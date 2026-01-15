@@ -84,6 +84,12 @@ const handlePush = async (req: AuthRequest, res: Response) => {
         }
     }
 
+    // Emit update event to all clients
+    const io = req.app.get('io');
+    if (io) {
+        io.emit('sync_update');
+    }
+
     res.json({ success: true, processedUuids, failedUuids });
 };
 

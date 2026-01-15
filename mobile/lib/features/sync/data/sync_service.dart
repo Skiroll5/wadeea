@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/core/config/api_config.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../../../core/database/app_database.dart';
 
 /// Provider for the SyncService with auto-sync capability
@@ -12,6 +13,8 @@ final syncServiceProvider = Provider((ref) {
   final service = SyncService(ref.read(appDatabaseProvider), Dio());
   // Start watching the sync queue for auto-sync
   service.startAutoSync();
+  // Ensure disposal when provider is disposed
+  ref.onDispose(() => service.dispose());
   return service;
 });
 
@@ -26,6 +29,7 @@ class SyncService {
   StreamSubscription? _queueSubscription;
   bool _isSyncing = false;
   Timer? _retryTimer;
+  IO.Socket? _socket;
 
   SyncService(this._db, this._dio);
 
@@ -47,19 +51,44 @@ class SyncService {
       sync();
     });
 
-    // Valid "notify if someone inserts something": Poll every 60 seconds
-    _retryTimer?.cancel();
-    _retryTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
+    // Real-time Sync with Socket.io
+    _initSocket();
+  }
+
+  void _initSocket() {
+    print('SyncService: Initializing Socket.io connection to $_baseUrl');
+    _socket = IO.io(
+      _baseUrl,
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .disableAutoConnect() // We connect manually
+          .build(),
+    );
+
+    _socket?.onConnect((_) {
+      print('SyncService: Socket Connected');
+    });
+
+    _socket?.onDisconnect((_) {
+      print('SyncService: Socket Disconnected');
+    });
+
+    _socket?.on('sync_update', (_) {
+      print('SyncService: Received sync_update event from server');
       if (!_isSyncing) {
         pullChanges();
       }
     });
+
+    _socket?.connect();
   }
 
   /// Stop auto-sync (call when disposing)
   void dispose() {
     _queueSubscription?.cancel();
     _retryTimer?.cancel();
+    _socket?.disconnect();
+    _socket?.dispose();
   }
 
   /// Try to push changes, silently fails and retries later if offline
