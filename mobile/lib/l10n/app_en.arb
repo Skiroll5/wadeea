@@ -1,0 +1,11 @@
+{
+  "appTitle": "St. Refqa Efteqad",
+  "login": "Login",
+  "email": "Email",
+  "password": "Password",
+  "register": "Register",
+  "waitActivation": "Account awaiting admin approval",
+  "classes": "Classes",
+  "students": "Students",
+  "attendance": "Attendance"
+}
