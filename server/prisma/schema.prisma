@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -6,3 +7,26 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(SERVANT)
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Soft Delete
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  SERVANT
+}
+
