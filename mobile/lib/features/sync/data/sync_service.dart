@@ -46,6 +46,14 @@ class SyncService {
     Future.delayed(const Duration(seconds: 2), () {
       sync();
     });
+
+    // Valid "notify if someone inserts something": Poll every 60 seconds
+    _retryTimer?.cancel();
+    _retryTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
+      if (!_isSyncing) {
+        pullChanges();
+      }
+    });
   }
 
   /// Stop auto-sync (call when disposing)
