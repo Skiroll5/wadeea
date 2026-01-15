@@ -214,178 +214,329 @@ class StudentListScreen extends ConsumerWidget {
   void _showAddStudentDialog(BuildContext context, WidgetRef ref) {
     final nameController = TextEditingController();
     final phoneController = TextEditingController();
+    final addressController = TextEditingController();
+    DateTime? selectedBirthdate;
+
     final selectedClassId = ref.read(selectedClassIdProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    final inputDecoration = InputDecoration(
+      filled: true,
+      fillColor: isDark
+          ? Colors.white.withOpacity(0.05)
+          : Colors.grey.withOpacity(0.05),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(
+          color: isDark ? AppColors.goldPrimary : AppColors.bluePrimary,
+        ),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    );
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Drag Handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              // Title
-              Text(
-                'Add New Student',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Add a student to this class',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Name Field
-              TextField(
-                controller: nameController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: 'Student Name',
-                  hintText: 'e.g. John Doe',
-                  prefixIcon: Icon(
-                    Icons.person,
-                    color: isDark
-                        ? AppColors.goldPrimary
-                        : AppColors.bluePrimary,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: isDark
-                          ? AppColors.goldPrimary
-                          : AppColors.bluePrimary,
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Phone Field
-              TextField(
-                controller: phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number (optional)',
-                  hintText: 'e.g. +1 234 567 890',
-                  prefixIcon: Icon(
-                    Icons.phone,
-                    color: isDark
-                        ? AppColors.goldPrimary
-                        : AppColors.bluePrimary,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: isDark
-                          ? AppColors.goldPrimary
-                          : AppColors.bluePrimary,
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Buttons
-              Row(
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      child: const Text('Cancel'),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (nameController.text.isNotEmpty &&
-                            selectedClassId != null) {
-                          try {
-                            await ref
-                                .read(studentsControllerProvider)
-                                .addStudent(
-                                  name: nameController.text,
-                                  phone: phoneController.text,
-                                  classId: selectedClassId,
-                                );
-                            if (context.mounted) Navigator.pop(context);
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error: $e')),
-                              );
-                            }
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please enter a name'),
-                            ),
-                          );
+                  Text(
+                    'Add New Student',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Add a student to this class',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Name Field
+                  TextField(
+                    controller: nameController,
+                    autofocus: true,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    decoration: inputDecoration.copyWith(
+                      labelText: 'Student Name',
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: isDark
+                            ? AppColors.goldPrimary.withOpacity(0.7)
+                            : AppColors.bluePrimary.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Phone Field
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    decoration: inputDecoration.copyWith(
+                      labelText: 'Phone Number (optional)',
+                      prefixIcon: Icon(
+                        Icons.phone_outlined,
+                        color: isDark
+                            ? AppColors.goldPrimary.withOpacity(0.7)
+                            : AppColors.bluePrimary.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Address Field
+                  TextField(
+                    controller: addressController,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    decoration: inputDecoration.copyWith(
+                      labelText: 'Address (optional)',
+                      prefixIcon: Icon(
+                        Icons.location_on_outlined,
+                        color: isDark
+                            ? AppColors.goldPrimary.withOpacity(0.7)
+                            : AppColors.bluePrimary.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Birthday Picker
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedBirthdate ?? DateTime(2010),
+                          firstDate: DateTime(1950),
+                          lastDate: DateTime.now(),
+                          builder: (context, child) {
+                            return Theme(
+                              data: theme.copyWith(
+                                colorScheme: isDark
+                                    ? const ColorScheme.dark(
+                                        primary: AppColors.goldPrimary,
+                                        onPrimary: Colors.black,
+                                        surface: Color(0xFF1E1E1E),
+                                        onSurface: Colors.white,
+                                      )
+                                    : const ColorScheme.light(
+                                        primary: AppColors.bluePrimary,
+                                        onPrimary: Colors.white,
+                                      ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null) {
+                          setSheetState(() => selectedBirthdate = picked);
                         }
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? AppColors.goldPrimary
-                            : AppColors.bluePrimary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
                         ),
-                      ),
-                      child: const Text(
-                        'Add Student',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.grey.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.transparent),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.cake_outlined,
+                              color: isDark
+                                  ? AppColors.goldPrimary.withOpacity(0.7)
+                                  : AppColors.bluePrimary.withOpacity(0.7),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Date of Birth',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    selectedBirthdate != null
+                                        ? '${selectedBirthdate!.day}/${selectedBirthdate!.month}/${selectedBirthdate!.year}'
+                                        : 'Not set',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: selectedBirthdate != null
+                                          ? (isDark
+                                                ? Colors.white
+                                                : Colors.black87)
+                                          : Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.calendar_today,
+                              size: 18,
+                              color: isDark ? Colors.white54 : Colors.black45,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 32),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white70
+                                  : Colors.grey.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    (isDark
+                                            ? AppColors.goldPrimary
+                                            : AppColors.bluePrimary)
+                                        .withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (nameController.text.isNotEmpty &&
+                                  selectedClassId != null) {
+                                try {
+                                  await ref
+                                      .read(studentsControllerProvider)
+                                      .addStudent(
+                                        name: nameController.text,
+                                        phone: phoneController.text,
+                                        address: addressController.text,
+                                        birthdate: selectedBirthdate,
+                                        classId: selectedClassId,
+                                      );
+                                  if (context.mounted) Navigator.pop(context);
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error: $e')),
+                                    );
+                                  }
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Please enter a name'),
+                                  ),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isDark
+                                  ? AppColors.goldPrimary
+                                  : AppColors.bluePrimary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              'Add Student',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                 ],
               ),
-              const SizedBox(height: 8),
-            ],
+            ),
           ),
         ),
       ),

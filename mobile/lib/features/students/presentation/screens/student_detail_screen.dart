@@ -406,6 +406,28 @@ class StudentDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final inputDecoration = InputDecoration(
+      filled: true,
+      fillColor: isDark
+          ? Colors.white.withOpacity(0.05)
+          : Colors.grey.withOpacity(0.05),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(
+          color: isDark ? AppColors.goldPrimary : AppColors.bluePrimary,
+        ),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    );
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -444,195 +466,234 @@ class StudentDetailScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
+
                   // Name
                   TextField(
                     controller: nameController,
-                    decoration: InputDecoration(
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    decoration: inputDecoration.copyWith(
                       labelText: 'Name',
                       prefixIcon: Icon(
-                        Icons.person,
+                        Icons.person_outline,
                         color: isDark
-                            ? AppColors.goldPrimary
-                            : AppColors.bluePrimary,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: isDark
-                              ? AppColors.goldPrimary
-                              : AppColors.bluePrimary,
-                          width: 2,
-                        ),
+                            ? AppColors.goldPrimary.withOpacity(0.7)
+                            : AppColors.bluePrimary.withOpacity(0.7),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
+
                   // Phone
                   TextField(
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    decoration: inputDecoration.copyWith(
                       labelText: 'Phone',
-                      hintText: '+1 234 567 890',
                       prefixIcon: Icon(
-                        Icons.phone,
+                        Icons.phone_outlined,
                         color: isDark
-                            ? AppColors.goldPrimary
-                            : AppColors.bluePrimary,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: isDark
-                              ? AppColors.goldPrimary
-                              : AppColors.bluePrimary,
-                          width: 2,
-                        ),
+                            ? AppColors.goldPrimary.withOpacity(0.7)
+                            : AppColors.bluePrimary.withOpacity(0.7),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
+
                   // Address
                   TextField(
                     controller: addressController,
-                    decoration: InputDecoration(
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    decoration: inputDecoration.copyWith(
                       labelText: 'Address',
-                      hintText: 'Street, City, Country',
                       prefixIcon: Icon(
-                        Icons.location_on,
+                        Icons.location_on_outlined,
                         color: isDark
-                            ? AppColors.goldPrimary
-                            : AppColors.bluePrimary,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: isDark
-                              ? AppColors.goldPrimary
-                              : AppColors.bluePrimary,
-                          width: 2,
-                        ),
+                            ? AppColors.goldPrimary.withOpacity(0.7)
+                            : AppColors.bluePrimary.withOpacity(0.7),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
+
                   // Birthday Picker
-                  InkWell(
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: selectedBirthdate ?? DateTime(2010),
-                        firstDate: DateTime(1950),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setSheetState(() => selectedBirthdate = picked);
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.cake,
-                            color: isDark
-                                ? AppColors.goldPrimary
-                                : AppColors.bluePrimary,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              selectedBirthdate != null
-                                  ? 'Birthday: ${selectedBirthdate!.day}/${selectedBirthdate!.month}/${selectedBirthdate!.year}'
-                                  : 'Set Birthday',
-                              style: TextStyle(
-                                color: selectedBirthdate != null
-                                    ? (isDark
-                                          ? AppColors.textPrimaryDark
-                                          : AppColors.textPrimaryLight)
-                                    : Colors.grey.shade600,
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedBirthdate ?? DateTime(2010),
+                          firstDate: DateTime(1950),
+                          lastDate: DateTime.now(),
+                          builder: (context, child) {
+                            return Theme(
+                              data: theme.copyWith(
+                                colorScheme: isDark
+                                    ? const ColorScheme.dark(
+                                        primary: AppColors.goldPrimary,
+                                        onPrimary: Colors.black,
+                                        surface: Color(0xFF1E1E1E),
+                                        onSurface: Colors.white,
+                                      )
+                                    : const ColorScheme.light(
+                                        primary: AppColors.bluePrimary,
+                                        onPrimary: Colors.white,
+                                      ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null) {
+                          setSheetState(() => selectedBirthdate = picked);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.grey.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.transparent),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.cake_outlined,
+                              color: isDark
+                                  ? AppColors.goldPrimary.withOpacity(0.7)
+                                  : AppColors.bluePrimary.withOpacity(0.7),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Date of Birth',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    selectedBirthdate != null
+                                        ? '${selectedBirthdate!.day}/${selectedBirthdate!.month}/${selectedBirthdate!.year}'
+                                        : 'Not set',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: selectedBirthdate != null
+                                          ? (isDark
+                                                ? Colors.white
+                                                : Colors.black87)
+                                          : Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                          Icon(
-                            Icons.edit_calendar,
-                            size: 20,
-                            color: isDark
-                                ? AppColors.textSecondaryDark
-                                : AppColors.textSecondaryLight,
-                          ),
-                        ],
+                            Icon(
+                              Icons.calendar_today,
+                              size: 18,
+                              color: isDark ? Colors.white54 : Colors.black45,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+
+                  const SizedBox(height: 32),
+
+                  // Buttons
                   Row(
                     children: [
                       Expanded(
-                        child: OutlinedButton(
+                        child: TextButton(
                           onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: const Text('Cancel'),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white70
+                                  : Colors.grey.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       Expanded(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final updatedStudent = student.copyWith(
-                              name: nameController.text,
-                              phone: Value(
-                                phoneController.text.isNotEmpty
-                                    ? phoneController.text
-                                    : null,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    (isDark
+                                            ? AppColors.goldPrimary
+                                            : AppColors.bluePrimary)
+                                        .withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
                               ),
-                              address: Value(
-                                addressController.text.isNotEmpty
-                                    ? addressController.text
-                                    : null,
-                              ),
-                              birthdate: Value(selectedBirthdate),
-                            );
-                            await ref
-                                .read(studentsControllerProvider)
-                                .updateStudent(updatedStudent);
-                            if (context.mounted) Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark
-                                ? AppColors.goldPrimary
-                                : AppColors.bluePrimary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            ],
                           ),
-                          child: const Text(
-                            'Save',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final updatedStudent = student.copyWith(
+                                name: nameController.text,
+                                phone: Value(
+                                  phoneController.text.isNotEmpty
+                                      ? phoneController.text
+                                      : null,
+                                ),
+                                address: Value(
+                                  addressController.text.isNotEmpty
+                                      ? addressController.text
+                                      : null,
+                                ),
+                                birthdate: Value(selectedBirthdate),
+                              );
+                              await ref
+                                  .read(studentsControllerProvider)
+                                  .updateStudent(updatedStudent);
+                              if (context.mounted) Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isDark
+                                  ? AppColors.goldPrimary
+                                  : AppColors.bluePrimary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
                         ),
                       ),
