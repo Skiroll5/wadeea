@@ -118,29 +118,11 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ).animate().fade(delay: 100.ms),
 
-          // All Settings in one card
+          // Language & Version
           PremiumCard(
             margin: const EdgeInsets.only(bottom: 16),
             child: Column(
               children: [
-                _SettingsTile(
-                  icon: Icons.brightness_6_outlined,
-                  title: 'Theme',
-                  subtitle: _getThemeName(themeMode),
-                  isDark: isDark,
-                  onTap: () =>
-                      _showThemePicker(context, ref, themeMode, isDark),
-                  trailing: Icon(
-                    Icons.chevron_right,
-                    color: isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondaryLight,
-                  ),
-                ),
-                Divider(
-                  height: 1,
-                  color: isDark ? Colors.white12 : Colors.grey.shade200,
-                ),
                 _SettingsTile(
                   icon: Icons.language_outlined,
                   title: 'Language',
@@ -159,11 +141,59 @@ class SettingsScreen extends ConsumerWidget {
                   height: 1,
                   color: isDark ? Colors.white12 : Colors.grey.shade200,
                 ),
-                _SettingsTile(
-                  icon: Icons.info_outline,
-                  title: 'Version',
-                  subtitle: '1.0.0',
-                  isDark: isDark,
+                // Version (Non-clickable)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 12,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.info_outline,
+                            size: 22,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Version',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondaryLight,
+                                ),
+                              ),
+                              Text(
+                                '1.0.0',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isDark
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondaryLight,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
