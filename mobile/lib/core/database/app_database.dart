@@ -24,6 +24,21 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      // In development, just recreate all tables
+      // This deletes all local data but avoids migration complexity
+      for (final table in allTables) {
+        await m.deleteTable(table.actualTableName);
+      }
+      await m.createAll();
+    },
+  );
 }
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {

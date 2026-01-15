@@ -30,6 +30,16 @@ final sessionRecordsProvider =
       return repo.watchRecordsForSession(sessionId);
     });
 
+// Watch records with student names for detail screen
+final sessionRecordsWithStudentsProvider =
+    StreamProvider.family<List<AttendanceRecordWithStudent>, String>((
+      ref,
+      sessionId,
+    ) {
+      final repo = ref.watch(attendanceRepositoryProvider);
+      return repo.watchRecordsWithStudents(sessionId);
+    });
+
 // --- Controller ---
 
 final attendanceControllerProvider =

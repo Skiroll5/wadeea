@@ -3,6 +3,17 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/database/app_database.dart';
 
+// Simple data class for record with student name
+class AttendanceRecordWithStudent {
+  final AttendanceRecord record;
+  final String studentName;
+
+  AttendanceRecordWithStudent({
+    required this.record,
+    required this.studentName,
+  });
+}
+
 class AttendanceRepository {
   final AppDatabase _db;
 
@@ -14,6 +25,33 @@ class AttendanceRepository {
           (r) => r.sessionId.equals(sessionId) & r.isDeleted.equals(false),
         ))
         .watch();
+  }
+
+  // Watch records with student names (joined)
+  Stream<List<AttendanceRecordWithStudent>> watchRecordsWithStudents(
+    String sessionId,
+  ) {
+    final query =
+        _db.select(_db.attendanceRecords).join([
+          innerJoin(
+            _db.students,
+            _db.students.id.equalsExp(_db.attendanceRecords.studentId),
+          ),
+        ])..where(
+          _db.attendanceRecords.sessionId.equals(sessionId) &
+              _db.attendanceRecords.isDeleted.equals(false),
+        );
+
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        final record = row.readTable(_db.attendanceRecords);
+        final student = row.readTable(_db.students);
+        return AttendanceRecordWithStudent(
+          record: record,
+          studentName: student.name,
+        );
+      }).toList();
+    });
   }
 
   // Get attendance records for a session (non-stream)
