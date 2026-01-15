@@ -20,9 +20,15 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     refreshListenable: AuthNotifier(ref),
     redirect: (context, state) {
+      if (authState.isLoading) return '/splash';
+
       final isLoggedIn = authState.asData?.value != null;
       final isLoggingIn = state.uri.toString() == '/login';
       final isRegistering = state.uri.toString() == '/register';
+      final isSplash = state.uri.toString() == '/splash';
+
+      if (isSplash && isLoggedIn) return '/';
+      if (isSplash && !isLoggedIn) return '/login';
 
       if (!isLoggedIn && !isLoggingIn && !isRegistering) {
         return '/login';
@@ -35,6 +41,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
+      ),
       // Home (Class Selection)
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
       // Students List (after class selected)

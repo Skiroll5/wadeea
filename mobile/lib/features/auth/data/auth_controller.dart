@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/auth_repository.dart';
@@ -16,9 +17,21 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
   }
 
   Future<void> _checkAuthStatus() async {
-    // TODO: Implement persistent token check
-    // For now starts unauthenticated
-    state = const AsyncValue.data(null);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userData = prefs.getString('user_data');
+
+      if (token != null && userData != null) {
+        final user = User.fromJson(jsonDecode(userData));
+        state = AsyncValue.data(user);
+      } else {
+        state = const AsyncValue.data(null);
+      }
+    } catch (e) {
+      // If error (e.g. corrupt json), logout
+      state = const AsyncValue.data(null);
+    }
   }
 
   Future<bool> login(String email, String password) async {
@@ -30,9 +43,10 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
       final user = User.fromJson(data['user']);
       final token = data['token'];
 
-      // Save token
+      // Save token and user data
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
+      await prefs.setString('user_data', jsonEncode(user.toJson()));
 
       state = AsyncValue.data(user);
       return true;
@@ -47,11 +61,8 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
     try {
       final repo = _ref.read(authRepositoryProvider);
       await repo.register(email, password, name);
-      // Registration successful, but maybe not logged in automatically?
-      // API returns user but no token usually for activation pending?
-      // Actually my API returns user. But plan says default isActive=false.
-      // So login will fail with PENDING_APPROVAL.
-      state = const AsyncValue.data(null); // Still not logged in
+      // Registration successful, await approval
+      state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -62,6 +73,7 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+    await prefs.remove('user_data');
     state = const AsyncValue.data(null);
   }
 }

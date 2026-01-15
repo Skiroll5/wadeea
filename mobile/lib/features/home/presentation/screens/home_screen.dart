@@ -6,7 +6,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/premium_card.dart';
 import '../../../classes/data/classes_controller.dart';
 import '../../../auth/data/auth_controller.dart';
-import '../../../sync/data/sync_service.dart';
 import '../../../students/data/students_controller.dart';
 import '../../../../core/database/app_database.dart';
 
