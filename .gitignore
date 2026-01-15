@@ -1,0 +1,19 @@
+# Node
+node_modules/
+dist/
+**/.env
+
+# Flutter
+.dart_tool/
+.idea/
+.vscode/
+build/
+.pub-cache/
+.packages
+
+# Postgres
+postgres-data/
+
+# OS
+.DS_Store
+Thumbs.db
