@@ -76,7 +76,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   _passwordController.text,
                                   _nameController.text,
                                 );
-                            if (success && mounted) {
+
+                            if (!mounted) return;
+
+                            if (success) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(l10n.waitActivation)),
                               );

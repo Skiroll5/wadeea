@@ -21,12 +21,67 @@ model User {
   // Soft Delete
   isDeleted Boolean  @default(false)
   deletedAt DateTime?
+  
+  notes     Note[]
 
   @@map("users")
 }
+
 
 enum Role {
   ADMIN
   SERVANT
 }
+
+model Student {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?
+  address   String?
+  birthdate DateTime?
+  classId   String?  // Could be a relation if we had Class table
+  
+  // Relations
+  notes     Note[]
+  attendance AttendanceRecord[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+
+  @@map("students")
+}
+
+model AttendanceRecord {
+  id        String   @id @default(uuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  date      DateTime
+  status    String   // PRESENT, ABSENT, EXCUSED
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+
+  @@map("attendance_records")
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  content   String
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+
+  @@map("notes")
+}
+
 
