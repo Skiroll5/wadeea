@@ -236,10 +236,9 @@ class StudentListScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               Text(
                 l10n?.upcomingBirthdays ?? "Upcoming Birthdays",
-                style: TextStyle(
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                 ),
               ),
             ],
@@ -430,10 +429,9 @@ class StudentListScreen extends ConsumerWidget {
             children: [
               Text(
                 l10n?.attendance ?? "Attendance",
-                style: TextStyle(
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                 ),
               ),
               Container(
