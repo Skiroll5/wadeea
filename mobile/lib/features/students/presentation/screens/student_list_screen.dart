@@ -313,8 +313,12 @@ class StudentListScreen extends ConsumerWidget {
                                   color: isToday
                                       ? AppColors.goldPrimary
                                       : (isDark
-                                            ? Colors.grey.shade700
-                                            : Colors.grey.shade200),
+                                            ? AppColors.goldPrimary.withValues(
+                                                alpha: 0.15,
+                                              )
+                                            : AppColors.goldPrimary.withValues(
+                                                alpha: 0.12,
+                                              )),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Column(
@@ -327,9 +331,7 @@ class StudentListScreen extends ConsumerWidget {
                                         fontSize: 18,
                                         color: isToday
                                             ? Colors.white
-                                            : (isDark
-                                                  ? Colors.white
-                                                  : Colors.black87),
+                                            : AppColors.goldDark,
                                       ),
                                     ),
                                     Text(
@@ -339,9 +341,7 @@ class StudentListScreen extends ConsumerWidget {
                                         fontWeight: FontWeight.w600,
                                         color: isToday
                                             ? Colors.white70
-                                            : (isDark
-                                                  ? Colors.white60
-                                                  : Colors.grey.shade600),
+                                            : AppColors.goldPrimary,
                                       ),
                                     ),
                                   ],
@@ -355,7 +355,7 @@ class StudentListScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      student.name.split(' ').first,
+                                      student.name,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -510,7 +510,7 @@ class StudentListScreen extends ConsumerWidget {
                       ),
                     ),
                     title: Text(
-                      '${DateFormat('EEEE', Localizations.localeOf(context).languageCode).format(session.date)} ${DateFormat('dd/MM/yyyy HH:mm', 'en').format(session.date)}',
+                      '${DateFormat('EEEE', Localizations.localeOf(context).languageCode).format(session.date)} ${DateFormat('dd/MM/yyyy', 'en').format(session.date)} - ${DateFormat('HH:mm', 'en').format(session.date)}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
@@ -522,13 +522,7 @@ class StudentListScreen extends ConsumerWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           )
-                        : Text(
-                            l10n?.sessionTime ?? "Session",
-                            style: TextStyle(
-                              color: Colors.grey.withOpacity(0.5),
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
+                        : null,
                     trailing: const Icon(Icons.chevron_right, size: 20),
                     onTap: () => context.push('/attendance/${session.id}'),
                   ),
