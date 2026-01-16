@@ -81,5 +81,8 @@
   "classNameHint": "مثال: مدرسة الأحد - الصف الثالث",
   "gradeOptional": "الصف (اختياري)",
   "gradeHint": "مثال: الصف الثالث",
-  "create": "إنشاء"
+  "create": "إنشاء",
+  "upcomingBirthdays": "أعياد الميلاد القادمة",
+  "today": "اليوم!",
+  "daysLeft": "باقي {count} يوم"
 }

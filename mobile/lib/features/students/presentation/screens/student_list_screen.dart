@@ -205,7 +205,7 @@ class StudentListScreen extends ConsumerWidget {
               Icon(Icons.cake, size: 16, color: AppColors.goldPrimary),
               const SizedBox(width: 8),
               Text(
-                "Upcoming Birthdays", // Localization needed
+                l10n?.upcomingBirthdays ?? "Upcoming Birthdays",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
@@ -232,44 +232,59 @@ class StudentListScreen extends ConsumerWidget {
               final diff = nextB.difference(now).inDays;
               final isToday = diff == 0;
 
-              return Container(
-                width: 70,
-                margin: const EdgeInsets.only(right: 12),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: isToday
-                          ? AppColors.goldPrimary
-                          : (isDark
-                                ? Colors.grey.shade800
-                                : Colors.grey.shade200),
-                      child: Text(
-                        student.name.substring(0, 1).toUpperCase(),
-                        style: TextStyle(
-                          color: isToday
-                              ? Colors.white
-                              : (isDark ? Colors.white : Colors.black87),
-                          fontWeight: FontWeight.bold,
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => context.push('/students/${student.id}'),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 70,
+                    margin: const EdgeInsets.only(right: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: isToday
+                              ? AppColors.goldPrimary.withOpacity(0.2)
+                              : (isDark
+                                    ? Colors.grey.shade800
+                                    : Colors.grey.shade200),
+                          child: Text(
+                            student.name.substring(0, 1).toUpperCase(),
+                            style: TextStyle(
+                              color: isToday
+                                  ? AppColors.goldPrimary
+                                  : (isDark ? Colors.white : Colors.black87),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 6),
+                        Text(
+                          student.name.split(' ')[0],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        Text(
+                          isToday
+                              ? (l10n?.today ?? "Today!")
+                              : (l10n?.daysLeft(diff) ?? "$diff days"),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: isToday
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isToday
+                                ? AppColors.goldPrimary
+                                : Colors.grey,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      student.name.split(' ')[0],
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 10),
-                    ),
-                    Text(
-                      isToday ? "Today!" : "$diff days",
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: isToday ? AppColors.goldPrimary : Colors.grey,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               );
             },
@@ -354,7 +369,7 @@ class StudentListScreen extends ConsumerWidget {
                   ..sort((a, b) => b.date.compareTo(a.date));
                 final session = sortedSessions[index];
                 return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
+                  margin: const EdgeInsets.only(bottom: 12),
                   color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(

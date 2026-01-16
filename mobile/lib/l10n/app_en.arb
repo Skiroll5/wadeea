@@ -102,5 +102,13 @@
   "classNameHint": "e.g. Sunday School - Grade 3",
   "gradeOptional": "Grade (optional)",
   "gradeHint": "e.g. Grade 3",
-  "create": "Create"
+  "create": "Create",
+  "upcomingBirthdays": "Upcoming Birthdays",
+  "today": "Today!",
+  "daysLeft": "{count} days left",
+  "@daysLeft": {
+    "placeholders": {
+        "count": {}
+    }
+  }
 }
