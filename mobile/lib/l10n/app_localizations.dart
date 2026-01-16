@@ -673,6 +673,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This will delete all local attendance data and force a full re-sync from the server. Use only if backend was cleared.'**
   String get resetWarning;
+
+  /// No description provided for @attendanceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance Details'**
+  String get attendanceDetails;
+
+  /// No description provided for @attendanceRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance Rate'**
+  String get attendanceRate;
+
+  /// No description provided for @noAttendanceRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'No attendance records'**
+  String get noAttendanceRecords;
 }
 
 class _AppLocalizationsDelegate

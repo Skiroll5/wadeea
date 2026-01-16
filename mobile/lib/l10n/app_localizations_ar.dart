@@ -309,4 +309,13 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get resetWarning =>
       'سيتم حذف جميع سجلات الغياب المحلية وفرض مزامنة كاملة من الخادم. استخدمه فقط إذا تم مسح البيانات على الخادم.';
+
+  @override
+  String get attendanceDetails => 'تفاصيل الغياب';
+
+  @override
+  String get attendanceRate => 'نسبة الحضور';
+
+  @override
+  String get noAttendanceRecords => 'لا توجد سجلات غياب';
 }

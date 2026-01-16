@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/premium_card.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../data/attendance_controller.dart';
 
 class AttendanceDetailScreen extends ConsumerWidget {
@@ -18,6 +19,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
       sessionRecordsWithStudentsProvider(sessionId),
     );
     final sessionsAsync = ref.watch(attendanceSessionsProvider);
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -26,7 +28,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
     sessionsAsync.whenData((sessions) {
       final session = sessions.where((s) => s.id == sessionId).firstOrNull;
       if (session != null) {
-        dateText = DateFormat.yMMMd().format(session.date);
+        dateText = DateFormat.yMMMd(l10n?.localeName).format(session.date);
       }
     });
 
@@ -41,7 +43,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
-              'Attendance Details',
+              l10n?.attendanceDetails ?? 'Attendance Details',
               style: TextStyle(
                 fontSize: 12,
                 color: isDark
@@ -65,7 +67,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
       body: recordsAsync.when(
         data: (records) {
           final presentCount = records
-              .where((r) => r.record.status == 'PRESENT')
+              .where((r) => r.record?.status == 'PRESENT')
               .length;
           final total = records.length;
           final percentage = total > 0 ? (presentCount / total) : 0.0;
@@ -110,7 +112,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Attendance Rate',
+                      l10n?.attendanceRate ?? 'Attendance Rate',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: isDark
                             ? AppColors.textSecondaryDark
@@ -162,7 +164,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
                       children: [
                         _StatChip(
                           icon: Icons.check_circle,
-                          label: 'Present',
+                          label: l10n?.present ?? 'Present',
                           count: presentCount,
                           color: AppColors.goldPrimary,
                           isDark: isDark,
@@ -174,7 +176,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
                         ),
                         _StatChip(
                           icon: Icons.cancel,
-                          label: 'Absent',
+                          label: l10n?.absent ?? 'Absent',
                           count: total - presentCount,
                           color: Colors.grey,
                           isDark: isDark,
@@ -194,7 +196,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     Text(
-                      'STUDENTS',
+                      l10n?.students?.toUpperCase() ?? 'STUDENTS',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -224,7 +226,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
                 child: records.isEmpty
                     ? Center(
                         child: Text(
-                          'No attendance records',
+                          l10n?.noAttendanceRecords ?? 'No attendance records',
                           style: TextStyle(
                             color: isDark
                                 ? AppColors.textSecondaryDark
@@ -237,7 +239,7 @@ class AttendanceDetailScreen extends ConsumerWidget {
                         itemCount: records.length,
                         itemBuilder: (context, index) {
                           final item = records[index];
-                          final isPresent = item.record.status == 'PRESENT';
+                          final isPresent = item.record?.status == 'PRESENT';
 
                           return PremiumCard(
                             delay: index * 0.02,

@@ -311,4 +311,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get resetWarning =>
       'This will delete all local attendance data and force a full re-sync from the server. Use only if backend was cleared.';
+
+  @override
+  String get attendanceDetails => 'Attendance Details';
+
+  @override
+  String get attendanceRate => 'Attendance Rate';
+
+  @override
+  String get noAttendanceRecords => 'No attendance records';
 }

@@ -1,16 +1,20 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'package:rxdart/rxdart.dart';
 import '../../../core/database/app_database.dart';
 
 // Simple data class for record with student name
 class AttendanceRecordWithStudent {
-  final AttendanceRecord record;
+  final AttendanceRecord?
+  record; // Nullable to represent students without a record
   final String studentName;
+  final String studentId;
 
   AttendanceRecordWithStudent({
-    required this.record,
+    this.record,
     required this.studentName,
+    required this.studentId,
   });
 }
 
@@ -42,7 +46,22 @@ class AttendanceRepository {
   Stream<Map<String, StudentAttendanceStats>> watchClassStudentStats(
     String classId,
   ) {
-    final query =
+    // 1. Get all students in this class
+    final studentsStream =
+        (_db.select(_db.students)..where(
+              (s) => s.classId.equals(classId) & s.isDeleted.equals(false),
+            ))
+            .watch();
+
+    // 2. Get all sessions for this class
+    final sessionsStream =
+        (_db.select(_db.attendanceSessions)..where(
+              (s) => s.classId.equals(classId) & s.isDeleted.equals(false),
+            ))
+            .watch();
+
+    // 3. Get all records for sessions in this class
+    final recordsQuery =
         _db.select(_db.attendanceRecords).join([
           innerJoin(
             _db.attendanceSessions,
@@ -55,27 +74,65 @@ class AttendanceRepository {
               _db.attendanceSessions.isDeleted.equals(false) &
               _db.attendanceRecords.isDeleted.equals(false),
         );
+    final recordsStream = recordsQuery.watch();
 
-    return query.watch().map((rows) {
-      final Map<String, List<AttendanceRecord>> recordsByStudent = {};
-
-      for (final row in rows) {
-        final record = row.readTable(_db.attendanceRecords);
-        recordsByStudent.putIfAbsent(record.studentId, () => []).add(record);
-      }
+    return Rx.combineLatest3(studentsStream, sessionsStream, recordsStream, (
+      students,
+      sessions,
+      recordRows,
+    ) {
+      final records = recordRows
+          .map((r) => r.readTable(_db.attendanceRecords))
+          .toList();
 
       final statsMap = <String, StudentAttendanceStats>{};
-      recordsByStudent.forEach((studentId, records) {
-        final present = records.where((r) => r.status == 'PRESENT').length;
-        final absent = records.where((r) => r.status == 'ABSENT').length;
 
-        statsMap[studentId] = StudentAttendanceStats(
-          studentId: studentId,
-          totalRecords: records.length,
-          presentCount: present,
-          absentCount: absent,
+      for (final student in students) {
+        final studentRecords = records
+            .where((r) => r.studentId == student.id)
+            .toList();
+
+        // A student is expected to have been in a session if:
+        // - The session date is after or on their creation date
+        // - OR they already have a record (was manually added/marked past)
+        final expectedSessionIds = sessions
+            .where((s) {
+              // Remove milliseconds/seconds to avoid issues with same-day creation
+              final studentDate = DateTime(
+                student.createdAt.year,
+                student.createdAt.month,
+                student.createdAt.day,
+              );
+              final sessionDate = DateTime(
+                s.date.year,
+                s.date.month,
+                s.date.day,
+              );
+
+              return sessionDate.isAfter(studentDate) ||
+                  sessionDate.isAtSameMomentAs(studentDate) ||
+                  studentRecords.any((r) => r.sessionId == s.id);
+            })
+            .map((s) => s.id)
+            .toSet();
+
+        final presentCount = studentRecords
+            .where((r) => r.status == 'PRESENT')
+            .length;
+
+        // Absences = Total Expected - Presence
+        // This correctly handles students added later (who won't be expected in old sessions)
+        // and students who were in class but didn't have a record created.
+        final totalExpected = expectedSessionIds.length;
+        final absentCount = totalExpected - presentCount;
+
+        statsMap[student.id] = StudentAttendanceStats(
+          studentId: student.id,
+          totalRecords: totalExpected,
+          presentCount: presentCount,
+          absentCount: absentCount,
         );
-      });
+      }
 
       return statsMap;
     });
@@ -90,29 +147,45 @@ class AttendanceRepository {
   }
 
   // Watch records with student names (joined)
+  // Shows all students belonging to the class at that time
   Stream<List<AttendanceRecordWithStudent>> watchRecordsWithStudents(
     String sessionId,
   ) {
-    final query =
-        _db.select(_db.attendanceRecords).join([
-          innerJoin(
-            _db.students,
-            _db.students.id.equalsExp(_db.attendanceRecords.studentId),
-          ),
-        ])..where(
-          _db.attendanceRecords.sessionId.equals(sessionId) &
-              _db.attendanceRecords.isDeleted.equals(false),
-        );
+    // First get the session info
+    final sessionQuery = _db.select(_db.attendanceSessions)
+      ..where((s) => s.id.equals(sessionId));
 
-    return query.watch().map((rows) {
-      return rows.map((row) {
-        final record = row.readTable(_db.attendanceRecords);
-        final student = row.readTable(_db.students);
-        return AttendanceRecordWithStudent(
-          record: record,
-          studentName: student.name,
-        );
-      }).toList();
+    return sessionQuery.watchSingle().switchMap((session) {
+      final query =
+          _db.select(_db.students).join([
+            leftOuterJoin(
+              _db.attendanceRecords,
+              _db.attendanceRecords.studentId.equalsExp(_db.students.id) &
+                  _db.attendanceRecords.sessionId.equals(sessionId) &
+                  _db.attendanceRecords.isDeleted.equals(false),
+            ),
+          ])..where(
+            _db.students.classId.equals(session.classId) &
+                _db.students.isDeleted.equals(false) &
+                (_db.students.createdAt.isSmallerOrEqualValue(session.date) |
+                    _db.attendanceRecords.id.isNotNull()),
+          );
+
+      return query.watch().map((rows) {
+        final results = rows.map((row) {
+          final record = row.readTableOrNull(_db.attendanceRecords);
+          final student = row.readTable(_db.students);
+          return AttendanceRecordWithStudent(
+            record: record,
+            studentName: student.name,
+            studentId: student.id,
+          );
+        }).toList();
+
+        // Sort by name
+        results.sort((a, b) => a.studentName.compareTo(b.studentName));
+        return results;
+      });
     });
   }
 
