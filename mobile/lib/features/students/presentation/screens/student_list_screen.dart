@@ -210,15 +210,17 @@ class StudentListScreen extends ConsumerWidget {
       return diff >= 0 && diff <= 30;
     }).toList();
 
-    // Sort by soonest
+    // Sort by soonest (closest first)
     upcomingBirthdays.sort((a, b) {
       var nextA = DateTime(now.year, a.birthdate!.month, a.birthdate!.day);
-      if (nextA.isBefore(now))
+      if (nextA.isBefore(now.subtract(const Duration(days: 1)))) {
         nextA = DateTime(now.year + 1, a.birthdate!.month, a.birthdate!.day);
+      }
 
       var nextB = DateTime(now.year, b.birthdate!.month, b.birthdate!.day);
-      if (nextB.isBefore(now))
+      if (nextB.isBefore(now.subtract(const Duration(days: 1)))) {
         nextB = DateTime(now.year + 1, b.birthdate!.month, b.birthdate!.day);
+      }
 
       return nextA.compareTo(nextB);
     });
