@@ -246,7 +246,7 @@ class StudentListScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 145,
+          height: 85,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -267,9 +267,12 @@ class StudentListScreen extends ConsumerWidget {
                 onTap: () => context.push('/students/${student.id}'),
                 child:
                     Container(
-                          width: 120,
+                          width: 150,
                           margin: const EdgeInsets.only(right: 12),
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             gradient: isToday
                                 ? LinearGradient(
@@ -300,13 +303,12 @@ class StudentListScreen extends ConsumerWidget {
                               width: isToday ? 1.5 : 1,
                             ),
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: Row(
                             children: [
                               // Date Box
                               Container(
-                                width: 44,
-                                height: 44,
+                                width: 48,
+                                height: 52,
                                 decoration: BoxDecoration(
                                   color: isToday
                                       ? AppColors.goldPrimary
@@ -319,10 +321,10 @@ class StudentListScreen extends ConsumerWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      b.day.toString().padLeft(2, '0'),
+                                      b.day.toString(),
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 18,
                                         color: isToday
                                             ? Colors.white
                                             : (isDark
@@ -333,7 +335,7 @@ class StudentListScreen extends ConsumerWidget {
                                     Text(
                                       _getMonthAbbr(b.month),
                                       style: TextStyle(
-                                        fontSize: 10,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                         color: isToday
                                             ? Colors.white70
@@ -345,53 +347,51 @@ class StudentListScreen extends ConsumerWidget {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              // Name
-                              Text(
-                                student.name.split(' ').first,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  color: isDark ? Colors.white : Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              // Days left badge
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isToday
-                                      ? Colors.white.withValues(alpha: 0.2)
-                                      : (isDark
-                                            ? Colors.grey.shade800
-                                            : Colors.grey.shade100),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                              const SizedBox(width: 10),
+                              // Name & countdown
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (isToday)
-                                      const Text(
-                                        "🎉 ",
-                                        style: TextStyle(fontSize: 10),
-                                      ),
                                     Text(
-                                      isToday
-                                          ? (l10n?.today ?? "Today!")
-                                          : (l10n?.daysLeft(diff) ??
-                                                "$diff days"),
+                                      student.name.split(' ').first,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                        fontSize: 10,
                                         fontWeight: FontWeight.bold,
-                                        color: isToday
+                                        fontSize: 13,
+                                        color: isDark
                                             ? Colors.white
-                                            : AppColors.goldPrimary,
+                                            : Colors.black87,
                                       ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        if (isToday)
+                                          const Text(
+                                            "🎉 ",
+                                            style: TextStyle(fontSize: 11),
+                                          ),
+                                        Flexible(
+                                          child: Text(
+                                            isToday
+                                                ? (l10n?.today ?? "Today!")
+                                                : (l10n?.daysLeft(diff) ??
+                                                      "$diff days"),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: isToday
+                                                  ? (isDark
+                                                        ? Colors.white70
+                                                        : AppColors.goldDark)
+                                                  : AppColors.goldPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -510,10 +510,7 @@ class StudentListScreen extends ConsumerWidget {
                       ),
                     ),
                     title: Text(
-                      DateFormat(
-                        'dd/MM/yyyy  HH:mm (EEEE)',
-                        Localizations.localeOf(context).languageCode,
-                      ).format(session.date),
+                      '${DateFormat('EEEE', Localizations.localeOf(context).languageCode).format(session.date)} ${DateFormat('dd/MM/yyyy HH:mm', 'en').format(session.date)}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
