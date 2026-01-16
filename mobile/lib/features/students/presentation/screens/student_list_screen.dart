@@ -271,7 +271,14 @@ class StudentListScreen extends ConsumerWidget {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => context.push('/students/${student.id}'),
+                        onTap: () async {
+                          await Future.delayed(
+                            const Duration(milliseconds: 150),
+                          );
+                          if (context.mounted) {
+                            context.push('/students/${student.id}');
+                          }
+                        },
                         borderRadius: BorderRadius.circular(16),
                         splashColor: AppColors.goldPrimary.withValues(
                           alpha: 0.2,
