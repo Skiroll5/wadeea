@@ -399,9 +399,11 @@ class StudentListScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 l10n?.attendance ?? "Attendance",
@@ -430,7 +432,7 @@ class StudentListScreen extends ConsumerWidget {
               ).animate().fade(delay: 300.ms).scale(),
             ],
           ),
-          // Recent Sessions List (Horizontal or Vertical condensed)
+          const SizedBox(height: 12),
           if (sessions.isEmpty)
             Container(
               padding: const EdgeInsets.all(16),
