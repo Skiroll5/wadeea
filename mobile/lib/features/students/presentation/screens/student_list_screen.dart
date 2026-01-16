@@ -96,15 +96,22 @@ class StudentListScreen extends ConsumerWidget {
                               : Colors.grey.shade600,
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.add_circle,
-                          size: 24,
-                          color: AppColors.goldPrimary,
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? AppColors.goldPrimary.withValues(alpha: 0.1)
+                              : AppColors.goldPrimary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
                         ),
-                        tooltip: l10n?.addNewStudent ?? 'Add Student',
-                        onPressed: () => _showAddStudentDialog(context, ref),
-                      ),
+                        child: IconButton(
+                          icon: const Icon(Icons.add),
+                          color: isDark
+                              ? AppColors.goldPrimary
+                              : AppColors.goldDark,
+                          tooltip: l10n?.addNewStudent ?? 'Add Student',
+                          onPressed: () => _showAddStudentDialog(context, ref),
+                        ),
+                      ).animate().fade(delay: 300.ms).scale(),
                     ],
                   ),
                 ),
@@ -207,21 +214,22 @@ class StudentListScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Icon(Icons.cake, size: 16, color: AppColors.goldPrimary),
+              Icon(Icons.cake, size: 18, color: AppColors.goldPrimary),
               const SizedBox(width: 8),
               Text(
                 l10n?.upcomingBirthdays ?? "Upcoming Birthdays",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontSize: 14,
                   color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         SizedBox(
-          height: 90,
+          height: 100,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -232,65 +240,146 @@ class StudentListScreen extends ConsumerWidget {
 
               // Calculate days
               var nextB = DateTime(now.year, b.month, b.day);
-              if (nextB.isBefore(now.subtract(const Duration(days: 1))))
+              if (nextB.isBefore(now.subtract(const Duration(days: 1)))) {
                 nextB = DateTime(now.year + 1, b.month, b.day);
+              }
               final diff = nextB.difference(now).inDays;
               final isToday = diff == 0;
 
-              return Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => context.push('/students/${student.id}'),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    width: 70,
-                    margin: const EdgeInsets.only(right: 8),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: isToday
-                              ? AppColors.goldPrimary.withOpacity(0.2)
-                              : (isDark
-                                    ? Colors.grey.shade800
-                                    : Colors.grey.shade200),
-                          child: Text(
-                            student.name.substring(0, 1).toUpperCase(),
-                            style: TextStyle(
+              return GestureDetector(
+                onTap: () => context.push('/students/${student.id}'),
+                child:
+                    Container(
+                          width: 140,
+                          margin: const EdgeInsets.only(right: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            gradient: isToday
+                                ? LinearGradient(
+                                    colors: [
+                                      AppColors.goldPrimary.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      AppColors.goldDark.withValues(alpha: 0.1),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : null,
+                            color: isToday
+                                ? null
+                                : (isDark
+                                      ? Colors.white.withValues(alpha: 0.05)
+                                      : Colors.grey.withValues(alpha: 0.08)),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
                               color: isToday
-                                  ? AppColors.goldPrimary
-                                  : (isDark ? Colors.white : Colors.black87),
-                              fontWeight: FontWeight.bold,
+                                  ? AppColors.goldPrimary.withValues(alpha: 0.5)
+                                  : (isDark
+                                        ? Colors.white10
+                                        : Colors.grey.shade200),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          student.name.split(' ')[0],
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 11),
-                        ),
-                        Text(
-                          isToday
-                              ? (l10n?.today ?? "Today!")
-                              : (l10n?.daysLeft(diff) ?? "$diff days"),
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: isToday
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isToday
-                                ? AppColors.goldPrimary
-                                : Colors.grey,
+                          child: Row(
+                            children: [
+                              // Avatar with date
+                              Stack(
+                                alignment: Alignment.bottomRight,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 26,
+                                    backgroundColor: isToday
+                                        ? AppColors.goldPrimary
+                                        : (isDark
+                                              ? Colors.grey.shade700
+                                              : Colors.grey.shade300),
+                                    child: Text(
+                                      student.name
+                                          .substring(0, 1)
+                                          .toUpperCase(),
+                                      style: TextStyle(
+                                        color: isToday
+                                            ? Colors.white
+                                            : (isDark
+                                                  ? Colors.white
+                                                  : Colors.black87),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isToday)
+                                    Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Text(
+                                        "🎉",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(width: 10),
+                              // Name & Days
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      student.name.split(' ').first,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isToday
+                                            ? AppColors.goldPrimary
+                                            : (isDark
+                                                  ? Colors.grey.shade700
+                                                  : Colors.grey.shade200),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        isToday
+                                            ? (l10n?.today ?? "Today!")
+                                            : (l10n?.daysLeft(diff) ??
+                                                  "$diff days"),
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: isToday
+                                              ? Colors.white
+                                              : (isDark
+                                                    ? Colors.white70
+                                                    : Colors.grey.shade700),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                        )
+                        .animate()
+                        .fade(delay: (index * 100).ms)
+                        .slideX(begin: 0.1, end: 0),
               );
             },
           ),
@@ -322,27 +411,23 @@ class StudentListScreen extends ConsumerWidget {
                   color: isDark ? Colors.white : Colors.black87,
                 ),
               ),
-              IconButton(
-                icon: const Icon(
-                  Icons.add_circle,
-                  color: AppColors.goldPrimary,
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.goldPrimary.withValues(alpha: 0.1)
+                      : AppColors.goldPrimary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                onPressed: () {
-                  // Go to Take Attendance Screen or Show Dialog
-                  if (classId != null) {
-                    // We could push a route or show dialog. Use route for now as per user request to "create another screen doesn't have much sense" -> wait, user said "creating another screen doesn't have much sense" referring to VIEWING attendances? Or creating?
-                    // "we should see the attendances (let's put them in that page with a plus icon for creating a new one) creating another screen doesn't have much sense"
-                    // So we should probably show a dialog to create session? Or navigate to a "Take Attendance" flow?
-                    // Let's assume navigate to TakeAttendanceScreen is fine, but maybe trigger it differently.
-                    // Or maybe user meant the LIST of attendances shouldn't be a separate screen.
-                    // I'll assume standard navigation for now, or improve later.
-
-                    // Navigate to 'take-attendance' with classId
-                    // Ideally we want to go straight to creating one?
-                    context.push('/attendance/new');
-                  }
-                },
-              ),
+                child: IconButton(
+                  icon: const Icon(Icons.add),
+                  color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
+                  onPressed: () {
+                    if (classId != null) {
+                      context.push('/attendance/new');
+                    }
+                  },
+                ),
+              ).animate().fade(delay: 300.ms).scale(),
             ],
           ),
           // Recent Sessions List (Horizontal or Vertical condensed)
@@ -402,7 +487,8 @@ class StudentListScreen extends ConsumerWidget {
                     ),
                     title: Text(
                       DateFormat(
-                        'dd/MM/yyyy  HH:mm (EEE)',
+                        'dd/MM/yyyy  HH:mm (EEEE)',
+                        Localizations.localeOf(context).languageCode,
                       ).format(session.date),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
@@ -830,35 +916,26 @@ class StudentListScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
 
                   // Retroactive Absence Checkbox
-                  StatefulBuilder(
-                    builder: (context, setStateCheckbox) {
-                      bool markAbsentPast =
-                          false; // Internal state for this widget in loop? No.
-                      // We need to lift this state up to the StatefulBuilder wrapping the content.
-                      // Actually, 'setSheetState' is available. Let's use a local var in the main dialog build function.
-                      return CheckboxListTile(
-                        value: markAbsentPast,
-                        onChanged: (val) {
-                          setSheetState(() => markAbsentPast = val ?? false);
-                        },
-                        title: Text(
-                          l10n?.markAbsentPast ??
-                              "Mark absent for past sessions",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        subtitle: Text(
-                          l10n?.markAbsentPastCaption ??
-                              "Student will be recorded as ABSENT for all previous sessions.",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                        activeColor: AppColors.goldPrimary,
-                        contentPadding: EdgeInsets.zero,
-                        controlAffinity: ListTileControlAffinity.leading,
-                      );
+                  CheckboxListTile(
+                    value: markAbsentPast,
+                    onChanged: (val) {
+                      setSheetState(() => markAbsentPast = val ?? false);
                     },
+                    title: Text(
+                      l10n?.markAbsentPast ?? "Mark absent for past sessions",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n?.markAbsentPastCaption ??
+                          "Student will be recorded as ABSENT for all previous sessions.",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    activeColor: AppColors.goldPrimary,
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
                   ),
 
                   const SizedBox(height: 24),
@@ -961,117 +1038,6 @@ class StudentListScreen extends ConsumerWidget {
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-
-                  const SizedBox(height: 32),
-
-                  // Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Text(
-                            l10n?.cancel ?? 'Cancel',
-                            style: TextStyle(
-                              color: isDark
-                                  ? Colors.white70
-                                  : Colors.grey.shade700,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color:
-                                    (isDark
-                                            ? AppColors.goldPrimary
-                                            : AppColors.goldPrimary)
-                                        .withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              // Reset errors
-                              setSheetState(() {
-                                nameError = null;
-                                serverError = null;
-                              });
-
-                              if (nameController.text.isEmpty) {
-                                setSheetState(() {
-                                  nameError =
-                                      l10n?.pleaseEnterName ??
-                                      'Please enter a name';
-                                });
-                                return;
-                              }
-
-                              if (selectedClassId == null) {
-                                setSheetState(() {
-                                  serverError =
-                                      'Error: No class selected (ID null)';
-                                });
-                                return;
-                              }
-
-                              try {
-                                await ref
-                                    .read(studentsControllerProvider)
-                                    .addStudent(
-                                      name: nameController.text,
-                                      phone: phoneController.text,
-                                      address: addressController.text,
-                                      birthdate: selectedBirthdate,
-                                      classId: selectedClassId,
-                                    );
-                                if (context.mounted) Navigator.pop(context);
-                              } catch (e) {
-                                if (context.mounted) {
-                                  setSheetState(() {
-                                    serverError = 'Error: $e';
-                                  });
-                                }
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isDark
-                                  ? AppColors.goldPrimary
-                                  : AppColors.goldPrimary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: Text(
-                              l10n?.addStudentAction ?? 'Add Student',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
                             ),
                           ),
                         ),
