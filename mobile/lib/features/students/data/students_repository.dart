@@ -21,6 +21,13 @@ class StudentsRepository {
         .watch();
   }
 
+  Stream<List<Student>> watchAllStudents() {
+    return (_db.select(_db.students)
+          ..where((t) => t.isDeleted.equals(false))
+          ..orderBy([(t) => OrderingTerm(expression: t.name)]))
+        .watch();
+  }
+
   Stream<Student?> watchStudent(String id) {
     return (_db.select(
       _db.students,

@@ -7,6 +7,7 @@ import 'package:mobile/features/attendance/data/attendance_controller.dart';
 import 'package:mobile/features/attendance/data/attendance_repository.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/components/upcoming_birthdays_section.dart';
 import '../../../../core/components/premium_card.dart';
 import '../../../../core/database/app_database.dart';
 import '../../data/students_controller.dart';
@@ -125,9 +126,16 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
               const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
               // 1. Birthday Section
-              SliverToBoxAdapter(
-                child: _buildBirthdaySection(context, students, isDark, l10n),
-              ),
+              if (students.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: UpcomingBirthdaysSection(
+                      students: students,
+                      isDark: isDark,
+                    ),
+                  ),
+                ),
 
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
@@ -481,291 +489,6 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
           ).animate().fade(delay: 200.ms),
         ],
       ),
-    );
-  }
-
-  String _getMonthAbbr(int month) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
-  }
-
-  Widget _buildBirthdaySection(
-    BuildContext context,
-    List<Student> students,
-    bool isDark,
-    AppLocalizations? l10n,
-  ) {
-    // Filter upcoming birthdays (next 30 days)
-    final now = DateTime.now();
-    final upcomingBirthdays = students.where((s) {
-      if (s.birthdate == null) return false;
-      final b = s.birthdate!;
-      // Simple check: is month/day within next 30 days?
-      // Normalize to current year
-      var nextB = DateTime(now.year, b.month, b.day);
-      if (nextB.isBefore(now.subtract(const Duration(days: 1)))) {
-        nextB = DateTime(now.year + 1, b.month, b.day);
-      }
-      final diff = nextB.difference(now).inDays;
-      return diff >= 0 && diff <= 30;
-    }).toList();
-
-    // Sort by soonest (closest first)
-    upcomingBirthdays.sort((a, b) {
-      var nextA = DateTime(now.year, a.birthdate!.month, a.birthdate!.day);
-      if (nextA.isBefore(now.subtract(const Duration(days: 1)))) {
-        nextA = DateTime(now.year + 1, a.birthdate!.month, a.birthdate!.day);
-      }
-
-      var nextB = DateTime(now.year, b.birthdate!.month, b.birthdate!.day);
-      if (nextB.isBefore(now.subtract(const Duration(days: 1)))) {
-        nextB = DateTime(now.year + 1, b.birthdate!.month, b.birthdate!.day);
-      }
-
-      return nextA.compareTo(nextB);
-    });
-
-    // if (upcomingBirthdays.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child:
-              Row(
-                    children: [
-                      Icon(Icons.cake, size: 18, color: AppColors.goldPrimary),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n?.upcomingBirthdays ?? "Upcoming Birthdays",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade600,
-                            ),
-                      ),
-                    ],
-                  )
-                  .animate()
-                  .fade(delay: 100.ms)
-                  .slideY(begin: 0.2, curve: Curves.easeOut),
-        ),
-        const SizedBox(height: 12),
-        if (upcomingBirthdays.isEmpty)
-          Container(
-            height: 60,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              l10n?.noUpcomingBirthdays ?? "No upcoming birthdays",
-              style: TextStyle(
-                color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ).animate().fade(delay: 150.ms)
-        else
-          SizedBox(
-            height: 85,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: upcomingBirthdays.length,
-              itemBuilder: (context, index) {
-                final student = upcomingBirthdays[index];
-                final b = student.birthdate!;
-
-                // Calculate days
-                var nextB = DateTime(now.year, b.month, b.day);
-                if (nextB.isBefore(now.subtract(const Duration(days: 1)))) {
-                  nextB = DateTime(now.year + 1, b.month, b.day);
-                }
-                final diff = nextB.difference(now).inDays;
-                final isToday = diff == 0;
-
-                return Container(
-                      width: 155,
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () async {
-                            await Future.delayed(
-                              const Duration(milliseconds: 150),
-                            );
-                            if (context.mounted) {
-                              context.push('/students/${student.id}');
-                            }
-                          },
-                          borderRadius: BorderRadius.circular(16),
-                          splashColor: AppColors.goldPrimary.withValues(
-                            alpha: 0.2,
-                          ),
-                          highlightColor: AppColors.goldPrimary.withValues(
-                            alpha: 0.1,
-                          ),
-                          child: Ink(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: isToday
-                                  ? LinearGradient(
-                                      colors: [
-                                        AppColors.goldPrimary.withValues(
-                                          alpha: 0.25,
-                                        ),
-                                        AppColors.goldDark.withValues(
-                                          alpha: 0.15,
-                                        ),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    )
-                                  : null,
-                              color: isToday
-                                  ? null
-                                  : (isDark
-                                        ? Colors.white.withValues(alpha: 0.05)
-                                        : Colors.grey.withValues(alpha: 0.08)),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isToday
-                                    ? AppColors.goldPrimary.withValues(
-                                        alpha: 0.6,
-                                      )
-                                    : (isDark
-                                          ? Colors.white10
-                                          : Colors.grey.shade200),
-                                width: isToday ? 1.5 : 1,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                // Date Box
-                                Container(
-                                  width: 44,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: isToday
-                                        ? AppColors.goldPrimary
-                                        : (isDark
-                                              ? AppColors.goldPrimary
-                                                    .withValues(alpha: 0.15)
-                                              : AppColors.goldPrimary
-                                                    .withValues(alpha: 0.12)),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        b.day.toString(),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: isToday
-                                              ? Colors.white
-                                              : AppColors.goldDark,
-                                        ),
-                                      ),
-                                      Text(
-                                        _getMonthAbbr(b.month),
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: isToday
-                                              ? Colors.white70
-                                              : AppColors.goldPrimary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                // Name & countdown
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        student.name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                              color: isDark
-                                                  ? Colors.grey.shade400
-                                                  : Colors.grey.shade600,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          if (isToday)
-                                            const Text(
-                                              "🎉 ",
-                                              style: TextStyle(fontSize: 11),
-                                            ),
-                                          Flexible(
-                                            child: Text(
-                                              isToday
-                                                  ? (l10n?.today ?? "Today!")
-                                                  : (l10n?.daysLeft(diff) ??
-                                                        "$diff days"),
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600,
-                                                color: isToday
-                                                    ? (isDark
-                                                          ? Colors.white70
-                                                          : AppColors.goldDark)
-                                                    : AppColors.goldPrimary,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                    .animate()
-                    .fade(delay: (index * 50).ms)
-                    .slideX(begin: 0.1, end: 0);
-              },
-            ),
-          ),
-      ],
     );
   }
 

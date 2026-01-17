@@ -41,6 +41,11 @@ final studentProvider = StreamProvider.autoDispose.family<Student?, String>((
   return repo.watchStudent(id);
 });
 
+final studentsStreamProvider = StreamProvider.autoDispose<List<Student>>((ref) {
+  final repo = ref.watch(studentsRepositoryProvider);
+  return repo.watchAllStudents();
+});
+
 final studentsControllerProvider = Provider((ref) {
   return StudentsController(ref);
 });
