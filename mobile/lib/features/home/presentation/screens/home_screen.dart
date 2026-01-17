@@ -16,6 +16,8 @@ import '../../../attendance/data/attendance_repository.dart';
 import '../../../attendance/data/attendance_controller.dart';
 import '../../../students/data/students_controller.dart';
 import '../../../sync/data/sync_service.dart';
+import 'package:mobile/core/database/app_database.dart';
+import 'package:drift/drift.dart' as drift;
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -692,7 +694,7 @@ class HomeScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.redPrimary.withOpacity(0.1),
+                  color: AppColors.redPrimary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -778,14 +780,7 @@ class _InsightsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print('DEBUG: Building _InsightsSection');
-    // We need data from multiple sources:
-    // 1. At Risk Students (Global)
-    // 2. All Students (for Birthdays)
-    // 3. Last Session (Global or per class?) -> "See how is the attendance for last session going" implies the most recent session overall.
-
     final atRiskAsync = ref.watch(atRiskStudentsProvider);
-    print('DEBUG: atRiskAsync: $atRiskAsync');
 
     // For "All Students" (Birthdays), we might need a provider that returns ALL students, not just one class.
     // The `classStudentsProvider` usually checks `selectedClassIdProvider`.
@@ -841,7 +836,6 @@ class _InsightsSection extends ConsumerWidget {
         // 2. Global At Risk
         atRiskAsync.when(
           data: (students) {
-            print('DEBUG: At Risk Students: ${students.length}');
             return Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: GlobalAtRiskWidget(

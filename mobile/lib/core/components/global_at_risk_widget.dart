@@ -5,7 +5,6 @@ import 'package:mobile/core/components/premium_card.dart';
 import 'package:mobile/core/theme/app_colors.dart';
 import 'package:mobile/features/statistics/data/statistics_repository.dart';
 import 'package:mobile/l10n/app_localizations.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class GlobalAtRiskWidget extends StatelessWidget {
   final List<AtRiskStudent> atRiskStudents;

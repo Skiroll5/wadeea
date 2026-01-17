@@ -229,7 +229,7 @@ class _AttendanceLineChart extends ConsumerWidget {
                   show: true,
                   color:
                       (isDark ? AppColors.goldPrimary : AppColors.goldPrimary)
-                          .withOpacity(0.15),
+                          .withValues(alpha: 0.15),
                 ),
               ),
             ],

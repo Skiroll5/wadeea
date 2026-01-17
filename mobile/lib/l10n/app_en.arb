@@ -124,6 +124,7 @@
   "resetSyncData": "Reset Sync & Data",
   "confirmReset": "Confirm Reset",
   "resetWarning": "This will delete all local attendance data and force a full re-sync from the server. Use only if backend was cleared.",
+  "lastSession": "Last Session",
   "attendanceSessions": "Attendance Sessions",
   "noUpcomingBirthdays": "No upcoming birthdays",
   "attendanceDetails": "Attendance Details",

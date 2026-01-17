@@ -36,7 +36,7 @@ class LastSessionCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.goldPrimary.withOpacity(0.1),
+                    color: AppColors.goldPrimary.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -74,10 +74,12 @@ class LastSessionCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: _getRateColor(attendanceRate).withOpacity(0.1),
+                    color: _getRateColor(attendanceRate).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: _getRateColor(attendanceRate).withOpacity(0.2),
+                      color: _getRateColor(
+                        attendanceRate,
+                      ).withValues(alpha: 0.2),
                     ),
                   ),
                   child: Text(
@@ -93,7 +95,10 @@ class LastSessionCard extends StatelessWidget {
             ),
             if (className != null) ...[
               const SizedBox(height: 12),
-              Divider(height: 1, color: theme.dividerColor.withOpacity(0.5)),
+              Divider(
+                height: 1,
+                color: theme.dividerColor.withValues(alpha: 0.5),
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
