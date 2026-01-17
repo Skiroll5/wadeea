@@ -12,12 +12,9 @@ import '../../../../core/components/upcoming_birthdays_section.dart';
 import '../../../../core/components/last_session_card.dart';
 import '../../../../core/components/global_at_risk_widget.dart';
 import '../../../statistics/data/statistics_repository.dart';
-import '../../../attendance/data/attendance_repository.dart';
-import '../../../attendance/data/attendance_controller.dart';
 import '../../../students/data/students_controller.dart';
 import '../../../sync/data/sync_service.dart';
 import 'package:mobile/core/database/app_database.dart';
-import 'package:drift/drift.dart' as drift;
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
