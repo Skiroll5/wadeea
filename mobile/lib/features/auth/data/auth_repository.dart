@@ -38,4 +38,22 @@ class AuthRepository {
       throw e.response?.data['message'] ?? 'Registration failed';
     }
   }
+
+  Future<Map<String, dynamic>> updateProfile({
+    String? name,
+    String? whatsappTemplate,
+  }) async {
+    try {
+      final response = await _dio.put(
+        '$_baseUrl/users/me',
+        data: {
+          if (name != null) 'name': name,
+          if (whatsappTemplate != null) 'whatsappTemplate': whatsappTemplate,
+        },
+      );
+      return response.data; // { message, user }
+    } on DioException catch (e) {
+      throw e.response?.data['message'] ?? 'Update failed';
+    }
+  }
 }

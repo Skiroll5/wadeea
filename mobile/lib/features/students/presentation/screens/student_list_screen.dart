@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -12,6 +13,43 @@ import '../../data/students_controller.dart';
 import 'package:mobile/features/classes/data/classes_controller.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import '../../../../features/auth/data/auth_controller.dart';
+import '../../../../features/settings/data/settings_controller.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/country_picker_dialog.dart';
+
+enum StudentSortField { name, percentage }
+
+enum SortDirection { asc, desc }
+
+class StudentSortState {
+  final StudentSortField field;
+  final SortDirection direction;
+
+  const StudentSortState({
+    this.field = StudentSortField.name,
+    this.direction = SortDirection.asc,
+  });
+
+  StudentSortState copyWith({
+    StudentSortField? field,
+    SortDirection? direction,
+  }) {
+    return StudentSortState(
+      field: field ?? this.field,
+      direction: direction ?? this.direction,
+    );
+  }
+}
+
+final studentSortProvider = StateProvider<StudentSortState>((ref) {
+  return const StudentSortState();
+});
+
+enum StudentFilterMode { all, atRiskOnly }
+
+final studentFilterProvider = StateProvider<StudentFilterMode>((ref) {
+  return StudentFilterMode.all;
+});
 
 class StudentListScreen extends ConsumerWidget {
   const StudentListScreen({super.key});
@@ -25,6 +63,7 @@ class StudentListScreen extends ConsumerWidget {
         ? ref.watch(classAttendanceStatsProvider(selectedClassId))
         : const AsyncValue.data(<String, StudentAttendanceStats>{});
     final sessionsAsync = ref.watch(attendanceSessionsProvider);
+    final atRiskThreshold = ref.watch(statisticsSettingsProvider);
 
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
@@ -56,6 +95,7 @@ class StudentListScreen extends ConsumerWidget {
             return _buildEmptyState(context, isDark, theme);
           }
 
+          final sortState = ref.watch(studentSortProvider);
           final statsMap = attendanceStatsAsync.value ?? {};
           final sessions = sessionsAsync.value ?? [];
 
@@ -70,20 +110,7 @@ class StudentListScreen extends ConsumerWidget {
 
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-              // 2. At Risk Students Section
-              SliverToBoxAdapter(
-                child: _buildAtRiskSection(
-                  context,
-                  students,
-                  attendanceStatsAsync,
-                  isDark,
-                  l10n,
-                ),
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-              // 3. Attendance Sessions Section (Inline)
+              // 2. Attendance Sessions Section (Inline)
               SliverToBoxAdapter(
                 child: _buildSessionsSection(
                   context,
@@ -99,58 +126,256 @@ class StudentListScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "${l10n?.students ?? 'Students'} (${students.length})",
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isDark
-                              ? Colors.grey.shade400
-                              : Colors.grey.shade600,
-                        ),
+                      // Row 1: Title + Add Button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "${l10n?.students ?? 'Students'} (${students.length})",
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade600,
+                            ),
+                          ),
+                          // Add Student Button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.goldPrimary.withValues(alpha: 0.1)
+                                  : AppColors.goldPrimary.withValues(
+                                      alpha: 0.1,
+                                    ),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.add),
+                              color: isDark
+                                  ? AppColors.goldPrimary
+                                  : AppColors.goldDark,
+                              tooltip: l10n?.addNewStudent ?? 'Add Student',
+                              onPressed: () =>
+                                  _showAddStudentDialog(context, ref),
+                            ),
+                          ).animate().fade(delay: 300.ms).scale(),
+                        ],
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.goldPrimary.withValues(alpha: 0.1)
-                              : AppColors.goldPrimary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.add),
-                          color: isDark
-                              ? AppColors.goldPrimary
-                              : AppColors.goldDark,
-                          tooltip: l10n?.addNewStudent ?? 'Add Student',
-                          onPressed: () => _showAddStudentDialog(context, ref),
-                        ),
-                      ).animate().fade(delay: 300.ms).scale(),
+                      const SizedBox(height: 12),
+                      // Row 2: Sorting + Filter
+                      Row(
+                        children: [
+                          // Sorting Chips
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF1E1E1E)
+                                  : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.all(4),
+                            child: Row(
+                              children: [
+                                _buildSortChip(
+                                  context: context,
+                                  label: l10n?.name ?? 'Name',
+                                  isActive:
+                                      sortState.field == StudentSortField.name,
+                                  direction: sortState.direction,
+                                  isDark: isDark,
+                                  onTap: () {
+                                    final current = ref.read(
+                                      studentSortProvider,
+                                    );
+                                    ref
+                                        .read(studentSortProvider.notifier)
+                                        .state = current.copyWith(
+                                      field: StudentSortField.name,
+                                      direction:
+                                          current.field == StudentSortField.name
+                                          ? (current.direction ==
+                                                    SortDirection.asc
+                                                ? SortDirection.desc
+                                                : SortDirection.asc)
+                                          : SortDirection.asc,
+                                    );
+                                  },
+                                ),
+                                const SizedBox(width: 4),
+                                _buildSortChip(
+                                  context: context,
+                                  label:
+                                      l10n?.attendancePercentage ??
+                                      'Attendance %',
+                                  isActive:
+                                      sortState.field ==
+                                      StudentSortField.percentage,
+                                  direction: sortState.direction,
+                                  isDark: isDark,
+                                  onTap: () {
+                                    final current = ref.read(
+                                      studentSortProvider,
+                                    );
+                                    ref
+                                        .read(studentSortProvider.notifier)
+                                        .state = current.copyWith(
+                                      field: StudentSortField.percentage,
+                                      direction:
+                                          current.field ==
+                                              StudentSortField.percentage
+                                          ? (current.direction ==
+                                                    SortDirection.asc
+                                                ? SortDirection.desc
+                                                : SortDirection.asc)
+                                          : SortDirection.desc,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Filter Toggle
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final filterMode = ref.watch(
+                                studentFilterProvider,
+                              );
+                              final isFiltered =
+                                  filterMode == StudentFilterMode.atRiskOnly;
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: isFiltered
+                                      ? AppColors.redPrimary.withValues(
+                                          alpha: 0.1,
+                                        )
+                                      : (isDark
+                                            ? const Color(0xFF1E1E1E)
+                                            : Colors.grey.shade100),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: isFiltered
+                                      ? Border.all(
+                                          color: AppColors.redPrimary,
+                                          width: 1,
+                                        )
+                                      : null,
+                                ),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.warning_amber_rounded,
+                                    color: isFiltered
+                                        ? AppColors.redPrimary
+                                        : (isDark
+                                              ? Colors.grey.shade600
+                                              : Colors.grey.shade400),
+                                    size: 20,
+                                  ),
+                                  tooltip: isFiltered
+                                      ? 'Show All'
+                                      : 'At Risk Only',
+                                  onPressed: () {
+                                    ref
+                                        .read(studentFilterProvider.notifier)
+                                        .state = isFiltered
+                                        ? StudentFilterMode.all
+                                        : StudentFilterMode.atRiskOnly;
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ),
 
               // 4. Student List with Stats
-              SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final sortedStudents = List.of(students)
-                    ..sort(
-                      (a, b) =>
-                          a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-                    );
-                  final student = sortedStudents[index];
-                  final stats = statsMap[student.id];
+              Builder(
+                builder: (context) {
+                  final filterMode = ref.watch(studentFilterProvider);
 
-                  return _buildStudentCard(
-                    context,
-                    student,
-                    stats,
-                    isDark,
-                    index,
+                  // First, sort students
+                  final sortedStudents = List.of(students)
+                    ..sort((a, b) {
+                      int result;
+                      if (sortState.field == StudentSortField.name) {
+                        result = a.name.toLowerCase().compareTo(
+                          b.name.toLowerCase(),
+                        );
+                      } else {
+                        final pctA = statsMap[a.id]?.presencePercentage ?? 0.0;
+                        final pctB = statsMap[b.id]?.presencePercentage ?? 0.0;
+                        result = pctA.compareTo(pctB);
+                        // If same percentage, sort by name
+                        if (result == 0) {
+                          result = a.name.toLowerCase().compareTo(
+                            b.name.toLowerCase(),
+                          );
+                        }
+                      }
+                      return sortState.direction == SortDirection.asc
+                          ? result
+                          : -result;
+                    });
+
+                  // Then filter if needed
+                  final displayedStudents =
+                      filterMode == StudentFilterMode.atRiskOnly
+                      ? sortedStudents.where((s) {
+                          final stats = statsMap[s.id];
+                          if (stats == null) return false;
+                          return stats.consecutiveAbsences >= atRiskThreshold;
+                        }).toList()
+                      : sortedStudents;
+
+                  if (displayedStudents.isEmpty &&
+                      filterMode == StudentFilterMode.atRiskOnly) {
+                    return SliverToBoxAdapter(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                size: 48,
+                                color: Colors.green,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n?.noAtRiskStudents ??
+                                    'No at-risk students! 🎉',
+                                style: theme.textTheme.titleMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final student = displayedStudents[index];
+                      final stats = statsMap[student.id];
+
+                      return _buildStudentCard(
+                        context,
+                        student,
+                        stats,
+                        isDark,
+                        index,
+                        atRiskThreshold,
+                      );
+                    }, childCount: displayedStudents.length),
                   );
-                }, childCount: students.length),
+                },
               ),
 
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -632,12 +857,85 @@ class StudentListScreen extends ConsumerWidget {
                                 ],
                               ),
                             ),
-                            Icon(
-                              Icons.chevron_right,
-                              size: 20,
-                              color: isDark
-                                  ? Colors.white30
-                                  : Colors.grey.shade400,
+                            // Percentage Badge + Chevron
+                            Consumer(
+                              builder: (context, ref, child) {
+                                final recordsAsync = ref.watch(
+                                  sessionRecordsWithStudentsProvider(
+                                    session.id,
+                                  ),
+                                );
+                                return recordsAsync.when(
+                                  data: (records) {
+                                    final presentCount = records
+                                        .where(
+                                          (r) => r.record?.status == 'PRESENT',
+                                        )
+                                        .length;
+                                    // Fix: Only count students with records (exclude new arrivals)
+                                    final total = records
+                                        .where((r) => r.record != null)
+                                        .length;
+                                    final percentage = total > 0
+                                        ? (presentCount / total * 100).toInt()
+                                        : 0;
+                                    final percentageColor = percentage >= 80
+                                        ? AppColors.goldPrimary
+                                        : percentage >= 50
+                                        ? Colors.orange
+                                        : AppColors.redPrimary;
+                                    return Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: percentageColor.withValues(
+                                              alpha: 0.15,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '$percentage%',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: percentageColor,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.chevron_right,
+                                          size: 20,
+                                          color: isDark
+                                              ? Colors.white30
+                                              : Colors.grey.shade400,
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  loading: () => Icon(
+                                    Icons.chevron_right,
+                                    size: 20,
+                                    color: isDark
+                                        ? Colors.white30
+                                        : Colors.grey.shade400,
+                                  ),
+                                  error: (_, __) => Icon(
+                                    Icons.chevron_right,
+                                    size: 20,
+                                    color: isDark
+                                        ? Colors.white30
+                                        : Colors.grey.shade400,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -652,219 +950,24 @@ class StudentListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAtRiskSection(
-    BuildContext context,
-    List<Student> students,
-    AsyncValue<Map<String, StudentAttendanceStats>> statsAsync,
-    bool isDark,
-    AppLocalizations? l10n,
-  ) {
-    return statsAsync.when(
-      data: (statsMap) {
-        final atRisk = students.where((s) {
-          final stats = statsMap[s.id];
-          if (stats == null || stats.totalRecords == 0) return false;
-          // Flag if presence < 85% OR has at least 2 absences
-          return stats.presencePercentage < 85 || stats.absentCount >= 2;
-        }).toList();
+  String _formatPhone(String phone) {
+    // Remove any non-digit characters
+    final cleaned = phone.replaceAll(RegExp(r'\D'), '');
 
-        atRisk.sort((a, b) {
-          final pctA = statsMap[a.id]?.presencePercentage ?? 100.0;
-          final pctB = statsMap[b.id]?.presencePercentage ?? 100.0;
-          return pctA.compareTo(pctB);
-        });
+    // Check if it's an 11-digit number (typical Egypt mobile) or 12 digit (20...)
+    String rest = cleaned;
+    if (cleaned.startsWith('20')) {
+      rest = cleaned.substring(2);
+    } else if (cleaned.length == 11 && cleaned.startsWith('0')) {
+      rest = cleaned.substring(1);
+    }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
-                    size: 18,
-                    color: isDark ? AppColors.redLight : AppColors.redPrimary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n?.atRiskStudents ?? "At Risk Students",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isDark
-                          ? Colors.grey.shade400
-                          : Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (atRisk.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.green.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          l10n?.noAtRiskStudents ??
-                              "No students are currently at risk.",
-                          style: TextStyle(
-                            color: Colors.green.shade700,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              SizedBox(
-                height: 85,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: atRisk.length,
-                  itemBuilder: (context, index) {
-                    final student = atRisk[index];
-                    final stats = statsMap[student.id]!;
-                    final pct = stats.presencePercentage;
+    // Now 'rest' should be 10 digits for EG (e.g. 100 710 9211)
+    if (rest.length == 10) {
+      return '+20 ${rest.substring(0, 3)} ${rest.substring(3, 6)} ${rest.substring(6)}';
+    }
 
-                    final color = pct < 50
-                        ? (isDark ? AppColors.redLight : AppColors.redPrimary)
-                        : (pct < 75 ? Colors.orange : Colors.green);
-
-                    return Container(
-                          width: 155,
-                          margin: const EdgeInsets.only(right: 12),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () async {
-                                await Future.delayed(
-                                  const Duration(milliseconds: 150),
-                                );
-                                if (context.mounted) {
-                                  context.push('/students/${student.id}');
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(16),
-                              splashColor: color.withValues(alpha: 0.2),
-                              highlightColor: color.withValues(alpha: 0.1),
-                              child: Ink(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? Colors.white.withValues(alpha: 0.05)
-                                      : Colors.grey.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: color.withValues(alpha: 0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 44,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        color: color.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          "${pct.toStringAsFixed(0)}%",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                            color: color,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            student.name,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                  color: isDark
-                                                      ? Colors.grey.shade400
-                                                      : Colors.grey.shade600,
-                                                ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            l10n?.absentTimes(
-                                                  stats.absentCount,
-                                                ) ??
-                                                "${stats.absentCount} absences",
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
-                                              color: color.withValues(
-                                                alpha: 0.8,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                        .animate()
-                        .fade(delay: (index * 50).ms)
-                        .slideX(begin: 0.2, curve: Curves.easeOutQuad);
-                  },
-                ),
-              ),
-          ],
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
-    );
+    return phone;
   }
 
   Widget _buildStudentCard(
@@ -873,12 +976,17 @@ class StudentListScreen extends ConsumerWidget {
     StudentAttendanceStats? stats,
     bool isDark,
     int index,
+    int threshold,
   ) {
     final presentPct = stats?.presencePercentage ?? 0.0;
-    final isCritical = stats?.isCritical ?? false;
+    // Critical if consecutive absences exceed threshold
     final absentCount = stats?.absentCount ?? 0;
-
+    final consecutiveAbsences = stats?.consecutiveAbsences ?? 0;
+    final isCritical = consecutiveAbsences >= threshold;
     final l10n = AppLocalizations.of(context);
+
+    // At Risk if consecutive absences exceed threshold
+    final isAtRisk = stats != null && stats.totalRecords > 0 && isCritical;
 
     return PremiumCard(
       delay: index * 0.05,
@@ -886,16 +994,43 @@ class StudentListScreen extends ConsumerWidget {
       onTap: () => context.push('/students/${student.id}'),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: AppColors.goldPrimary,
-            child: Text(
-              student.name.substring(0, 1).toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: AppColors.goldPrimary,
+                child: Text(
+                  student.name.substring(0, 1).toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
+              if (isAtRisk)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.redLight : AppColors.redPrimary,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDark
+                            ? AppColors.surfaceDark
+                            : AppColors.surfaceLight,
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.priority_high,
+                      size: 10,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -909,13 +1044,27 @@ class StudentListScreen extends ConsumerWidget {
                     color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                   ),
                 ),
-                Text(
-                  student.phone ?? "No phone",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                if (student.phone != null && student.phone!.isNotEmpty)
+                  Text(
+                    _formatPhone(student.phone!),
+                    textDirection: ui.TextDirection.ltr,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
+                    ),
+                  )
+                else
+                  Text(
+                    l10n?.noPhone ?? "No Phone",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -971,14 +1120,40 @@ class StudentListScreen extends ConsumerWidget {
                       ),
               ),
               const SizedBox(height: 2),
-              Text(
-                "$absentCount Absences",
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isCritical
-                      ? AppColors.redLight
-                      : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
-                  fontWeight: isCritical ? FontWeight.bold : FontWeight.normal,
+              const SizedBox(height: 4),
+              RichText(
+                textAlign: TextAlign.end,
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontFamily: 'Outfit',
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
+                  children: [
+                    TextSpan(
+                      text:
+                          l10n?.absencesTotal(absentCount) ??
+                          "$absentCount Absences (Total)",
+                    ),
+                    if (consecutiveAbsences > 0) ...[
+                      const TextSpan(text: " • "),
+                      TextSpan(
+                        text:
+                            l10n?.consecutive(consecutiveAbsences) ??
+                            "$consecutiveAbsences Consecutive",
+                        style: TextStyle(
+                          color: isCritical
+                              ? AppColors.redLight
+                              : (isDark
+                                    ? Colors.grey.shade400
+                                    : Colors.grey.shade600),
+                          fontWeight: isCritical
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],
@@ -997,6 +1172,7 @@ class StudentListScreen extends ConsumerWidget {
   void _showAddStudentDialog(BuildContext context, WidgetRef ref) {
     final nameController = TextEditingController();
     final phoneController = TextEditingController();
+    String? fullPhoneNumber;
     final addressController = TextEditingController();
     DateTime? selectedBirthdate;
     String? nameError;
@@ -1153,20 +1329,63 @@ class StudentListScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
 
                   // Phone Field
-                  TextField(
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                    decoration: inputDecoration.copyWith(
-                      labelText:
-                          l10n?.phoneNumberOptional ??
-                          'Phone Number (optional)',
-                      prefixIcon: Icon(
-                        Icons.phone_outlined,
-                        color: isDark
-                            ? AppColors.goldPrimary.withValues(alpha: 0.7)
-                            : AppColors.goldPrimary.withValues(alpha: 0.7),
+                  Directionality(
+                    textDirection: ui.TextDirection.ltr,
+                    child: IntlPhoneField(
+                      controller: phoneController,
+                      initialCountryCode: 'EG',
+                      textAlign: TextAlign.left,
+                      decoration: inputDecoration.copyWith(
+                        labelText:
+                            l10n?.phoneNumberOptional ??
+                            'Phone Number (optional)',
+                        counterText: '', // Hide length counter
+                        alignLabelWithHint: true,
                       ),
+                      disableLengthCheck: true,
+                      languageCode: l10n?.localeName ?? 'en',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      dropdownTextStyle: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      pickerDialogStyle: PickerDialogStyle(
+                        backgroundColor: isDark
+                            ? const Color(0xFF1E1E1E)
+                            : Colors.white,
+                        countryCodeStyle: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        countryNameStyle: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        searchFieldInputDecoration: InputDecoration(
+                          labelText: 'Search',
+                          labelStyle: TextStyle(
+                            color: isDark ? Colors.grey : Colors.black54,
+                          ),
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey.withValues(alpha: 0.05),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      onChanged: (phone) {
+                        if (phone.countryISOCode == 'EG' &&
+                            phone.number.startsWith('0')) {
+                          fullPhoneNumber =
+                              '${phone.countryCode}${phone.number.substring(1)}';
+                        } else {
+                          fullPhoneNumber = phone.completeNumber;
+                        }
+                      },
+                      onCountryChanged: (country) {
+                        // Optional: log or handle
+                      },
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1368,7 +1587,9 @@ class StudentListScreen extends ConsumerWidget {
                                   .read(studentsControllerProvider)
                                   .addStudent(
                                     name: name,
-                                    phone: phoneController.text.trim(),
+                                    phone:
+                                        fullPhoneNumber ??
+                                        phoneController.text.trim(),
                                     classId: selectedClassId,
                                     address: addressController.text.trim(),
                                     birthdate: selectedBirthdate,
@@ -1392,6 +1613,7 @@ class StudentListScreen extends ConsumerWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('Error adding student: $e'),
+                                    backgroundColor: AppColors.goldPrimary,
                                   ),
                                 );
                               }
@@ -1422,6 +1644,54 @@ class StudentListScreen extends ConsumerWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortChip({
+    required BuildContext context,
+    required String label,
+    required bool isActive,
+    required SortDirection direction,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? (isDark ? AppColors.goldPrimary : AppColors.goldPrimary)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive
+                    ? Colors.white
+                    : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+              ),
+            ),
+            if (isActive) ...[
+              const SizedBox(width: 4),
+              Icon(
+                direction == SortDirection.asc
+                    ? Icons.arrow_upward_rounded
+                    : Icons.arrow_downward_rounded,
+                size: 14,
+                color: Colors.white,
+              ),
+            ],
+          ],
         ),
       ),
     );

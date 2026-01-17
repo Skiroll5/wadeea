@@ -5,6 +5,7 @@ class User {
   final String role; // 'ADMIN' or 'SERVANT'
   final bool isActive;
   final String? classId;
+  final String? whatsappTemplate;
 
   User({
     required this.id,
@@ -13,6 +14,7 @@ class User {
     required this.role,
     required this.isActive,
     this.classId,
+    this.whatsappTemplate,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class User {
       role: json['role'] ?? 'SERVANT',
       isActive: json['isActive'] ?? false,
       classId: json['classId'],
+      whatsappTemplate: json['whatsappTemplate'],
     );
   }
 
@@ -34,6 +37,19 @@ class User {
       'role': role,
       'isActive': isActive,
       'classId': classId,
+      'whatsappTemplate': whatsappTemplate,
     };
+  }
+
+  User copyWith({String? name, String? whatsappTemplate}) {
+    return User(
+      id: id,
+      email: email,
+      name: name ?? this.name,
+      role: role,
+      isActive: isActive,
+      classId: classId,
+      whatsappTemplate: whatsappTemplate ?? this.whatsappTemplate,
+    );
   }
 }

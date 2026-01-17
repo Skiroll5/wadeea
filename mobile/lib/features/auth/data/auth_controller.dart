@@ -70,6 +70,28 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
+  Future<bool> updateWhatsAppTemplate(String template) async {
+    try {
+      final repo = _ref.read(authRepositoryProvider);
+      final data = await repo.updateProfile(whatsappTemplate: template);
+
+      final updatedUser = User.fromJson(data['user']);
+
+      // Update local storage
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_data', jsonEncode(updatedUser.toJson()));
+
+      state = AsyncValue.data(updatedUser);
+      return true;
+    } catch (e, st) {
+      // Don't change state to error, just return false or rethrow?
+      // Better to show snackbar in UI, but here we can keep state as data(oldUser)
+      // or set error. Setting error might replace the UI with error screen which is bad.
+      // So let's just return false and let UI handle error message.
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');

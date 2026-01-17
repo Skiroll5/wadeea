@@ -126,5 +126,26 @@
   "resetWarning": "This will delete all local attendance data and force a full re-sync from the server. Use only if backend was cleared.",
   "attendanceDetails": "Attendance Details",
   "attendanceRate": "Attendance Rate",
-  "noAttendanceRecords": "No attendance records"
+  "noAttendanceRecords": "No attendance records",
+  "sortBy": "Sort by",
+  "attendancePercentage": "Attendance",
+  "sortAscending": "Ascending",
+  "sortDescending": "Descending",
+  "absencesTotal": "{count} Absences (Total)",
+  "@absencesTotal": {
+    "placeholders": {
+        "count": {}
+    }
+  },
+  "consecutive": "{count} Consecutive",
+  "@consecutive": {
+    "placeholders": {
+        "count": {}
+    }
+  },
+  "whatsappTemplate": "WhatsApp Template",
+  "whatsappTemplateDesc": "Customize the default message sent to students",
+  "newArrivals": "New Arrivals",
+  "tapToAddToSession": "Tap to add to this session",
+  "notInSession": "Not in this session"
 }

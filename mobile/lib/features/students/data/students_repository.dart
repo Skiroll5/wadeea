@@ -229,6 +229,52 @@ class StudentsRepository {
     await _db.into(_db.students).insertOnConflictUpdate(entity);
   }
 
+  Future<void> saveStudentPreference(
+    String studentId,
+    String customMessage,
+  ) async {
+    try {
+      final token = await _getToken();
+      if (token == null) throw Exception('No token');
+
+      await _dio.put(
+        '$_baseUrl/users/me/students/$studentId/preference',
+        data: {'customWhatsappMessage': customMessage},
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+          sendTimeout: const Duration(seconds: 5),
+        ),
+      );
+    } catch (e) {
+      print('StudentsRepo: Save Student Preference Failed ($e)');
+      rethrow;
+    }
+  }
+
+  Future<String?> getStudentPreference(String studentId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) throw Exception('No token');
+
+      final response = await _dio.get(
+        '$_baseUrl/users/me/students/$studentId/preference',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+          sendTimeout: const Duration(seconds: 5),
+        ),
+      );
+
+      if (response.data != null &&
+          response.data['customWhatsappMessage'] != null) {
+        return response.data['customWhatsappMessage'] as String;
+      }
+      return null;
+    } catch (e) {
+      print('StudentsRepo: Get Student Preference Failed ($e)');
+      return null;
+    }
+  }
+
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');

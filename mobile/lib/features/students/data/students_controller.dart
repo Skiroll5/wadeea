@@ -112,4 +112,17 @@ class StudentsController {
       rethrow;
     }
   }
+
+  Future<void> saveStudentPreference(
+    String studentId,
+    String customMessage,
+  ) async {
+    final repo = _ref.read(studentsRepositoryProvider);
+    await repo.saveStudentPreference(studentId, customMessage);
+  }
+
+  Future<String?> getStudentPreference(String studentId) async {
+    final repo = _ref.read(studentsRepositoryProvider);
+    return repo.getStudentPreference(studentId);
+  }
 }

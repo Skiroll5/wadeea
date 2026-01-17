@@ -12,6 +12,7 @@ import '../../features/attendance/presentation/screens/take_attendance_screen.da
 import '../../features/attendance/presentation/screens/attendance_detail_screen.dart';
 import '../../features/classes/presentation/screens/class_list_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/screens/whatsapp_template_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authControllerProvider);
@@ -90,6 +91,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'whatsapp-template',
+            builder: (context, state) => const WhatsAppTemplateScreen(),
+          ),
+        ],
       ),
       // Auth
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),

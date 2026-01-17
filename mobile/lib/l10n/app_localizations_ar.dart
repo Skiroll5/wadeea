@@ -318,4 +318,41 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noAttendanceRecords => 'لا توجد سجلات غياب';
+
+  @override
+  String get sortBy => 'رتب حسب';
+
+  @override
+  String get attendancePercentage => 'نسبة الحضور';
+
+  @override
+  String get sortAscending => 'تصاعدي';
+
+  @override
+  String get sortDescending => 'تنازلي';
+
+  @override
+  String absencesTotal(Object count) {
+    return '$count غياب (كلي)';
+  }
+
+  @override
+  String consecutive(Object count) {
+    return '$count متتالية';
+  }
+
+  @override
+  String get whatsappTemplate => 'قالب واتساب';
+
+  @override
+  String get whatsappTemplateDesc => 'تخصيص الرسالة الافتراضية المرسلة للطلاب';
+
+  @override
+  String get newArrivals => 'طلاب جدد';
+
+  @override
+  String get tapToAddToSession => 'اضغط لإضافتهم لهذه الجلسة';
+
+  @override
+  String get notInSession => 'غير مسجل في هذه الجلسة';
 }

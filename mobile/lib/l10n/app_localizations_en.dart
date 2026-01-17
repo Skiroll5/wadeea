@@ -320,4 +320,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noAttendanceRecords => 'No attendance records';
+
+  @override
+  String get sortBy => 'Sort by';
+
+  @override
+  String get attendancePercentage => 'Attendance';
+
+  @override
+  String get sortAscending => 'Ascending';
+
+  @override
+  String get sortDescending => 'Descending';
+
+  @override
+  String absencesTotal(Object count) {
+    return '$count Absences (Total)';
+  }
+
+  @override
+  String consecutive(Object count) {
+    return '$count Consecutive';
+  }
+
+  @override
+  String get whatsappTemplate => 'WhatsApp Template';
+
+  @override
+  String get whatsappTemplateDesc =>
+      'Customize the default message sent to students';
+
+  @override
+  String get newArrivals => 'New Arrivals';
+
+  @override
+  String get tapToAddToSession => 'Tap to add to this session';
+
+  @override
+  String get notInSession => 'Not in this session';
 }

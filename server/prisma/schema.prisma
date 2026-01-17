@@ -23,7 +23,10 @@ model User {
   isDeleted Boolean  @default(false)
   deletedAt DateTime?
   
+  whatsappTemplate String?
+
   notes     Note[]
+  studentPreferences UserStudentPreference[]
 
   @@map("users")
 }
@@ -45,6 +48,7 @@ model Student {
   // Relations
   notes     Note[]
   attendance AttendanceRecord[]
+  userPreferences UserStudentPreference[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -119,4 +123,18 @@ model AttendanceSession {
   deletedAt DateTime?
 
   @@map("attendance_sessions")
+}
+
+model UserStudentPreference {
+  userId               String
+  user                 User    @relation(fields: [userId], references: [id])
+  studentId            String
+  student              Student @relation(fields: [studentId], references: [id])
+  customWhatsappMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, studentId])
+  @@map("user_student_preferences")
 }

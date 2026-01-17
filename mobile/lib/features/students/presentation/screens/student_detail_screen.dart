@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' hide Column;
@@ -13,6 +14,15 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart' as intl;
 import '../../../attendance/data/attendance_controller.dart';
 import '../../../attendance/data/attendance_repository.dart';
+import '../../../auth/data/auth_controller.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/country_picker_dialog.dart';
+
+final studentCustomMessageProvider = FutureProvider.autoDispose
+    .family<String?, String>((ref, studentId) async {
+      final controller = ref.read(studentsControllerProvider);
+      return controller.getStudentPreference(studentId);
+    });
 
 class StudentDetailScreen extends ConsumerWidget {
   final String studentId;
@@ -52,7 +62,7 @@ class StudentDetailScreen extends ConsumerWidget {
                     border: Border.all(color: AppColors.goldPrimary, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.goldPrimary.withOpacity(0.3),
+                        color: AppColors.goldPrimary.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -109,32 +119,108 @@ class StudentDetailScreen extends ConsumerWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.goldPrimary.withOpacity(0.1),
+                      color: AppColors.goldPrimary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.phone,
-                          size: 18,
-                          color: AppColors.goldDark,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          student.phone?.isNotEmpty == true
-                              ? _formatPhone(student.phone!)
-                              : (l10n?.noPhone ?? 'No Phone'),
-                          textDirection: TextDirection.ltr,
-                          style: theme.textTheme.bodyLarge?.copyWith(
+                    child: Directionality(
+                      textDirection: ui.TextDirection.ltr,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.phone,
+                            size: 18,
                             color: AppColors.goldDark,
-                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            student.phone?.isNotEmpty == true
+                                ? _formatPhone(student.phone!)
+                                : (l10n?.noPhone ?? 'No Phone'),
+                            // textDirection already LTR by parent, but keeping explicit is fine
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: AppColors.goldDark,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ).animate().fade().slideY(begin: 0.1, end: 0, delay: 200.ms),
+
+                const SizedBox(height: 12),
+
+                // WhatsApp Button
+                if (student.phone != null && student.phone!.isNotEmpty)
+                  if (student.phone != null && student.phone!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () =>
+                                  _showWhatsAppDialog(context, ref, student),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: isDark
+                                    ? Colors.white
+                                    : Colors.black87,
+                                side: BorderSide(
+                                  color: isDark
+                                      ? Colors.white24
+                                      : Colors.grey.shade300,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              icon: const Icon(Icons.edit_note, size: 20),
+                              label: const Text('Customize'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final customMessageAsync = ref.read(
+                                  studentCustomMessageProvider(studentId),
+                                );
+                                final customMessage = customMessageAsync.value;
+                                String message =
+                                    customMessage ??
+                                    _buildTemplateMessage(ref, student);
+                                await _launchWhatsApp(
+                                  context,
+                                  student,
+                                  message,
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              icon: const Icon(Icons.chat, size: 20),
+                              label: const Text('WhatsApp'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ).animate().fade().slideY(
+                      begin: 0.2,
+                      end: 0,
+                      delay: 250.ms,
+                    ),
 
                 const SizedBox(height: 16),
 
@@ -219,7 +305,7 @@ class StudentDetailScreen extends ConsumerWidget {
                                 contentPadding: EdgeInsets.zero,
                                 leading: CircleAvatar(
                                   backgroundColor: AppColors.goldPrimary
-                                      .withOpacity(0.1),
+                                      .withValues(alpha: 0.1),
                                   child: const Icon(
                                     Icons.note,
                                     color: AppColors.goldDark,
@@ -310,6 +396,251 @@ class StudentDetailScreen extends ConsumerWidget {
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
         fontWeight: FontWeight.bold,
         color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+      ),
+    );
+  }
+
+  Future<void> _launchWhatsApp(
+    BuildContext context,
+    Student student,
+    String message,
+  ) async {
+    if (student.phone == null || student.phone!.isEmpty) return;
+
+    // Clean phone number (remove non-digits, ensure country code if strictly needed,
+    // but usually local numbers work if saved in contacts, or full intl format is best.
+    // Assuming simple usage for now).
+    // WhatsApp URL scheme usually expects clean digits.
+    String cleanPhone = student.phone!.replaceAll(RegExp(r'\D'), '');
+
+    // Default to +2 (Egypt) if missing country code and looks like local mobile
+    // If it's 11 digits and starts with '01' (e.g. 01007109211), make it 201007109211
+    if (cleanPhone.length == 11 && cleanPhone.startsWith('01')) {
+      cleanPhone = '2${cleanPhone.substring(1)}'; // 2 + 0100... -> 20100...
+    } else if (cleanPhone.length == 10 && cleanPhone.startsWith('1')) {
+      // Just in case stored without 0 but local
+      cleanPhone = '2$cleanPhone';
+    }
+
+    final Uri appUrl = Uri.parse(
+      "whatsapp://send?phone=$cleanPhone&text=${Uri.encodeComponent(message)}",
+    );
+    final Uri webUrl = Uri.parse(
+      "https://wa.me/$cleanPhone?text=${Uri.encodeComponent(message)}",
+    );
+
+    try {
+      // Try to launch app directly
+      bool launched = false;
+      if (await canLaunchUrl(appUrl)) {
+        launched = await launchUrl(
+          appUrl,
+          mode: LaunchMode.externalApplication,
+        );
+      }
+
+      if (!launched) {
+        // Fallback to web
+        if (await canLaunchUrl(webUrl)) {
+          await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Could not launch WhatsApp')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      // If something crashes (like "component name null"), try web as fallback
+      try {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      } catch (e2) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
+      }
+    }
+  }
+
+  String _buildTemplateMessage(WidgetRef ref, Student student) {
+    final user = ref.read(authControllerProvider).value;
+    String initialMessage = user?.whatsappTemplate ?? '';
+
+    if (initialMessage.isEmpty) {
+      initialMessage = "Hi {firstname},";
+    }
+
+    final firstName = student.name.split(' ').first;
+    initialMessage = initialMessage.replaceAll('{firstname}', firstName);
+    initialMessage = initialMessage.replaceAll('{name}', student.name);
+
+    if (student.birthdate != null) {
+      final now = DateTime.now();
+      final birthdate = student.birthdate!;
+      int age = (now.year - birthdate.year).toInt();
+      if (now.month < birthdate.month ||
+          (now.month == birthdate.month && now.day < birthdate.day)) {
+        age--;
+      }
+      initialMessage = initialMessage.replaceAll('{age}', age.toString());
+    } else {
+      initialMessage = initialMessage.replaceAll('{age}', '');
+    }
+    return initialMessage;
+  }
+
+  Future<void> _showWhatsAppDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Student student,
+  ) async {
+    if (student.phone == null || student.phone!.isEmpty) return;
+
+    // Fetch customized message from backend
+    final controller = ref.read(studentsControllerProvider);
+    final customMessage = await controller.getStudentPreference(student.id);
+    final initialMessage = customMessage ?? _buildTemplateMessage(ref, student);
+
+    final messageController = TextEditingController(text: initialMessage);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    if (!context.mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          ui.TextDirection getDirection(String text) {
+            if (text.trim().isEmpty) return ui.TextDirection.ltr;
+            final firstChar = text.trim()[0];
+            final isLatin = RegExp(r'^[a-zA-Z]').hasMatch(firstChar);
+            return isLatin ? ui.TextDirection.ltr : ui.TextDirection.rtl;
+          }
+
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'Customize Message',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: messageController,
+                    autofocus: true,
+                    maxLines: 5,
+                    textDirection: getDirection(messageController.text),
+                    onChanged: (val) {
+                      setState(() {});
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Type your message...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.grey.withValues(alpha: 0.05),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            try {
+                              await ref
+                                  .read(studentsControllerProvider)
+                                  .saveStudentPreference(
+                                    student.id,
+                                    messageController.text,
+                                  );
+                              ref.invalidate(
+                                studentCustomMessageProvider(student.id),
+                              );
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Message saved'),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error saving: $e')),
+                                );
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.goldPrimary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          icon: const Icon(Icons.save),
+                          label: const Text('Save'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -545,7 +876,9 @@ class StudentDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  student.address ?? (l10n?.noAddress ?? "No address provided"),
+                  (student.address?.isNotEmpty == true)
+                      ? student.address!
+                      : (l10n?.noAddress ?? "No address provided"),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -865,7 +1198,8 @@ class StudentDetailScreen extends ConsumerWidget {
 
   void _showEditDialog(BuildContext context, WidgetRef ref, Student student) {
     final nameController = TextEditingController(text: student.name);
-    final phoneController = TextEditingController(text: student.phone ?? '');
+    // final phoneController = TextEditingController(text: student.phone ?? ''); // Not used with IntlPhoneField
+    String? fullPhoneNumber = student.phone;
     final addressController = TextEditingController(
       text: student.address ?? '',
     );
@@ -877,8 +1211,8 @@ class StudentDetailScreen extends ConsumerWidget {
     final inputDecoration = InputDecoration(
       filled: true,
       fillColor: isDark
-          ? Colors.white.withOpacity(0.05)
-          : Colors.grey.withOpacity(0.05),
+          ? Colors.white.withValues(alpha: 0.05)
+          : Colors.grey.withValues(alpha: 0.05),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
@@ -944,26 +1278,65 @@ class StudentDetailScreen extends ConsumerWidget {
                       prefixIcon: Icon(
                         Icons.person_outline,
                         color: isDark
-                            ? AppColors.goldPrimary.withOpacity(0.7)
-                            : AppColors.goldDark.withOpacity(0.7),
+                            ? AppColors.goldPrimary.withValues(alpha: 0.7)
+                            : AppColors.goldDark.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
 
                   // Phone
-                  TextField(
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                    decoration: inputDecoration.copyWith(
-                      labelText: l10n?.phone ?? 'Phone',
-                      prefixIcon: Icon(
-                        Icons.phone_outlined,
-                        color: isDark
-                            ? AppColors.goldPrimary.withOpacity(0.7)
-                            : AppColors.goldDark.withOpacity(0.7),
+                  Directionality(
+                    textDirection: ui.TextDirection.ltr,
+                    child: IntlPhoneField(
+                      initialValue: student.phone,
+                      initialCountryCode: 'EG',
+                      textAlign: TextAlign.left,
+                      decoration: inputDecoration.copyWith(
+                        labelText: l10n?.phone ?? 'Phone',
+                        counterText: '',
                       ),
+                      disableLengthCheck: true,
+                      languageCode: l10n?.localeName ?? 'en',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      dropdownTextStyle: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      pickerDialogStyle: PickerDialogStyle(
+                        backgroundColor: isDark
+                            ? const Color(0xFF1E1E1E)
+                            : Colors.white,
+                        countryCodeStyle: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        countryNameStyle: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        searchFieldInputDecoration: InputDecoration(
+                          labelText: 'Search',
+                          labelStyle: TextStyle(
+                            color: isDark ? Colors.grey : Colors.black54,
+                          ),
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey.withValues(alpha: 0.05),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      onChanged: (phone) {
+                        if (phone.countryISOCode == 'EG' &&
+                            phone.number.startsWith('0')) {
+                          fullPhoneNumber =
+                              '${phone.countryCode}${phone.number.substring(1)}';
+                        } else {
+                          fullPhoneNumber = phone.completeNumber;
+                        }
+                      },
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -977,8 +1350,8 @@ class StudentDetailScreen extends ConsumerWidget {
                       prefixIcon: Icon(
                         Icons.location_on_outlined,
                         color: isDark
-                            ? AppColors.goldPrimary.withOpacity(0.7)
-                            : AppColors.goldDark.withOpacity(0.7),
+                            ? AppColors.goldPrimary.withValues(alpha: 0.7)
+                            : AppColors.goldDark.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -1025,8 +1398,8 @@ class StudentDetailScreen extends ConsumerWidget {
                         ),
                         decoration: BoxDecoration(
                           color: isDark
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.grey.withOpacity(0.05),
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: Colors.transparent),
                         ),
@@ -1035,8 +1408,8 @@ class StudentDetailScreen extends ConsumerWidget {
                             Icon(
                               Icons.cake_outlined,
                               color: isDark
-                                  ? AppColors.goldPrimary.withOpacity(0.7)
-                                  : AppColors.goldDark.withOpacity(0.7),
+                                  ? AppColors.goldPrimary.withValues(alpha: 0.7)
+                                  : AppColors.goldDark.withValues(alpha: 0.7),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -1117,7 +1490,7 @@ class StudentDetailScreen extends ConsumerWidget {
                                     (isDark
                                             ? AppColors.goldPrimary
                                             : AppColors.goldPrimary)
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -1128,8 +1501,8 @@ class StudentDetailScreen extends ConsumerWidget {
                               final updatedStudent = student.copyWith(
                                 name: nameController.text,
                                 phone: Value(
-                                  phoneController.text.isNotEmpty
-                                      ? phoneController.text
+                                  (fullPhoneNumber?.isNotEmpty == true)
+                                      ? fullPhoneNumber
                                       : null,
                                 ),
                                 address: Value(
@@ -1207,7 +1580,7 @@ class StudentDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.redPrimary.withOpacity(0.1),
+                  color: AppColors.redPrimary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -1295,10 +1668,17 @@ class StudentDetailScreen extends ConsumerWidget {
     // Remove any non-digit characters
     final cleaned = phone.replaceAll(RegExp(r'\D'), '');
 
-    // Check if it's an 11-digit number
-    if (cleaned.length == 11) {
-      // 4 digits + space + 3 digits + space + 4 digits
-      return '${cleaned.substring(0, 4)} ${cleaned.substring(4, 7)} ${cleaned.substring(7, 11)}';
+    // Check if it's an 11-digit number (typical Egypt mobile) or 12 digit (20...)
+    String rest = cleaned;
+    if (cleaned.startsWith('20')) {
+      rest = cleaned.substring(2);
+    } else if (cleaned.length == 11 && cleaned.startsWith('0')) {
+      rest = cleaned.substring(1);
+    }
+
+    // Now 'rest' should be 10 digits for EG (e.g. 100 710 9211)
+    if (rest.length == 10) {
+      return '+20 ${rest.substring(0, 3)} ${rest.substring(3, 6)} ${rest.substring(6)}';
     }
 
     return phone;

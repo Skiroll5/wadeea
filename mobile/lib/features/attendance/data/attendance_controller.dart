@@ -140,4 +140,34 @@ class AttendanceController extends StateNotifier<AsyncValue<void>> {
       state = AsyncError(e, st);
     }
   }
+
+  // Create a new attendance record for a student who doesn't have one
+  Future<void> createRecord({
+    required String sessionId,
+    required String studentId,
+    required String status,
+  }) async {
+    state = const AsyncLoading();
+    try {
+      await _recordRepo.createRecord(
+        sessionId: sessionId,
+        studentId: studentId,
+        status: status,
+      );
+      state = const AsyncData(null);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+
+  // Delete a single attendance record
+  Future<void> deleteRecord(String recordId) async {
+    state = const AsyncLoading();
+    try {
+      await _recordRepo.deleteRecord(recordId);
+      state = const AsyncData(null);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
 }

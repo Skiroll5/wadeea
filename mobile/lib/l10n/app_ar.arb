@@ -105,5 +105,16 @@
   "resetWarning": "سيتم حذف جميع سجلات الغياب المحلية وفرض مزامنة كاملة من الخادم. استخدمه فقط إذا تم مسح البيانات على الخادم.",
   "attendanceDetails": "تفاصيل الغياب",
   "attendanceRate": "نسبة الحضور",
-  "noAttendanceRecords": "لا توجد سجلات غياب"
+  "noAttendanceRecords": "لا توجد سجلات غياب",
+  "sortBy": "رتب حسب",
+  "attendancePercentage": "نسبة الحضور",
+  "sortAscending": "تصاعدي",
+  "sortDescending": "تنازلي",
+  "absencesTotal": "{count} غياب (كلي)",
+  "consecutive": "{count} متتالية",
+  "whatsappTemplate": "قالب واتساب",
+  "whatsappTemplateDesc": "تخصيص الرسالة الافتراضية المرسلة للطلاب",
+  "newArrivals": "طلاب جدد",
+  "tapToAddToSession": "اضغط لإضافتهم لهذه الجلسة",
+  "notInSession": "غير مسجل في هذه الجلسة"
 }

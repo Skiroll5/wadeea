@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -80,7 +81,7 @@ class SettingsScreen extends ConsumerWidget {
                                 (isDark
                                         ? AppColors.goldPrimary
                                         : AppColors.goldPrimary)
-                                    .withOpacity(0.15),
+                                    .withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -115,6 +116,26 @@ class SettingsScreen extends ConsumerWidget {
                   isDark: isDark,
                   onTap: () =>
                       _showThemePicker(context, ref, themeMode, isDark),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
+                  ),
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark ? Colors.white10 : Colors.grey.shade100,
+                  indent: 50,
+                ),
+                _SettingsTile(
+                  icon: Icons.chat_bubble_outline,
+                  title: l10n?.whatsappTemplate ?? 'WhatsApp Template',
+                  subtitle:
+                      l10n?.whatsappTemplateDesc ??
+                      'Customize the default message sent to students',
+                  isDark: isDark,
+                  onTap: () => context.push('/settings/whatsapp-template'),
                   trailing: Icon(
                     Icons.chevron_right,
                     color: isDark
@@ -218,8 +239,8 @@ class SettingsScreen extends ConsumerWidget {
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? AppColors.goldPrimary.withOpacity(0.1)
-                                : AppColors.goldPrimary.withOpacity(0.1),
+                                ? AppColors.goldPrimary.withValues(alpha: 0.1)
+                                : AppColors.goldPrimary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(
@@ -323,7 +344,7 @@ class SettingsScreen extends ConsumerWidget {
                       side: BorderSide(
                         color:
                             (isDark ? AppColors.redLight : AppColors.redPrimary)
-                                .withOpacity(0.3),
+                                .withValues(alpha: 0.3),
                       ),
                       minimumSize: const Size.fromHeight(45),
                       shape: RoundedRectangleBorder(
@@ -350,7 +371,7 @@ class SettingsScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       (isDark ? AppColors.redLight : AppColors.redPrimary)
-                          .withOpacity(0.1),
+                          .withValues(alpha: 0.1),
                   foregroundColor: isDark
                       ? AppColors.redLight
                       : AppColors.redPrimary,
@@ -553,7 +574,7 @@ class _SettingsTile extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: (isDark ? AppColors.goldPrimary : AppColors.goldPrimary)
-                    .withOpacity(0.1),
+                    .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(

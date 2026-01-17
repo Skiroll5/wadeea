@@ -23,16 +23,20 @@ class StudentAttendanceStats {
   final int totalRecords;
   final int presentCount;
   final int absentCount;
+  final int consecutiveAbsences;
 
   StudentAttendanceStats({
     required this.studentId,
     required this.totalRecords,
     required this.presentCount,
     required this.absentCount,
+    required this.consecutiveAbsences,
   });
 
+  // If a student has no records (e.g. new arrival), they have 0 absences.
+  // Therefore, they are considered to have 100% attendance by default.
   double get presencePercentage =>
-      totalRecords == 0 ? 0.0 : (presentCount / totalRecords) * 100.0;
+      totalRecords == 0 ? 100.0 : (presentCount / totalRecords) * 100.0;
 
   bool get isCritical => absentCount >= 3; // Example rule, customizable
 }
@@ -89,48 +93,55 @@ class AttendanceRepository {
 
       for (final student in students) {
         final studentRecords = records
-            .where((r) => r.studentId == student.id)
+            .where((r) => r.studentId == student.id && !r.isDeleted)
             .toList();
 
-        // A student is expected to have been in a session if:
-        // - The session date is after or on their creation date
-        // - OR they already have a record (was manually added/marked past)
-        final expectedSessionIds = sessions
-            .where((s) {
-              // Remove milliseconds/seconds to avoid issues with same-day creation
-              final studentDate = DateTime(
-                student.createdAt.year,
-                student.createdAt.month,
-                student.createdAt.day,
-              );
-              final sessionDate = DateTime(
-                s.date.year,
-                s.date.month,
-                s.date.day,
-              );
+        // Explicitly count records based on status to ensure we only include valid attendance data
+        final presentRecords = studentRecords.where(
+          (r) => r.status == 'PRESENT',
+        );
+        final absentRecords = studentRecords.where((r) => r.status == 'ABSENT');
 
-              return sessionDate.isAfter(studentDate) ||
-                  sessionDate.isAtSameMomentAs(studentDate) ||
-                  studentRecords.any((r) => r.sessionId == s.id);
-            })
-            .map((s) => s.id)
-            .toSet();
+        final presentCount = presentRecords.length;
+        final absentCount = absentRecords.length;
+        final totalRecords = presentCount + absentCount;
 
-        final presentCount = studentRecords
-            .where((r) => r.status == 'PRESENT')
-            .length;
+        // Calculate consecutive absences
+        // We only care about sessions where the student DOES have a record.
+        // Sort records by session date (requires mapping session ID to date)
 
-        // Absences = Total Expected - Presence
-        // This correctly handles students added later (who won't be expected in old sessions)
-        // and students who were in class but didn't have a record created.
-        final totalExpected = expectedSessionIds.length;
-        final absentCount = totalExpected - presentCount;
+        // 1. Map sessionId -> Date from the sessions list
+        final sessionDates = <String, DateTime>{};
+        for (final s in sessions) {
+          sessionDates[s.id] = s.date;
+        }
+
+        // 2. Filter records that correspond to valid sessions and sort them descending
+        final validRecords =
+            studentRecords
+                .where((r) => sessionDates.containsKey(r.sessionId))
+                .toList()
+              ..sort((a, b) {
+                final dateA = sessionDates[a.sessionId]!;
+                final dateB = sessionDates[b.sessionId]!;
+                return dateB.compareTo(dateA); // Newest first
+              });
+
+        int consecutiveAbsences = 0;
+        for (final record in validRecords) {
+          if (record.status == 'PRESENT') {
+            break;
+          } else if (record.status == 'ABSENT') {
+            consecutiveAbsences++;
+          }
+        }
 
         statsMap[student.id] = StudentAttendanceStats(
           studentId: student.id,
-          totalRecords: totalExpected,
+          totalRecords: totalRecords,
           presentCount: presentCount,
           absentCount: absentCount,
+          consecutiveAbsences: consecutiveAbsences,
         );
       }
 
@@ -166,9 +177,7 @@ class AttendanceRepository {
             ),
           ])..where(
             _db.students.classId.equals(session.classId) &
-                _db.students.isDeleted.equals(false) &
-                (_db.students.createdAt.isSmallerOrEqualValue(session.date) |
-                    _db.attendanceRecords.id.isNotNull()),
+                _db.students.isDeleted.equals(false),
           );
 
       return query.watch().map((rows) {
@@ -251,6 +260,12 @@ class AttendanceRepository {
   Future<void> updateRecord(String recordId, String newStatus) async {
     final now = DateTime.now();
 
+    // First, get the record to include sessionId and studentId in payload
+    // This is required for the server-side upsert to work if the record needs to be created
+    final record = await (_db.select(
+      _db.attendanceRecords,
+    )..where((r) => r.id.equals(recordId))).getSingle();
+
     await (_db.update(
       _db.attendanceRecords,
     )..where((r) => r.id.equals(recordId))).write(
@@ -260,7 +275,7 @@ class AttendanceRepository {
       ),
     );
 
-    // Add to sync queue
+    // Add to sync queue with FULL payload
     await _db
         .into(_db.syncQueue)
         .insert(
@@ -271,7 +286,54 @@ class AttendanceRepository {
             operation: 'UPDATE',
             payload: jsonEncode({
               'id': recordId,
+              'sessionId': record.sessionId,
+              'studentId': record.studentId,
               'status': newStatus,
+              'updatedAt': now.toIso8601String(),
+            }),
+            createdAt: now,
+          ),
+        );
+  }
+
+  // Create a new attendance record for a student
+  Future<void> createRecord({
+    required String sessionId,
+    required String studentId,
+    required String status,
+  }) async {
+    final now = DateTime.now();
+    final id = const Uuid().v4();
+
+    await _db
+        .into(_db.attendanceRecords)
+        .insert(
+          AttendanceRecordsCompanion(
+            id: Value(id),
+            sessionId: Value(sessionId),
+            studentId: Value(studentId),
+            status: Value(status),
+            isDeleted: const Value(false),
+            createdAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
+
+    // Add to sync queue
+    await _db
+        .into(_db.syncQueue)
+        .insert(
+          SyncQueueCompanion.insert(
+            uuid: const Uuid().v4(),
+            entityType: 'ATTENDANCE',
+            entityId: id,
+            operation: 'CREATE',
+            payload: jsonEncode({
+              'id': id,
+              'sessionId': sessionId,
+              'studentId': studentId,
+              'status': status,
+              'createdAt': now.toIso8601String(),
               'updatedAt': now.toIso8601String(),
             }),
             createdAt: now,
@@ -292,6 +354,38 @@ class AttendanceRepository {
         updatedAt: Value(now),
       ),
     );
+  }
+
+  // Delete a single attendance record by ID
+  Future<void> deleteRecord(String recordId) async {
+    final now = DateTime.now();
+
+    await (_db.update(
+      _db.attendanceRecords,
+    )..where((r) => r.id.equals(recordId))).write(
+      AttendanceRecordsCompanion(
+        isDeleted: const Value(true),
+        deletedAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
+
+    // Add to sync queue
+    await _db
+        .into(_db.syncQueue)
+        .insert(
+          SyncQueueCompanion.insert(
+            uuid: const Uuid().v4(),
+            entityType: 'ATTENDANCE',
+            entityId: recordId,
+            operation: 'DELETE',
+            payload: jsonEncode({
+              'id': recordId,
+              'deletedAt': now.toIso8601String(),
+            }),
+            createdAt: now,
+          ),
+        );
   }
 
   // --- New Features ---

@@ -691,6 +691,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No attendance records'**
   String get noAttendanceRecords;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// No description provided for @attendancePercentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get attendancePercentage;
+
+  /// No description provided for @sortAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get sortAscending;
+
+  /// No description provided for @sortDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get sortDescending;
+
+  /// No description provided for @absencesTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Absences (Total)'**
+  String absencesTotal(Object count);
+
+  /// No description provided for @consecutive.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Consecutive'**
+  String consecutive(Object count);
+
+  /// No description provided for @whatsappTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp Template'**
+  String get whatsappTemplate;
+
+  /// No description provided for @whatsappTemplateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize the default message sent to students'**
+  String get whatsappTemplateDesc;
+
+  /// No description provided for @newArrivals.
+  ///
+  /// In en, this message translates to:
+  /// **'New Arrivals'**
+  String get newArrivals;
+
+  /// No description provided for @tapToAddToSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add to this session'**
+  String get tapToAddToSession;
+
+  /// No description provided for @notInSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in this session'**
+  String get notInSession;
 }
 
 class _AppLocalizationsDelegate
