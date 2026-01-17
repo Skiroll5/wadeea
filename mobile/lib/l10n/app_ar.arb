@@ -116,5 +116,11 @@
   "whatsappTemplateDesc": "تخصيص الرسالة الافتراضية المرسلة للطلاب",
   "newArrivals": "طلاب جدد",
   "tapToAddToSession": "اضغط لإضافتهم لهذه الجلسة",
-  "notInSession": "غير مسجل في هذه الجلسة"
+  "notInSession": "غير مسجل في هذه الجلسة",
+  "whatsappCustomize": "تخصيص الرسالة",
+  "whatsappButton": "واتساب",
+  "deleteSessionConfirmTitle": "حذف الحصة؟",
+  "deleteSessionConfirmMessage": "هل أنت متأكد أنك تريد حذف هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "typeMessageHint": "اكتب رسالتك...",
+  "messageSaved": "تم حفظ الرسالة"
 }

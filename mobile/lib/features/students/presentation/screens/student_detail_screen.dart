@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/premium_card.dart';
 import '../../../../core/database/app_database.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../data/students_controller.dart';
 import '../../data/notes_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -180,7 +181,9 @@ class StudentDetailScreen extends ConsumerWidget {
                                 ),
                               ),
                               icon: const Icon(Icons.edit_note, size: 20),
-                              label: const Text('Customize'),
+                              label: Text(
+                                l10n?.whatsappCustomize ?? 'Customize',
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -201,7 +204,7 @@ class StudentDetailScreen extends ConsumerWidget {
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
+                                backgroundColor: const Color(0xFF25D366),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
@@ -210,8 +213,11 @@ class StudentDetailScreen extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              icon: const Icon(Icons.chat, size: 20),
-                              label: const Text('WhatsApp'),
+                              icon: const FaIcon(
+                                FontAwesomeIcons.whatsapp,
+                                size: 20,
+                              ),
+                              label: Text(l10n?.whatsappButton ?? 'WhatsApp'),
                             ),
                           ),
                         ],
@@ -504,11 +510,11 @@ class StudentDetailScreen extends ConsumerWidget {
     final customMessage = await controller.getStudentPreference(student.id);
     final initialMessage = customMessage ?? _buildTemplateMessage(ref, student);
 
+    if (!context.mounted) return;
+
     final messageController = TextEditingController(text: initialMessage);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
-    if (!context.mounted) return;
 
     showModalBottomSheet(
       context: context,
@@ -516,6 +522,7 @@ class StudentDetailScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
+          final l10n = AppLocalizations.of(context);
           ui.TextDirection getDirection(String text) {
             if (text.trim().isEmpty) return ui.TextDirection.ltr;
             final firstChar = text.trim()[0];
@@ -551,7 +558,7 @@ class StudentDetailScreen extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    'Customize Message',
+                    l10n?.whatsappCustomize ?? 'Customize Message',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -566,7 +573,7 @@ class StudentDetailScreen extends ConsumerWidget {
                       setState(() {});
                     },
                     decoration: InputDecoration(
-                      hintText: 'Type your message...',
+                      hintText: l10n?.typeMessageHint ?? 'Type your message...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -588,7 +595,7 @@ class StudentDetailScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text('Cancel'),
+                          child: Text(l10n?.cancel ?? 'Cancel'),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -608,8 +615,10 @@ class StudentDetailScreen extends ConsumerWidget {
                               if (context.mounted) {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Message saved'),
+                                  SnackBar(
+                                    content: Text(
+                                      l10n?.messageSaved ?? 'Message saved',
+                                    ),
                                   ),
                                 );
                               }

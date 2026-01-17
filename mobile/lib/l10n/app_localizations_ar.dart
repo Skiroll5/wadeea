@@ -355,4 +355,23 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notInSession => 'غير مسجل في هذه الجلسة';
+
+  @override
+  String get whatsappCustomize => 'تخصيص الرسالة';
+
+  @override
+  String get whatsappButton => 'واتساب';
+
+  @override
+  String get deleteSessionConfirmTitle => 'حذف الحصة؟';
+
+  @override
+  String get deleteSessionConfirmMessage =>
+      'هل أنت متأكد أنك تريد حذف هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get typeMessageHint => 'اكتب رسالتك...';
+
+  @override
+  String get messageSaved => 'تم حفظ الرسالة';
 }

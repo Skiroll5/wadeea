@@ -350,7 +350,9 @@ class StudentListScreen extends ConsumerWidget {
                               Text(
                                 l10n?.noAtRiskStudents ??
                                     'No at-risk students! 🎉',
-                                style: theme.textTheme.titleMedium,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                             ],

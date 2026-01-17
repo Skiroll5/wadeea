@@ -147,5 +147,11 @@
   "whatsappTemplateDesc": "Customize the default message sent to students",
   "newArrivals": "New Arrivals",
   "tapToAddToSession": "Tap to add to this session",
-  "notInSession": "Not in this session"
+  "notInSession": "Not in this session",
+  "whatsappCustomize": "Customize Message",
+  "whatsappButton": "WhatsApp",
+  "deleteSessionConfirmTitle": "Delete Session?",
+  "deleteSessionConfirmMessage": "Are you sure you want to delete this session? This action cannot be undone.",
+  "typeMessageHint": "Type your message...",
+  "messageSaved": "Message saved"
 }

@@ -358,4 +358,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notInSession => 'Not in this session';
+
+  @override
+  String get whatsappCustomize => 'Customize Message';
+
+  @override
+  String get whatsappButton => 'WhatsApp';
+
+  @override
+  String get deleteSessionConfirmTitle => 'Delete Session?';
+
+  @override
+  String get deleteSessionConfirmMessage =>
+      'Are you sure you want to delete this session? This action cannot be undone.';
+
+  @override
+  String get typeMessageHint => 'Type your message...';
+
+  @override
+  String get messageSaved => 'Message saved';
 }

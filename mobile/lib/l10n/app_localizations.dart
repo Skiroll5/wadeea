@@ -757,6 +757,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not in this session'**
   String get notInSession;
+
+  /// No description provided for @whatsappCustomize.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Message'**
+  String get whatsappCustomize;
+
+  /// No description provided for @whatsappButton.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get whatsappButton;
+
+  /// No description provided for @deleteSessionConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Session?'**
+  String get deleteSessionConfirmTitle;
+
+  /// No description provided for @deleteSessionConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this session? This action cannot be undone.'**
+  String get deleteSessionConfirmMessage;
+
+  /// No description provided for @typeMessageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your message...'**
+  String get typeMessageHint;
+
+  /// No description provided for @messageSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Message saved'**
+  String get messageSaved;
 }
 
 class _AppLocalizationsDelegate
