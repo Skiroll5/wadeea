@@ -67,7 +67,38 @@ class UpcomingBirthdaysSection extends StatelessWidget {
       return nextA.compareTo(nextB);
     });
 
-    if (upcomingBirthdays.isEmpty) return const SizedBox.shrink();
+    if (upcomingBirthdays.isEmpty) {
+      // Show empty state
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 0),
+            child: Row(
+              children: [
+                Icon(Icons.cake, size: 18, color: AppColors.goldPrimary),
+                const SizedBox(width: 8),
+                Text(
+                  l10n?.upcomingBirthdays ?? "Upcoming Birthdays",
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            l10n?.noUpcomingBirthdays ?? "No birthdays in the next 30 days.",
+            style: TextStyle(
+              color: isDark ? Colors.white38 : Colors.black38,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

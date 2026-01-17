@@ -794,7 +794,7 @@ class _InsightsSection extends ConsumerWidget {
             if (activeSessions.isEmpty) return const SizedBox.shrink();
 
             return Container(
-              height: 140,
+              height: 160,
               margin: const EdgeInsets.only(bottom: 24),
               child: PageView.builder(
                 controller: PageController(viewportFraction: 0.92),
@@ -811,7 +811,7 @@ class _InsightsSection extends ConsumerWidget {
             );
           },
           loading: () => const SizedBox(
-            height: 140,
+            height: 160,
             child: Center(child: CircularProgressIndicator()),
           ),
           error: (_, __) => const SizedBox.shrink(),
