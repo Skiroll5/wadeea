@@ -89,6 +89,41 @@ class HomeInsightsRepository {
 
     return result;
   }
+
+  Future<String> getStudentWhatsAppMessage(String studentId) async {
+    // 1. Get current active user
+    final user =
+        await (_db.select(_db.users)
+              ..where((t) => t.isActive.equals(true))
+              ..limit(1))
+            .getSingleOrNull();
+
+    // Default message if no user or template found
+    const defaultMsg =
+        "Hello, we noticed that the student has been absent recently. Is everything okay?";
+
+    if (user == null) return defaultMsg;
+
+    // 2. Check custom preference for this student
+    final pref =
+        await (_db.select(_db.userStudentPreferences)..where(
+              (t) => t.userId.equals(user.id) & t.studentId.equals(studentId),
+            ))
+            .getSingleOrNull();
+
+    if (pref != null &&
+        pref.customWhatsappMessage != null &&
+        pref.customWhatsappMessage!.isNotEmpty) {
+      return pref.customWhatsappMessage!;
+    }
+
+    // 3. Check user's global template
+    if (user.whatsappTemplate != null && user.whatsappTemplate!.isNotEmpty) {
+      return user.whatsappTemplate!;
+    }
+
+    return defaultMsg;
+  }
 }
 
 class ClassSessionStatus {

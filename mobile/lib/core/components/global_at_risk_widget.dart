@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Added Riverpod
 import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mobile/core/components/premium_card.dart';
 import 'package:mobile/core/theme/app_colors.dart';
+import 'package:mobile/features/home/data/home_insights_repository.dart'; // Added import
 import 'package:mobile/features/statistics/data/statistics_repository.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -99,7 +101,8 @@ class GlobalAtRiskWidget extends StatelessWidget {
   }
 }
 
-class _GlobalAtRiskItem extends StatelessWidget {
+class _GlobalAtRiskItem extends ConsumerWidget {
+  // Changed to ConsumerWidget
   final AtRiskStudent item;
   final bool isDark;
 
@@ -112,16 +115,33 @@ class _GlobalAtRiskItem extends StatelessWidget {
     }
   }
 
-  Future<void> _openWhatsApp(String phoneNumber) async {
+  Future<void> _openWhatsApp(WidgetRef ref, String phoneNumber) async {
+    // Added WidgetRef
     var cleanNumber = phoneNumber.replaceAll(RegExp(r'\D'), '');
-    final Uri launchUri = Uri.parse("https://wa.me/$cleanNumber");
+
+    // Fetch custom/template message
+    final repo = ref.read(homeInsightsRepositoryProvider);
+    String message = await repo.getStudentWhatsAppMessage(item.student.id);
+
+    // Simple template replacement
+    message = message.replaceAll('{student_name}', item.student.name);
+    message = message.replaceAll(
+      '{name}',
+      item.student.name,
+    ); // Handle both common keys
+
+    final Uri launchUri = Uri.parse(
+      "https://wa.me/$cleanNumber?text=${Uri.encodeComponent(message)}",
+    );
+
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri, mode: LaunchMode.externalApplication);
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Added ref
     final l10n = AppLocalizations.of(context);
 
     // Using SizedBox to enforce width since PremiumCard doesn't have width prop
@@ -211,15 +231,17 @@ class _GlobalAtRiskItem extends StatelessWidget {
                         if (item.phoneNumber != null &&
                             item.phoneNumber!.isNotEmpty) ...[
                           _ActionButton(
-                            icon: Icons.call,
-                            color: Colors.indigo,
+                            icon: FontAwesomeIcons
+                                .phone, // Changed to FontAwesome phone
+                            color: Colors.blueGrey, // Changed Color
                             onTap: () => _makePhoneCall(item.phoneNumber!),
+                            isFontAwesome: true,
                           ),
                           const SizedBox(width: 8),
                           _ActionButton(
                             icon: FontAwesomeIcons.whatsapp,
                             color: const Color(0xFF25D366),
-                            onTap: () => _openWhatsApp(item.phoneNumber!),
+                            onTap: () => _openWhatsApp(ref, item.phoneNumber!),
                             isFontAwesome: true,
                           ),
                         ] else
@@ -265,9 +287,15 @@ class _ActionButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(
+            8,
+          ), // Increased padding slightly for balance if icon is small
           child: isFontAwesome
-              ? FaIcon(icon, size: 18, color: color)
+              ? FaIcon(
+                  icon,
+                  size: 16,
+                  color: color,
+                ) // Fixed size 16 for FontAwesome to match visual weight
               : Icon(icon, size: 18, color: color),
         ),
       ),
