@@ -8,7 +8,6 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../auth/data/auth_controller.dart';
 import '../../../classes/data/classes_controller.dart';
 
-import '../../../statistics/presentation/widgets/statistics_dashboard.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../students/data/students_controller.dart';
 import '../../../sync/data/sync_service.dart';
@@ -111,11 +110,6 @@ class HomeScreen extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              if (user?.role == 'ADMIN') ...[
-                const StatisticsDashboard(),
-                const SizedBox(height: 24),
-              ],
-
               if (classes.isNotEmpty || user?.role == 'ADMIN') ...[
                 Row(
                   children: [
@@ -132,24 +126,64 @@ class HomeScreen extends ConsumerWidget {
                     ),
                     const Spacer(),
                     if (user?.role == 'ADMIN')
-                      Container(
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.goldPrimary.withValues(alpha: 0.1)
-                              : AppColors.goldPrimary.withValues(
-                                  alpha: 0.1,
-                                ), // Unified Gold
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.add),
-                          color: isDark
-                              ? AppColors.goldPrimary
-                              : AppColors.goldDark,
-                          tooltip: l10n?.createClass ?? 'Create Class',
-                          onPressed: () => _showAddClassDialog(context, ref),
-                        ),
-                      ).animate().fade(delay: 300.ms).scale(),
+                      Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => _showAddClassDialog(context, ref),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? AppColors.goldPrimary.withValues(
+                                          alpha: 0.1,
+                                        )
+                                      : AppColors.goldPrimary.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? AppColors.goldPrimary.withValues(
+                                            alpha: 0.2,
+                                          )
+                                        : AppColors.goldPrimary.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.add,
+                                      size: 18,
+                                      color: isDark
+                                          ? AppColors.goldPrimary
+                                          : AppColors.goldDark,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      l10n?.createClass ?? 'Create Class',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        color: isDark
+                                            ? AppColors.goldPrimary
+                                            : AppColors.goldDark,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                          .animate()
+                          .fade(delay: 300.ms)
+                          .slideY(begin: 0.2, end: 0, curve: Curves.easeOut),
                   ],
                 ).animate().fade(),
                 const SizedBox(height: 4),
