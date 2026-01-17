@@ -59,278 +59,349 @@ class StudentDetailScreen extends ConsumerWidget {
               children: [
                 // Avatar Section
                 Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.goldPrimary,
-                          width: 2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.goldPrimary.withValues(alpha: 0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.goldPrimary, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.goldPrimary.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
-                      child: CircleAvatar(
-                        radius: 60,
-                        backgroundColor: AppColors.goldPrimary,
-                        child: Text(
-                          student.name.substring(0, 1).toUpperCase(),
-                          style: theme.textTheme.displayMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundColor: AppColors.goldPrimary,
+                    child: Text(
+                      student.name.substring(0, 1).toUpperCase(),
+                      style: theme.textTheme.displayMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
-                    )
-                    .animate()
-                    .scale(duration: 400.ms, curve: Curves.easeOutBack)
-                    .fade(duration: 400.ms),
+                    ),
+                  ),
+                ).animate().fade(duration: 400.ms),
                 const SizedBox(height: 16),
                 Text(
-                  student.name,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: isDark
-                        ? AppColors.textPrimaryDark
-                        : AppColors.textPrimaryLight,
-                  ),
-                  textAlign: TextAlign.center,
-                ).animate().fade().slideY(begin: 0.2, end: 0, delay: 100.ms),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: () async {
-                    if (student.phone != null && student.phone!.isNotEmpty) {
-                      final Uri launchUri = Uri(
-                        scheme: 'tel',
-                        path: student.phone!,
-                      );
-                      if (await canLaunchUrl(launchUri)) {
-                        await launchUrl(launchUri);
-                      }
-                    }
-                  },
-                  onLongPress: () {
-                    if (student.phone != null && student.phone!.isNotEmpty) {
-                      Clipboard.setData(ClipboardData(text: student.phone!));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Phone number copied')),
-                      );
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.goldPrimary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Directionality(
-                      textDirection: ui.TextDirection.ltr,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.phone,
-                            size: 18,
-                            color: AppColors.goldDark,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            student.phone?.isNotEmpty == true
-                                ? _formatPhone(student.phone!)
-                                : (l10n?.noPhone ?? 'No Phone'),
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: AppColors.goldDark,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                      student.name,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
                       ),
+                      textAlign: TextAlign.center,
+                    )
+                    .animate()
+                    .fade(duration: 400.ms, delay: 50.ms)
+                    .slideY(
+                      begin: 0.2,
+                      end: 0,
+                      duration: 400.ms,
+                      curve: Curves.easeOutQuart,
                     ),
-                  ),
-                ).animate().fade().slideY(begin: 0.2, end: 0, delay: 150.ms),
-
-                const SizedBox(height: 12),
-
-                // WhatsApp Button Group
+                // Contact Actions - Two Lines (Compact)
                 if (student.phone != null && student.phone!.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(
-                                0xFF25D366,
-                              ).withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                        padding: const EdgeInsets.only(
+                          left: 64,
+                          right: 64,
+                          top: 16,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        child: Column(
                           children: [
-                            // Main WhatsApp Button
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                final customMessageAsync = ref.read(
-                                  studentCustomMessageProvider(studentId),
-                                );
-                                final customMessage = customMessageAsync.value;
-                                String message =
-                                    customMessage ??
-                                    _buildTemplateMessage(ref, student);
-                                await _launchWhatsApp(
-                                  context,
-                                  student,
-                                  message,
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF25D366),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 32,
-                                  vertical: 14,
+                            // Phone Number Row (Dialer)
+                            Container(
+                              height: 42,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white24
+                                      : Colors.grey.shade300,
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadiusDirectional.only(
-                                    topStart: Radius.circular(12),
-                                    bottomStart: Radius.circular(12),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                                child: InkWell(
+                                  onTap: () async {
+                                    final Uri launchUri = Uri(
+                                      scheme: 'tel',
+                                      path: student.phone!,
+                                    );
+                                    if (await canLaunchUrl(launchUri)) {
+                                      await launchUrl(launchUri);
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Directionality(
+                                    textDirection: ui.TextDirection.ltr,
+                                    child: Row(
+                                      children: [
+                                        // Phone icon
+                                        const SizedBox(width: 12),
+                                        Icon(
+                                          Icons.phone_outlined,
+                                          size: 18,
+                                          color: isDark
+                                              ? Colors.white70
+                                              : Colors.grey.shade600,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        // Phone number
+                                        Expanded(
+                                          child: Text(
+                                            _formatPhone(student.phone!),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.grey.shade800,
+                                            ),
+                                          ),
+                                        ),
+                                        // Copy button
+                                        Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: () {
+                                              Clipboard.setData(
+                                                ClipboardData(
+                                                  text: student.phone!,
+                                                ),
+                                              );
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Phone number copied',
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8),
+                                              child: Icon(
+                                                Icons.copy,
+                                                size: 16,
+                                                color: isDark
+                                                    ? Colors.white38
+                                                    : Colors.grey.shade400,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                elevation: 0,
                               ),
-                              icon: const FaIcon(
-                                FontAwesomeIcons.whatsapp,
-                                size: 20,
-                              ),
-                              label: Text(l10n?.whatsappButton ?? 'WhatsApp'),
                             ),
-                            // Divider line
+                            const SizedBox(height: 8),
+                            // WhatsApp Button Row
                             Container(
-                              width: 1,
-                              height: 48,
-                              color: Colors.white.withValues(alpha: 0.3),
-                            ),
-                            // Customize Icon Button
-                            Builder(
-                              builder: (context) {
-                                final isRtl =
-                                    Directionality.of(context) ==
-                                    TextDirection.rtl;
-                                final borderRadius = BorderRadius.only(
-                                  topLeft: isRtl
-                                      ? const Radius.circular(12)
-                                      : Radius.zero,
-                                  bottomLeft: isRtl
-                                      ? const Radius.circular(12)
-                                      : Radius.zero,
-                                  topRight: isRtl
-                                      ? Radius.zero
-                                      : const Radius.circular(12),
-                                  bottomRight: isRtl
-                                      ? Radius.zero
-                                      : const Radius.circular(12),
-                                );
-                                return Material(
-                                  color: const Color(0xFF25D366),
-                                  borderRadius: borderRadius,
-                                  child: InkWell(
-                                    onTap: () => _showWhatsAppDialog(
-                                      context,
-                                      ref,
-                                      student,
-                                    ),
-                                    borderRadius: borderRadius,
-                                    child: Container(
-                                      width: 48,
-                                      height: 48,
-                                      alignment: Alignment.center,
-                                      child: const FaIcon(
-                                        FontAwesomeIcons.penToSquare,
-                                        size: 16,
-                                        color: Colors.white,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF25D366),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF25D366,
+                                    ).withValues(alpha: 0.2),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  // Main WhatsApp Button
+                                  Expanded(
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () async {
+                                          // Refresh and wait for the latest value
+                                          final customMessage = await ref
+                                              .refresh(
+                                                studentCustomMessageProvider(
+                                                  studentId,
+                                                ).future,
+                                              );
+
+                                          String message =
+                                              customMessage ??
+                                              _buildTemplateMessage(
+                                                ref,
+                                                student,
+                                              );
+                                          if (context.mounted) {
+                                            await _launchWhatsApp(
+                                              context,
+                                              student,
+                                              message,
+                                            );
+                                          }
+                                        },
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(10),
+                                          bottomLeft: Radius.circular(10),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const FaIcon(
+                                              FontAwesomeIcons.whatsapp,
+                                              size: 18,
+                                              color: Colors.white,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              l10n?.whatsappButton ??
+                                                  'WhatsApp',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                );
-                              },
+                                  // Divider
+                                  Container(
+                                    width: 1,
+                                    height: 24,
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                  ),
+                                  // Customize Button
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => _showWhatsAppDialog(
+                                        context,
+                                        ref,
+                                        student,
+                                      ),
+                                      borderRadius: const BorderRadius.only(
+                                        topRight: Radius.circular(10),
+                                        bottomRight: Radius.circular(10),
+                                      ),
+                                      child: const SizedBox(
+                                        width: 42,
+                                        height: 42,
+                                        child: Center(
+                                          child: FaIcon(
+                                            FontAwesomeIcons.penToSquare,
+                                            size: 14,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
+                      )
+                      .animate()
+                      .fade(duration: 400.ms, delay: 100.ms)
+                      .slideY(
+                        begin: 0.2,
+                        end: 0,
+                        duration: 400.ms,
+                        curve: Curves.easeOutQuart,
                       ),
-                    ),
-                  ).animate().fade().slideY(begin: 0.2, end: 0, delay: 200.ms),
 
                 const SizedBox(height: 24),
 
                 // Edit/Delete Buttons
                 Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showEditDialog(context, ref, student),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.goldPrimary,
-                          side: const BorderSide(color: AppColors.goldPrimary),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () =>
+                                _showEditDialog(context, ref, student),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.goldPrimary,
+                              side: const BorderSide(
+                                color: AppColors.goldPrimary,
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon: const Icon(Icons.edit_outlined, size: 20),
+                            label: Text(l10n?.edit ?? 'Edit'),
                           ),
                         ),
-                        icon: const Icon(Icons.edit_outlined, size: 20),
-                        label: Text(l10n?.edit ?? 'Edit'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showDeleteDialog(context, ref),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.redPrimary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showDeleteDialog(context, ref),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.redPrimary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon: const Icon(Icons.delete_outline, size: 20),
+                            label: Text(l10n?.delete ?? 'Delete'),
                           ),
                         ),
-                        icon: const Icon(Icons.delete_outline, size: 20),
-                        label: Text(l10n?.delete ?? 'Delete'),
-                      ),
+                      ],
+                    )
+                    .animate()
+                    .fade(duration: 400.ms, delay: 150.ms)
+                    .slideY(
+                      begin: 0.2,
+                      end: 0,
+                      duration: 400.ms,
+                      curve: Curves.easeOutQuart,
                     ),
-                  ],
-                ).animate().fade().slideY(begin: 0.2, end: 0, delay: 220.ms),
 
                 const SizedBox(height: 16),
 
                 // Info Cards (Stacked)
-                _buildBirthdayCard(
-                  context,
-                  student,
-                  l10n,
-                  isDark,
-                ).animate().fade().slideY(begin: 0.2, end: 0, delay: 250.ms),
+                _buildBirthdayCard(context, student, l10n, isDark)
+                    .animate()
+                    .fade(duration: 400.ms, delay: 200.ms)
+                    .slideY(
+                      begin: 0.2,
+                      end: 0,
+                      duration: 400.ms,
+                      curve: Curves.easeOutQuart,
+                    ),
 
                 const SizedBox(height: 12),
 
-                _buildAddressCard(
-                  context,
-                  student,
-                  l10n,
-                  isDark,
-                ).animate().fade().slideY(begin: 0.2, end: 0, delay: 300.ms),
+                _buildAddressCard(context, student, l10n, isDark)
+                    .animate()
+                    .fade(duration: 400.ms, delay: 250.ms)
+                    .slideY(
+                      begin: 0.2,
+                      end: 0,
+                      duration: 400.ms,
+                      curve: Curves.easeOutQuart,
+                    ),
 
                 const SizedBox(height: 24),
 
@@ -351,62 +422,78 @@ class StudentDetailScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildSectionHeader(
-                      context,
-                      l10n?.visitationNotes ?? "Visitation Notes",
-                      isDark,
-                    ).animate().fade().slideX(
-                      begin: -0.1,
-                      end: 0,
-                      delay: 400.ms,
-                    ),
+                          context,
+                          l10n?.visitationNotes ?? "Visitation Notes",
+                          isDark,
+                        )
+                        .animate()
+                        .fade(duration: 400.ms, delay: 500.ms)
+                        .slideX(
+                          begin: -0.1,
+                          end: 0,
+                          duration: 400.ms,
+                          curve: Curves.easeOutQuart,
+                        ),
                     Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () =>
-                            _showAddNoteDialog(context, ref, student.id),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.goldPrimary.withValues(alpha: 0.1),
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () =>
+                                _showAddNoteDialog(context, ref, student.id),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isDark
-                                  ? AppColors.goldPrimary.withValues(alpha: 0.2)
-                                  : AppColors.goldPrimary.withValues(
-                                      alpha: 0.3,
-                                    ),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.add,
-                                size: 18,
-                                color: isDark
-                                    ? AppColors.goldPrimary
-                                    : AppColors.goldDark,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
                               ),
-                              const SizedBox(width: 6),
-                              Text(
-                                l10n?.addNote ?? 'Add Note',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                              decoration: BoxDecoration(
+                                color: AppColors.goldPrimary.withValues(
+                                  alpha: 0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
                                   color: isDark
-                                      ? AppColors.goldPrimary
-                                      : AppColors.goldDark,
+                                      ? AppColors.goldPrimary.withValues(
+                                          alpha: 0.2,
+                                        )
+                                      : AppColors.goldPrimary.withValues(
+                                          alpha: 0.3,
+                                        ),
                                 ),
                               ),
-                            ],
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.add,
+                                    size: 18,
+                                    color: isDark
+                                        ? AppColors.goldPrimary
+                                        : AppColors.goldDark,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    l10n?.addNote ?? 'Add Note',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: isDark
+                                          ? AppColors.goldPrimary
+                                          : AppColors.goldDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
+                        )
+                        .animate()
+                        .fade(duration: 400.ms, delay: 550.ms)
+                        .slideX(
+                          begin: 0.1,
+                          end: 0,
+                          duration: 400.ms,
+                          curve: Curves.easeOutQuart,
                         ),
-                      ),
-                    ).animate().fade(delay: 450.ms).slideX(begin: 0.1, end: 0),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -419,7 +506,7 @@ class StudentDetailScreen extends ConsumerWidget {
                       data: (notes) {
                         if (notes.isEmpty) {
                           return PremiumCard(
-                            delay: 0.5,
+                            delay: 0.6,
                             child: Center(
                               child: Padding(
                                 padding: EdgeInsets.all(16),
@@ -440,9 +527,16 @@ class StudentDetailScreen extends ConsumerWidget {
                                   noteItem: noteItem,
                                   studentId: studentId,
                                 )
-                                .animate(delay: (0.5 + (index * 0.05)).seconds)
-                                .fade()
-                                .slideX();
+                                .animate(
+                                  delay: (0.6 + (index * 0.05)).seconds,
+                                ) // Start after header
+                                .fade(duration: 400.ms)
+                                .slideX(
+                                  begin: 0.1,
+                                  end: 0,
+                                  duration: 400.ms,
+                                  curve: Curves.easeOutQuart,
+                                );
                           }).toList(),
                         );
                       },
@@ -630,6 +724,7 @@ class StudentDetailScreen extends ConsumerWidget {
                     l10n?.whatsappCustomize ?? 'Customize Message',
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -707,8 +802,8 @@ class StudentDetailScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          icon: const Icon(Icons.save),
-                          label: const Text('Save'),
+                          icon: const Icon(Icons.check_rounded),
+                          label: Text(l10n?.save ?? 'Save'),
                         ),
                       ),
                     ],
@@ -1014,10 +1109,18 @@ class StudentDetailScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _buildSectionHeader(
-              context,
-              l10n?.attendanceHistory ?? "Attendance History",
-              isDark,
-            ).animate().fade().slideX(delay: 350.ms),
+                  context,
+                  l10n?.attendanceHistory ?? "Attendance History",
+                  isDark,
+                )
+                .animate()
+                .fade(duration: 400.ms, delay: 300.ms)
+                .slideX(
+                  begin: -0.1,
+                  end: 0,
+                  duration: 400.ms,
+                  curve: Curves.easeOutQuart,
+                ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
@@ -1032,7 +1135,7 @@ class StudentDetailScreen extends ConsumerWidget {
                   fontSize: 12,
                 ),
               ),
-            ).animate().scale(delay: 400.ms),
+            ).animate().fade(duration: 400.ms, delay: 350.ms),
           ],
         ),
         const SizedBox(height: 16),

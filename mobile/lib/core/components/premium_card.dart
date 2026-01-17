@@ -14,6 +14,8 @@ class PremiumCard extends StatelessWidget {
   final double delay;
   final BoxBorder? border;
   final bool enableAnimation;
+  final double slideOffset;
+  final Duration? animationDuration;
 
   const PremiumCard({
     super.key,
@@ -26,6 +28,8 @@ class PremiumCard extends StatelessWidget {
     this.delay = 0,
     this.border,
     this.enableAnimation = true,
+    this.slideOffset = 0.2, // Increased default for better visibility
+    this.animationDuration,
   });
 
   @override
@@ -78,13 +82,13 @@ class PremiumCard extends StatelessWidget {
         ? cardContent
               .animate(delay: Duration(milliseconds: (delay * 1000).toInt()))
               .fade(
-                duration: AppAnimations.defaultDuration,
+                duration: animationDuration ?? AppAnimations.defaultDuration,
                 curve: AppAnimations.defaultCurve,
               )
               .slideY(
-                begin: 0.1,
+                begin: slideOffset,
                 end: 0,
-                duration: AppAnimations.defaultDuration,
+                duration: animationDuration ?? AppAnimations.defaultDuration,
                 curve: AppAnimations.defaultCurve,
               )
         : cardContent;

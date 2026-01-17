@@ -458,4 +458,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get unknown => 'مجهول';
+
+  @override
+  String get discardChanges => 'تجاهل التغييرات؟';
+
+  @override
+  String get discardChangesMessage =>
+      'لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد تجاهل هذه التغييرات؟';
+
+  @override
+  String get discard => 'تجاهل التغييرات';
 }

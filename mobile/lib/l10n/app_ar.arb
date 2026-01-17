@@ -149,5 +149,8 @@
   "editSessionNote": "تعديل ملاحظة الحصة",
   "defaultNoteHint": "أدخل الملاحظة الافتراضية...",
   "status": "الحالة",
-  "unknown": "مجهول"
+  "unknown": "مجهول",
+  "discardChanges": "تجاهل التغييرات؟",
+  "discardChangesMessage": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد تجاهل هذه التغييرات؟",
+  "discard": "تجاهل التغييرات"
 }

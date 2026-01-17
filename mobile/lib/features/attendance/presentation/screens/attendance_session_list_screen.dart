@@ -4,17 +4,33 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/premium_button.dart';
+import '../../../../core/components/keep_alive_wrapper.dart';
 import '../../data/attendance_controller.dart';
 import '../../../classes/data/classes_controller.dart';
 import '../../../students/data/students_controller.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../widgets/attendance_session_card.dart';
 
-class AttendanceSessionListScreen extends ConsumerWidget {
+class AttendanceSessionListScreen extends ConsumerStatefulWidget {
   const AttendanceSessionListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AttendanceSessionListScreen> createState() =>
+      _AttendanceSessionListScreenState();
+}
+
+class _AttendanceSessionListScreenState
+    extends ConsumerState<AttendanceSessionListScreen> {
+  late final DateTime _loadTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTime = DateTime.now();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final sessionsAsync = ref.watch(attendanceSessionsProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -92,13 +108,26 @@ class AttendanceSessionListScreen extends ConsumerWidget {
                     final sortedSessions = List.from(sessions)
                       ..sort((a, b) => b.date.compareTo(a.date));
                     final session = sortedSessions[index];
-                    return AttendanceSessionCard(
-                          session: session,
-                          isDark: isDark,
-                        )
-                        .animate()
-                        .fade(duration: 400.ms, delay: (index * 50).ms)
-                        .slideY(begin: 0.1, end: 0, curve: Curves.easeOut);
+
+                    // Time-based restriction: Only animate items built in the first 600ms
+                    final isInitialLoad =
+                        DateTime.now().difference(_loadTime).inMilliseconds <
+                        600;
+                    final shouldAnimate = isInitialLoad && (index < 12);
+
+                    Widget card = AttendanceSessionCard(
+                      session: session,
+                      isDark: isDark,
+                    );
+
+                    if (shouldAnimate) {
+                      card = card
+                          .animate()
+                          .fade(duration: 400.ms, delay: (index * 50).ms)
+                          .slideY(begin: 0.1, end: 0, curve: Curves.easeOut);
+                    }
+
+                    return KeepAliveWrapper(child: card);
                   },
                 );
               },
