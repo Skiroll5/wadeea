@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/database/app_database.dart' hide User;
 import '../data/auth_repository.dart';
 import '../domain/user_model.dart';
+import 'package:mobile/core/services/notification_service.dart';
+import 'package:mobile/core/data/fcm_repository.dart';
 
 final authControllerProvider =
     StateNotifierProvider<AuthController, AsyncValue<User?>>((ref) {
@@ -53,6 +55,18 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
 
       // Upsert user to local DB so joins work immediately
       await _upsertUserLocal(user);
+
+      // Register FCM Token
+      try {
+        final notifService = _ref.read(notificationServiceProvider);
+        final token = await notifService.getToken();
+        if (token != null) {
+          final fcmRepo = _ref.read(fcmRepositoryProvider);
+          await fcmRepo.registerToken(token);
+        }
+      } catch (e) {
+        print('FCM Registration Warning: $e');
+      }
 
       state = AsyncValue.data(user);
       return true;

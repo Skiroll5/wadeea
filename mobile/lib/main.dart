@@ -8,13 +8,23 @@ import 'core/router/router_provider.dart';
 import 'core/database/app_database.dart';
 import 'features/settings/data/settings_controller.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'core/services/notification_service.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
   final db = AppDatabase();
+  final container = ProviderContainer(
+    overrides: [appDatabaseProvider.overrideWithValue(db)],
+  );
+
+  // Initialize Notification Service
+  await container.read(notificationServiceProvider).initialize();
+
   runApp(
-    ProviderScope(
-      overrides: [appDatabaseProvider.overrideWithValue(db)],
-      child: const MainApp(),
-    ),
+    UncontrolledProviderScope(container: container, child: const MainApp()),
   );
 }
 

@@ -76,9 +76,7 @@ class AttendanceSessionCard extends ConsumerWidget {
                   : Colors.grey.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isDark
-                    ? Colors.white10
-                    : Colors.black.withOpacity(0.05),
+                color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
               ),
             ),
             child: Row(
@@ -184,8 +182,8 @@ class AttendanceSessionCard extends ConsumerWidget {
                             ?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: isDark
-                                  ? Colors.grey.shade400
-                                  : Colors.grey.shade600,
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
                             ),
                       ),
                       if (subtitle != null)
@@ -199,8 +197,8 @@ class AttendanceSessionCard extends ConsumerWidget {
                                 ?.copyWith(
                                   // fontStyle: FontStyle.italic,
                                   color: isDark
-                                      ? Colors.grey.shade500
-                                      : Colors.grey.shade500,
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondaryLight,
                                 ),
                           ),
                         ),

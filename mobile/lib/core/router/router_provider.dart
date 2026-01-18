@@ -13,6 +13,7 @@ import '../../features/attendance/presentation/screens/attendance_detail_screen.
 import '../../features/classes/presentation/screens/class_list_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/whatsapp_template_screen.dart';
+import '../../features/settings/presentation/pages/notification_settings_page.dart';
 import '../../features/admin/presentation/screens/admin_panel_screen.dart';
 import '../../features/admin/presentation/screens/user_management_screen.dart';
 import '../../features/admin/presentation/screens/class_management_screen.dart';
@@ -111,6 +112,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'whatsapp-template',
             builder: (context, state) => const WhatsAppTemplateScreen(),
+          ),
+          GoRoute(
+            path: 'notifications',
+            builder: (context, state) => const NotificationSettingsPage(),
           ),
         ],
       ),

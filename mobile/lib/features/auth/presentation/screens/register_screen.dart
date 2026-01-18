@@ -100,8 +100,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 8),
 
                 Text(
-                  l10n.createAccountCaption ??
-                      'Create your account to get started',
+                  'Create your account to get started',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: isDark
                         ? AppColors.textSecondaryDark
@@ -121,13 +120,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       children: [
                         PremiumTextField(
                           controller: _nameController,
-                          label: l10n.name ?? 'Name',
+                          label: l10n.name,
                           prefixIcon: Icons.person_outline,
                           keyboardType: TextInputType.name,
-                          textCapitalization: TextCapitalization.words,
-                          validator: (value) => value!.isEmpty
-                              ? l10n.required ?? 'Required'
-                              : null,
+                          validator: (value) =>
+                              value!.isEmpty ? 'Required' : null,
                           delay: 0.3,
                         ),
                         const SizedBox(height: 16),
@@ -136,9 +133,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           label: l10n.email,
                           prefixIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
-                          validator: (value) => value!.isEmpty
-                              ? l10n.required ?? 'Required'
-                              : null,
+                          validator: (value) =>
+                              value!.isEmpty ? 'Required' : null,
                           delay: 0.4,
                         ),
                         const SizedBox(height: 16),
@@ -147,9 +143,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           label: l10n.password,
                           prefixIcon: Icons.lock_outline,
                           isPassword: true,
-                          validator: (value) => value!.isEmpty
-                              ? l10n.required ?? 'Required'
-                              : null,
+                          validator: (value) =>
+                              value!.isEmpty ? 'Required' : null,
                           delay: 0.5,
                         ),
                         const SizedBox(height: 32),
@@ -188,7 +183,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
                         PremiumButton(
-                          label: l10n.backToLogin ?? 'Back to Login',
+                          label: l10n.cancel,
                           variant: ButtonVariant.outline,
                           isFullWidth: true,
                           delay: 0.7,

@@ -163,8 +163,8 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: isDark
-                                      ? Colors.grey.shade400
-                                      : Colors.grey.shade600,
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondaryLight,
                                 ),
                               )
                               .animate()
@@ -537,8 +537,8 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: isDark
-                          ? Colors.grey.shade400
-                          : Colors.grey.shade600,
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
                     ),
                   ),
                   // Header Button: Now "View All" (Swapped)
@@ -791,7 +791,9 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                   student.name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
                   ),
                 ),
                 if (student.phone != null && student.phone!.isNotEmpty)

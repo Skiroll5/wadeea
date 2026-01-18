@@ -143,6 +143,24 @@ class SettingsScreen extends ConsumerWidget {
                         : AppColors.textSecondaryLight,
                   ),
                 ),
+                Divider(
+                  height: 1,
+                  color: isDark ? Colors.white10 : Colors.grey.shade100,
+                  indent: 50,
+                ),
+                _SettingsTile(
+                  icon: Icons.notifications_none_outlined,
+                  title: 'Notifications',
+                  subtitle: 'Manage push notifications',
+                  isDark: isDark,
+                  onTap: () => context.push('/settings/notifications'),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
+                  ),
+                ),
               ],
             ),
           ).animate().fade(delay: 100.ms),

@@ -54,6 +54,9 @@ dependencies:
   rxdart: ^0.28.0
   intl_phone_field: ^3.2.0
   font_awesome_flutter: ^10.12.0
+  firebase_core: ^4.3.0
+  firebase_messaging: ^16.1.0
+  flutter_local_notifications: ^19.5.0
 
 dev_dependencies:
   flutter_test:

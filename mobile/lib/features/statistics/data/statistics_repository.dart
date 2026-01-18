@@ -63,8 +63,6 @@ class StatisticsRepository {
       // If not enough sessions to judge, skip
       if (recentSessions.isEmpty) continue;
 
-      final recentSessionIds = recentSessions.map((s) => s.id).toList();
-
       // Get ALL sessions for this class (for total stats)
       final allSessions =
           await (_db.select(_db.attendanceSessions)..where(
@@ -75,43 +73,54 @@ class StatisticsRepository {
 
       // For each student in this class, check attendance
       for (var student in classStudents) {
-        // Check consecutive absences in recent sessions
-        final recentPresentRecords =
+        // Get ALL attendance records for this student
+        // Only count sessions where student has a record
+        final allStudentRecords =
             await (_db.select(_db.attendanceRecords)..where(
                   (t) =>
                       t.studentId.equals(student.id) &
-                      t.sessionId.isIn(recentSessionIds) &
-                      t.status.equals('PRESENT') &
+                      t.sessionId.isIn(allSessionIds) &
                       t.isDeleted.equals(false),
                 ))
                 .get();
 
-        // Only add to at-risk list if they missed all recent sessions
-        if (recentPresentRecords.isEmpty) {
-          // Get ALL attendance records for this student (to calculate total stats)
-          // Only count sessions where student has a record (was enrolled at that time)
-          final allStudentRecords =
-              await (_db.select(_db.attendanceRecords)..where(
-                    (t) =>
-                        t.studentId.equals(student.id) &
-                        t.sessionId.isIn(allSessionIds) &
-                        t.isDeleted.equals(false),
-                  ))
-                  .get();
+        if (allStudentRecords.isEmpty) continue; // No records at all
 
-          // Total sessions = sessions where student has ANY record
-          final totalSessions = allStudentRecords.length;
-          final totalPresences = allStudentRecords
-              .where((r) => r.status == 'PRESENT')
-              .length;
-          final attendancePercentage = totalSessions > 0
-              ? (totalPresences / totalSessions) * 100
-              : 0.0;
+        // Calculate Attendance Percentage
+        // Total sessions = sessions where student has ANY record (Present, Absent, Excused)
+        final totalSessions = allStudentRecords.length;
+        final totalPresences = allStudentRecords
+            .where((r) => r.status == 'PRESENT')
+            .length;
+        final attendancePercentage = totalSessions > 0
+            ? (totalPresences / totalSessions) * 100
+            : 0.0;
 
+        // Calculate Consecutive Absences
+        // Count how many of the top `threshold` sessions defined in `recentSessions`
+        // have a record that is NOT PRESENT.
+
+        int currentConsecutive = 0;
+        for (var session in recentSessions) {
+          final record = allStudentRecords
+              .where((r) => r.sessionId == session.id)
+              .firstOrNull;
+          if (record != null) {
+            if (record.status != 'PRESENT') {
+              currentConsecutive++;
+            } else {
+              break;
+            }
+          }
+          // If no record, ignore this session (e.g. didn't join yet)
+        }
+
+        // Condition: Consecutive >= threshold OR Percentage < 50%
+        if (currentConsecutive >= threshold || attendancePercentage < 50.0) {
           atRiskList.add(
             AtRiskStudent(
               student: student,
-              consecutiveAbsences: recentSessions.length,
+              consecutiveAbsences: currentConsecutive,
               className: className,
               phoneNumber: student.phone,
               totalPresences: totalPresences,
