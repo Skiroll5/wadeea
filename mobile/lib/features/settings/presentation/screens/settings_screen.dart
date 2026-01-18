@@ -258,6 +258,25 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ).animate().fade(delay: 300.ms),
 
+          // Admin Panel Link (Admin only)
+          if (user?.role == 'ADMIN')
+            PremiumCard(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: _SettingsTile(
+                icon: Icons.admin_panel_settings,
+                title: 'Admin Panel',
+                subtitle: 'Manage users and class managers',
+                isDark: isDark,
+                onTap: () => context.push('/admin'),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
+                ),
+              ),
+            ).animate().fade(delay: 250.ms),
+
           // Statistics Settings (Threshold)
           if (user?.role == 'ADMIN')
             Consumer(

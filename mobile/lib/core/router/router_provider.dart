@@ -13,6 +13,9 @@ import '../../features/attendance/presentation/screens/attendance_detail_screen.
 import '../../features/classes/presentation/screens/class_list_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/whatsapp_template_screen.dart';
+import '../../features/admin/presentation/screens/admin_panel_screen.dart';
+import '../../features/admin/presentation/screens/user_management_screen.dart';
+import '../../features/admin/presentation/screens/class_management_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authControllerProvider);
@@ -85,8 +88,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/classes',
         builder: (context, state) => const ClassListScreen(),
       ),
-      // Statistics
-
+      // Admin Panel (Admin only)
+      GoRoute(
+        path: '/admin',
+        builder: (context, state) => const AdminPanelScreen(),
+        routes: [
+          GoRoute(
+            path: 'users',
+            builder: (context, state) => const UserManagementScreen(),
+          ),
+          GoRoute(
+            path: 'classes',
+            builder: (context, state) => const ClassManagementScreen(),
+          ),
+        ],
+      ),
       // Settings
       GoRoute(
         path: '/settings',

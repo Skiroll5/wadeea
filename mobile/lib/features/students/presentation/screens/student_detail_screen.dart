@@ -715,7 +715,9 @@ class StudentDetailScreen extends ConsumerWidget {
                       height: 4,
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
+                        color: isDark
+                            ? AppColors.dragHandleDark
+                            : AppColors.dragHandleLight,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),

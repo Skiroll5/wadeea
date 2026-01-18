@@ -81,6 +81,17 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _fcmTokenMeta = const VerificationMeta(
+    'fcmToken',
+  );
+  @override
+  late final GeneratedColumn<String> fcmToken = GeneratedColumn<String>(
+    'fcm_token',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -138,6 +149,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     classId,
     whatsappTemplate,
     isActive,
+    fcmToken,
     createdAt,
     updatedAt,
     deletedAt,
@@ -205,6 +217,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
+    if (data.containsKey('fcm_token')) {
+      context.handle(
+        _fcmTokenMeta,
+        fcmToken.isAcceptableOrUnknown(data['fcm_token']!, _fcmTokenMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -270,6 +288,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      fcmToken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fcm_token'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -303,6 +325,7 @@ class User extends DataClass implements Insertable<User> {
   final String? classId;
   final String? whatsappTemplate;
   final bool isActive;
+  final String? fcmToken;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
@@ -315,6 +338,7 @@ class User extends DataClass implements Insertable<User> {
     this.classId,
     this.whatsappTemplate,
     required this.isActive,
+    this.fcmToken,
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
@@ -334,6 +358,9 @@ class User extends DataClass implements Insertable<User> {
       map['whatsapp_template'] = Variable<String>(whatsappTemplate);
     }
     map['is_active'] = Variable<bool>(isActive);
+    if (!nullToAbsent || fcmToken != null) {
+      map['fcm_token'] = Variable<String>(fcmToken);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
@@ -356,6 +383,9 @@ class User extends DataClass implements Insertable<User> {
           ? const Value.absent()
           : Value(whatsappTemplate),
       isActive: Value(isActive),
+      fcmToken: fcmToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fcmToken),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
@@ -378,6 +408,7 @@ class User extends DataClass implements Insertable<User> {
       classId: serializer.fromJson<String?>(json['classId']),
       whatsappTemplate: serializer.fromJson<String?>(json['whatsappTemplate']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      fcmToken: serializer.fromJson<String?>(json['fcmToken']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -395,6 +426,7 @@ class User extends DataClass implements Insertable<User> {
       'classId': serializer.toJson<String?>(classId),
       'whatsappTemplate': serializer.toJson<String?>(whatsappTemplate),
       'isActive': serializer.toJson<bool>(isActive),
+      'fcmToken': serializer.toJson<String?>(fcmToken),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -410,6 +442,7 @@ class User extends DataClass implements Insertable<User> {
     Value<String?> classId = const Value.absent(),
     Value<String?> whatsappTemplate = const Value.absent(),
     bool? isActive,
+    Value<String?> fcmToken = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
@@ -424,6 +457,7 @@ class User extends DataClass implements Insertable<User> {
         ? whatsappTemplate.value
         : this.whatsappTemplate,
     isActive: isActive ?? this.isActive,
+    fcmToken: fcmToken.present ? fcmToken.value : this.fcmToken,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
@@ -440,6 +474,7 @@ class User extends DataClass implements Insertable<User> {
           ? data.whatsappTemplate.value
           : this.whatsappTemplate,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      fcmToken: data.fcmToken.present ? data.fcmToken.value : this.fcmToken,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
@@ -457,6 +492,7 @@ class User extends DataClass implements Insertable<User> {
           ..write('classId: $classId, ')
           ..write('whatsappTemplate: $whatsappTemplate, ')
           ..write('isActive: $isActive, ')
+          ..write('fcmToken: $fcmToken, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -474,6 +510,7 @@ class User extends DataClass implements Insertable<User> {
     classId,
     whatsappTemplate,
     isActive,
+    fcmToken,
     createdAt,
     updatedAt,
     deletedAt,
@@ -490,6 +527,7 @@ class User extends DataClass implements Insertable<User> {
           other.classId == this.classId &&
           other.whatsappTemplate == this.whatsappTemplate &&
           other.isActive == this.isActive &&
+          other.fcmToken == this.fcmToken &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
@@ -504,6 +542,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String?> classId;
   final Value<String?> whatsappTemplate;
   final Value<bool> isActive;
+  final Value<String?> fcmToken;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
@@ -517,6 +556,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.classId = const Value.absent(),
     this.whatsappTemplate = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.fcmToken = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -531,6 +571,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.classId = const Value.absent(),
     this.whatsappTemplate = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.fcmToken = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
@@ -550,6 +591,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<String>? classId,
     Expression<String>? whatsappTemplate,
     Expression<bool>? isActive,
+    Expression<String>? fcmToken,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
@@ -564,6 +606,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       if (classId != null) 'class_id': classId,
       if (whatsappTemplate != null) 'whatsapp_template': whatsappTemplate,
       if (isActive != null) 'is_active': isActive,
+      if (fcmToken != null) 'fcm_token': fcmToken,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -580,6 +623,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Value<String?>? classId,
     Value<String?>? whatsappTemplate,
     Value<bool>? isActive,
+    Value<String?>? fcmToken,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
@@ -594,6 +638,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       classId: classId ?? this.classId,
       whatsappTemplate: whatsappTemplate ?? this.whatsappTemplate,
       isActive: isActive ?? this.isActive,
+      fcmToken: fcmToken ?? this.fcmToken,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -626,6 +671,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (fcmToken.present) {
+      map['fcm_token'] = Variable<String>(fcmToken.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -654,6 +702,7 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('classId: $classId, ')
           ..write('whatsappTemplate: $whatsappTemplate, ')
           ..write('isActive: $isActive, ')
+          ..write('fcmToken: $fcmToken, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -4131,6 +4180,372 @@ class UserStudentPreferencesCompanion
   }
 }
 
+class $ClassManagersTable extends ClassManagers
+    with TableInfo<$ClassManagersTable, ClassManager> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ClassManagersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _classIdMeta = const VerificationMeta(
+    'classId',
+  );
+  @override
+  late final GeneratedColumn<String> classId = GeneratedColumn<String>(
+    'class_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES classes (id)',
+    ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    classId,
+    userId,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'class_managers';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ClassManager> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('class_id')) {
+      context.handle(
+        _classIdMeta,
+        classId.isAcceptableOrUnknown(data['class_id']!, _classIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_classIdMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ClassManager map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClassManager(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      classId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}class_id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ClassManagersTable createAlias(String alias) {
+    return $ClassManagersTable(attachedDatabase, alias);
+  }
+}
+
+class ClassManager extends DataClass implements Insertable<ClassManager> {
+  final String id;
+  final String classId;
+  final String userId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ClassManager({
+    required this.id,
+    required this.classId,
+    required this.userId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['class_id'] = Variable<String>(classId);
+    map['user_id'] = Variable<String>(userId);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ClassManagersCompanion toCompanion(bool nullToAbsent) {
+    return ClassManagersCompanion(
+      id: Value(id),
+      classId: Value(classId),
+      userId: Value(userId),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ClassManager.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClassManager(
+      id: serializer.fromJson<String>(json['id']),
+      classId: serializer.fromJson<String>(json['classId']),
+      userId: serializer.fromJson<String>(json['userId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'classId': serializer.toJson<String>(classId),
+      'userId': serializer.toJson<String>(userId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ClassManager copyWith({
+    String? id,
+    String? classId,
+    String? userId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ClassManager(
+    id: id ?? this.id,
+    classId: classId ?? this.classId,
+    userId: userId ?? this.userId,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ClassManager copyWithCompanion(ClassManagersCompanion data) {
+    return ClassManager(
+      id: data.id.present ? data.id.value : this.id,
+      classId: data.classId.present ? data.classId.value : this.classId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClassManager(')
+          ..write('id: $id, ')
+          ..write('classId: $classId, ')
+          ..write('userId: $userId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, classId, userId, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClassManager &&
+          other.id == this.id &&
+          other.classId == this.classId &&
+          other.userId == this.userId &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ClassManagersCompanion extends UpdateCompanion<ClassManager> {
+  final Value<String> id;
+  final Value<String> classId;
+  final Value<String> userId;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ClassManagersCompanion({
+    this.id = const Value.absent(),
+    this.classId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ClassManagersCompanion.insert({
+    required String id,
+    required String classId,
+    required String userId,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       classId = Value(classId),
+       userId = Value(userId),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ClassManager> custom({
+    Expression<String>? id,
+    Expression<String>? classId,
+    Expression<String>? userId,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (classId != null) 'class_id': classId,
+      if (userId != null) 'user_id': userId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ClassManagersCompanion copyWith({
+    Value<String>? id,
+    Value<String>? classId,
+    Value<String>? userId,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ClassManagersCompanion(
+      id: id ?? this.id,
+      classId: classId ?? this.classId,
+      userId: userId ?? this.userId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (classId.present) {
+      map['class_id'] = Variable<String>(classId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClassManagersCompanion(')
+          ..write('id: $id, ')
+          ..write('classId: $classId, ')
+          ..write('userId: $userId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4145,6 +4560,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NotesTable notes = $NotesTable(this);
   late final $UserStudentPreferencesTable userStudentPreferences =
       $UserStudentPreferencesTable(this);
+  late final $ClassManagersTable classManagers = $ClassManagersTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4158,6 +4574,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     syncQueue,
     notes,
     userStudentPreferences,
+    classManagers,
   ];
 }
 
@@ -4170,6 +4587,7 @@ typedef $$UsersTableCreateCompanionBuilder =
       Value<String?> classId,
       Value<String?> whatsappTemplate,
       Value<bool> isActive,
+      Value<String?> fcmToken,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
@@ -4185,6 +4603,7 @@ typedef $$UsersTableUpdateCompanionBuilder =
       Value<String?> classId,
       Value<String?> whatsappTemplate,
       Value<bool> isActive,
+      Value<String?> fcmToken,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
@@ -4242,6 +4661,24 @@ final class $$UsersTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$ClassManagersTable, List<ClassManager>>
+  _classManagersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.classManagers,
+    aliasName: $_aliasNameGenerator(db.users.id, db.classManagers.userId),
+  );
+
+  $$ClassManagersTableProcessedTableManager get classManagersRefs {
+    final manager = $$ClassManagersTableTableManager(
+      $_db,
+      $_db.classManagers,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_classManagersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
@@ -4284,6 +4721,11 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
 
   ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fcmToken => $composableBuilder(
+    column: $table.fcmToken,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4357,6 +4799,31 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
         );
     return f(composer);
   }
+
+  Expression<bool> classManagersRefs(
+    Expression<bool> Function($$ClassManagersTableFilterComposer f) f,
+  ) {
+    final $$ClassManagersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.classManagers,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClassManagersTableFilterComposer(
+            $db: $db,
+            $table: $db.classManagers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableOrderingComposer
@@ -4400,6 +4867,11 @@ class $$UsersTableOrderingComposer
 
   ColumnOrderings<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fcmToken => $composableBuilder(
+    column: $table.fcmToken,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4455,6 +4927,9 @@ class $$UsersTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<String> get fcmToken =>
+      $composableBuilder(column: $table.fcmToken, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4518,6 +4993,31 @@ class $$UsersTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> classManagersRefs<T extends Object>(
+    Expression<T> Function($$ClassManagersTableAnnotationComposer a) f,
+  ) {
+    final $$ClassManagersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.classManagers,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClassManagersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.classManagers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -4536,6 +5036,7 @@ class $$UsersTableTableManager
           PrefetchHooks Function({
             bool notesRefs,
             bool userStudentPreferencesRefs,
+            bool classManagersRefs,
           })
         > {
   $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
@@ -4558,6 +5059,7 @@ class $$UsersTableTableManager
                 Value<String?> classId = const Value.absent(),
                 Value<String?> whatsappTemplate = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<String?> fcmToken = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -4571,6 +5073,7 @@ class $$UsersTableTableManager
                 classId: classId,
                 whatsappTemplate: whatsappTemplate,
                 isActive: isActive,
+                fcmToken: fcmToken,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
@@ -4586,6 +5089,7 @@ class $$UsersTableTableManager
                 Value<String?> classId = const Value.absent(),
                 Value<String?> whatsappTemplate = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<String?> fcmToken = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -4599,6 +5103,7 @@ class $$UsersTableTableManager
                 classId: classId,
                 whatsappTemplate: whatsappTemplate,
                 isActive: isActive,
+                fcmToken: fcmToken,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
@@ -4612,12 +5117,17 @@ class $$UsersTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({notesRefs = false, userStudentPreferencesRefs = false}) {
+              ({
+                notesRefs = false,
+                userStudentPreferencesRefs = false,
+                classManagersRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (notesRefs) db.notes,
                     if (userStudentPreferencesRefs) db.userStudentPreferences,
+                    if (classManagersRefs) db.classManagers,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -4656,6 +5166,27 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (classManagersRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          ClassManager
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._classManagersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).classManagersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -4676,7 +5207,11 @@ typedef $$UsersTableProcessedTableManager =
       $$UsersTableUpdateCompanionBuilder,
       (User, $$UsersTableReferences),
       User,
-      PrefetchHooks Function({bool notesRefs, bool userStudentPreferencesRefs})
+      PrefetchHooks Function({
+        bool notesRefs,
+        bool userStudentPreferencesRefs,
+        bool classManagersRefs,
+      })
     >;
 typedef $$StudentsTableCreateCompanionBuilder =
     StudentsCompanion Function({
@@ -5341,6 +5876,24 @@ final class $$ClassesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$ClassManagersTable, List<ClassManager>>
+  _classManagersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.classManagers,
+    aliasName: $_aliasNameGenerator(db.classes.id, db.classManagers.classId),
+  );
+
+  $$ClassManagersTableProcessedTableManager get classManagersRefs {
+    final manager = $$ClassManagersTableTableManager(
+      $_db,
+      $_db.classManagers,
+    ).filter((f) => f.classId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_classManagersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$ClassesTableFilterComposer
@@ -5403,6 +5956,31 @@ class $$ClassesTableFilterComposer
           }) => $$AttendanceSessionsTableFilterComposer(
             $db: $db,
             $table: $db.attendanceSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> classManagersRefs(
+    Expression<bool> Function($$ClassManagersTableFilterComposer f) f,
+  ) {
+    final $$ClassManagersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.classManagers,
+      getReferencedColumn: (t) => t.classId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClassManagersTableFilterComposer(
+            $db: $db,
+            $table: $db.classManagers,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5513,6 +6091,31 @@ class $$ClassesTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> classManagersRefs<T extends Object>(
+    Expression<T> Function($$ClassManagersTableAnnotationComposer a) f,
+  ) {
+    final $$ClassManagersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.classManagers,
+      getReferencedColumn: (t) => t.classId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClassManagersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.classManagers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ClassesTableTableManager
@@ -5528,7 +6131,10 @@ class $$ClassesTableTableManager
           $$ClassesTableUpdateCompanionBuilder,
           (ClassesData, $$ClassesTableReferences),
           ClassesData,
-          PrefetchHooks Function({bool attendanceSessionsRefs})
+          PrefetchHooks Function({
+            bool attendanceSessionsRefs,
+            bool classManagersRefs,
+          })
         > {
   $$ClassesTableTableManager(_$AppDatabase db, $ClassesTable table)
     : super(
@@ -5589,37 +6195,63 @@ class $$ClassesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({attendanceSessionsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (attendanceSessionsRefs) db.attendanceSessions,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (attendanceSessionsRefs)
-                    await $_getPrefetchedData<
-                      ClassesData,
-                      $ClassesTable,
-                      AttendanceSession
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ClassesTableReferences
-                          ._attendanceSessionsRefsTable(db),
-                      managerFromTypedResult: (p0) => $$ClassesTableReferences(
-                        db,
-                        table,
-                        p0,
-                      ).attendanceSessionsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.classId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({attendanceSessionsRefs = false, classManagersRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (attendanceSessionsRefs) db.attendanceSessions,
+                    if (classManagersRefs) db.classManagers,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (attendanceSessionsRefs)
+                        await $_getPrefetchedData<
+                          ClassesData,
+                          $ClassesTable,
+                          AttendanceSession
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ClassesTableReferences
+                              ._attendanceSessionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ClassesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).attendanceSessionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.classId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (classManagersRefs)
+                        await $_getPrefetchedData<
+                          ClassesData,
+                          $ClassesTable,
+                          ClassManager
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ClassesTableReferences
+                              ._classManagersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ClassesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).classManagersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.classId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -5636,7 +6268,10 @@ typedef $$ClassesTableProcessedTableManager =
       $$ClassesTableUpdateCompanionBuilder,
       (ClassesData, $$ClassesTableReferences),
       ClassesData,
-      PrefetchHooks Function({bool attendanceSessionsRefs})
+      PrefetchHooks Function({
+        bool attendanceSessionsRefs,
+        bool classManagersRefs,
+      })
     >;
 typedef $$AttendanceSessionsTableCreateCompanionBuilder =
     AttendanceSessionsCompanion Function({
@@ -7743,6 +8378,416 @@ typedef $$UserStudentPreferencesTableProcessedTableManager =
       UserStudentPreference,
       PrefetchHooks Function({bool userId, bool studentId})
     >;
+typedef $$ClassManagersTableCreateCompanionBuilder =
+    ClassManagersCompanion Function({
+      required String id,
+      required String classId,
+      required String userId,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ClassManagersTableUpdateCompanionBuilder =
+    ClassManagersCompanion Function({
+      Value<String> id,
+      Value<String> classId,
+      Value<String> userId,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ClassManagersTableReferences
+    extends BaseReferences<_$AppDatabase, $ClassManagersTable, ClassManager> {
+  $$ClassManagersTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ClassesTable _classIdTable(_$AppDatabase db) =>
+      db.classes.createAlias(
+        $_aliasNameGenerator(db.classManagers.classId, db.classes.id),
+      );
+
+  $$ClassesTableProcessedTableManager get classId {
+    final $_column = $_itemColumn<String>('class_id')!;
+
+    final manager = $$ClassesTableTableManager(
+      $_db,
+      $_db.classes,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_classIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $UsersTable _userIdTable(_$AppDatabase db) => db.users.createAlias(
+    $_aliasNameGenerator(db.classManagers.userId, db.users.id),
+  );
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ClassManagersTableFilterComposer
+    extends Composer<_$AppDatabase, $ClassManagersTable> {
+  $$ClassManagersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ClassesTableFilterComposer get classId {
+    final $$ClassesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.classId,
+      referencedTable: $db.classes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClassesTableFilterComposer(
+            $db: $db,
+            $table: $db.classes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ClassManagersTableOrderingComposer
+    extends Composer<_$AppDatabase, $ClassManagersTable> {
+  $$ClassManagersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ClassesTableOrderingComposer get classId {
+    final $$ClassesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.classId,
+      referencedTable: $db.classes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClassesTableOrderingComposer(
+            $db: $db,
+            $table: $db.classes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ClassManagersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ClassManagersTable> {
+  $$ClassManagersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ClassesTableAnnotationComposer get classId {
+    final $$ClassesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.classId,
+      referencedTable: $db.classes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClassesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.classes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ClassManagersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ClassManagersTable,
+          ClassManager,
+          $$ClassManagersTableFilterComposer,
+          $$ClassManagersTableOrderingComposer,
+          $$ClassManagersTableAnnotationComposer,
+          $$ClassManagersTableCreateCompanionBuilder,
+          $$ClassManagersTableUpdateCompanionBuilder,
+          (ClassManager, $$ClassManagersTableReferences),
+          ClassManager,
+          PrefetchHooks Function({bool classId, bool userId})
+        > {
+  $$ClassManagersTableTableManager(_$AppDatabase db, $ClassManagersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ClassManagersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ClassManagersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ClassManagersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> classId = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ClassManagersCompanion(
+                id: id,
+                classId: classId,
+                userId: userId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String classId,
+                required String userId,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ClassManagersCompanion.insert(
+                id: id,
+                classId: classId,
+                userId: userId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ClassManagersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({classId = false, userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (classId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.classId,
+                                referencedTable: $$ClassManagersTableReferences
+                                    ._classIdTable(db),
+                                referencedColumn: $$ClassManagersTableReferences
+                                    ._classIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$ClassManagersTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$ClassManagersTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ClassManagersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ClassManagersTable,
+      ClassManager,
+      $$ClassManagersTableFilterComposer,
+      $$ClassManagersTableOrderingComposer,
+      $$ClassManagersTableAnnotationComposer,
+      $$ClassManagersTableCreateCompanionBuilder,
+      $$ClassManagersTableUpdateCompanionBuilder,
+      (ClassManager, $$ClassManagersTableReferences),
+      ClassManager,
+      PrefetchHooks Function({bool classId, bool userId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7766,4 +8811,6 @@ class $AppDatabaseManager {
         _db,
         _db.userStudentPreferences,
       );
+  $$ClassManagersTableTableManager get classManagers =>
+      $$ClassManagersTableTableManager(_db, _db.classManagers);
 }

@@ -29,4 +29,8 @@ class AppColors {
   static const Color surfaceDark = Color(0xFF1E1E1E);
   static const Color textPrimaryDark = Color(0xFFE0E0E0);
   static const Color textSecondaryDark = Color(0xFFA0A0A0);
+
+  // Modal UI elements (theme-aware)
+  static const Color dragHandleLight = Color(0xFFD1D5DB); // grey-300 equivalent
+  static const Color dragHandleDark = Color(0xFF4B5563); // grey-600 equivalent
 }

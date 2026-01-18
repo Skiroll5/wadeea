@@ -396,7 +396,9 @@ class HomeScreen extends ConsumerWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: isDark
+                        ? AppColors.dragHandleDark
+                        : AppColors.dragHandleLight,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -506,9 +508,7 @@ class HomeScreen extends ConsumerWidget {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? AppColors.goldPrimary
-                            : AppColors.bluePrimary,
+                        backgroundColor: AppColors.goldPrimary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -565,7 +565,9 @@ class HomeScreen extends ConsumerWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: isDark
+                        ? AppColors.dragHandleDark
+                        : AppColors.dragHandleLight,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -679,13 +681,17 @@ class HomeScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Drag Handle
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.dragHandleDark
+                        : AppColors.dragHandleLight,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
               // Warning Icon

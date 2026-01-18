@@ -10,6 +10,7 @@ class Users extends Table {
   TextColumn get classId => text().nullable()();
   TextColumn get whatsappTemplate => text().nullable()();
   BoolColumn get isActive => boolean().withDefault(const Constant(false))();
+  TextColumn get fcmToken => text().nullable()(); // For push notifications
 
   // Sync Fields
   DateTimeColumn get createdAt => dateTime()();
@@ -122,4 +123,17 @@ class UserStudentPreferences extends Table {
 
   @override
   Set<Column> get primaryKey => {userId, studentId};
+}
+
+// Junction table for Class-Manager many-to-many relationship
+class ClassManagers extends Table {
+  TextColumn get id => text()();
+  TextColumn get classId => text().references(Classes, #id)();
+  TextColumn get userId => text().references(Users, #id)();
+
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
