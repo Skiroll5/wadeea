@@ -15,7 +15,6 @@ import '../../../auth/data/auth_controller.dart';
 import '../../../classes/presentation/widgets/class_list_item.dart';
 import '../../../classes/presentation/widgets/class_dialogs.dart';
 import '../../../sync/data/sync_service.dart';
-import '../widgets/user_status_toggle.dart';
 
 class AdminPanelScreen extends ConsumerStatefulWidget {
   const AdminPanelScreen({super.key});
@@ -503,98 +502,14 @@ class _UsersSection extends ConsumerWidget {
                 final isEnabled = user['isEnabled'] == true;
                 final isAdmin = user['role'] == 'ADMIN';
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: isAdmin
-                          ? Colors.amber.shade100
-                          : (isEnabled
-                                ? Colors.green.shade100
-                                : Colors.grey.shade200),
-                      child: Icon(
-                        isAdmin ? Icons.admin_panel_settings : Icons.person,
-                        color: isAdmin
-                            ? Colors.amber.shade700
-                            : (isEnabled ? Colors.green : Colors.grey),
-                        size: 20,
-                      ),
-                    ),
-                    title: Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            user['name'] ?? 'Unknown',
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (isAdmin) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.amber.shade100,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              l10n?.admin ?? 'Admin',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                        ],
-                        if (!isActive && !isAdmin) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.shade100,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              l10n?.pending ?? 'Pending',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.orange.shade800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    subtitle: Text(user['email'] ?? ''),
-                    trailing: isAdmin
-                        ? null // Don't allow modifying admin users
-                        : UserStatusToggle(
-                            isEnabled: isEnabled,
-                            enabledLabel: l10n?.enabled ?? 'Enabled',
-                            disabledLabel: l10n?.disabled ?? 'Disabled',
-                            onToggle: (newValue) async {
-                              final success = newValue
-                                  ? await controller.enableUser(user['id'])
-                                  : await controller.disableUser(user['id']);
-                              if (context.mounted && !success) {
-                                _showActionFeedback(
-                                  context,
-                                  success: false,
-                                  successMessage: '',
-                                  failureMessage:
-                                      l10n?.actionFailedCheckConnection ??
-                                      'Action failed. Check your internet connection.',
-                                );
-                              }
-                              return success;
-                            },
-                          ),
-                  ),
+                return _UserCard(
+                  user: user,
+                  isActive: isActive,
+                  isEnabled: isEnabled,
+                  isAdmin: isAdmin,
+                  isDark: isDark,
+                  l10n: l10n,
+                  controller: controller,
                 );
               },
             );
@@ -638,4 +553,340 @@ void _showActionFeedback(
       duration: Duration(seconds: success ? 2 : 4),
     ),
   );
+}
+
+/// User card with clickable functionality and optimistic updates
+class _UserCard extends StatefulWidget {
+  final Map<String, dynamic> user;
+  final bool isActive;
+  final bool isEnabled;
+  final bool isAdmin;
+  final bool isDark;
+  final AppLocalizations? l10n;
+  final AdminController controller;
+
+  const _UserCard({
+    required this.user,
+    required this.isActive,
+    required this.isEnabled,
+    required this.isAdmin,
+    required this.isDark,
+    required this.l10n,
+    required this.controller,
+  });
+
+  @override
+  State<_UserCard> createState() => _UserCardState();
+}
+
+class _UserCardState extends State<_UserCard> {
+  late bool _optimisticEnabled;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _optimisticEnabled = widget.isEnabled;
+  }
+
+  @override
+  void didUpdateWidget(_UserCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Sync with parent if not loading
+    if (!_isLoading && widget.isEnabled != _optimisticEnabled) {
+      _optimisticEnabled = widget.isEnabled;
+    }
+  }
+
+  Future<void> _toggleEnabled() async {
+    if (_isLoading || widget.isAdmin) return;
+
+    final newValue = !_optimisticEnabled;
+
+    // Optimistic update
+    setState(() {
+      _optimisticEnabled = newValue;
+      _isLoading = true;
+    });
+
+    final success = newValue
+        ? await widget.controller.enableUser(widget.user['id'])
+        : await widget.controller.disableUser(widget.user['id']);
+
+    if (mounted) {
+      if (!success) {
+        // Revert on failure
+        setState(() {
+          _optimisticEnabled = !newValue;
+          _isLoading = false;
+        });
+        if (context.mounted) {
+          _showActionFeedback(
+            context,
+            success: false,
+            successMessage: '',
+            failureMessage:
+                widget.l10n?.actionFailedCheckConnection ??
+                'Action failed. Check your internet connection.',
+          );
+        }
+      } else {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final l10n = widget.l10n;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: widget.isAdmin ? null : _toggleEnabled,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              // Avatar with animated color
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.isAdmin
+                      ? Colors.amber.shade100
+                      : (_optimisticEnabled
+                            ? Colors.green.shade100
+                            : Colors.grey.shade200),
+                ),
+                child: Center(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: _isLoading
+                        ? SizedBox(
+                            key: const ValueKey('loading'),
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                _optimisticEnabled ? Colors.green : Colors.grey,
+                              ),
+                            ),
+                          )
+                        : Icon(
+                            widget.isAdmin
+                                ? Icons.admin_panel_settings
+                                : Icons.person,
+                            key: ValueKey(
+                              _optimisticEnabled ? 'enabled' : 'disabled',
+                            ),
+                            color: widget.isAdmin
+                                ? Colors.amber.shade700
+                                : (_optimisticEnabled
+                                      ? Colors.green
+                                      : Colors.grey),
+                            size: 20,
+                          ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // User info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            widget.user['name'] ?? 'Unknown',
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        if (widget.isAdmin) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade100,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              l10n?.admin ?? 'Admin',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (!widget.isActive && !widget.isAdmin) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade100,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              l10n?.pending ?? 'Pending',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.orange.shade800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.user['email'] ?? '',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: isDark
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Status indicator (only for non-admins)
+              if (!widget.isAdmin)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: _optimisticEnabled
+                        ? LinearGradient(
+                            colors: [
+                              Colors.green.shade400,
+                              Colors.green.shade600,
+                            ],
+                          )
+                        : LinearGradient(
+                            colors: isDark
+                                ? [Colors.grey.shade700, Colors.grey.shade800]
+                                : [Colors.grey.shade300, Colors.grey.shade400],
+                          ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _optimisticEnabled
+                            ? Colors.green.withOpacity(0.3)
+                            : Colors.grey.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        switchInCurve: Curves.easeOutBack,
+                        switchOutCurve: Curves.easeIn,
+                        transitionBuilder: (child, animation) {
+                          return ScaleTransition(
+                            scale: animation,
+                            child: FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: _isLoading
+                            ? SizedBox(
+                                key: const ValueKey('loading'),
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    _optimisticEnabled
+                                        ? Colors.white
+                                        : (isDark
+                                              ? Colors.white70
+                                              : Colors.black54),
+                                  ),
+                                ),
+                              )
+                            : Icon(
+                                _optimisticEnabled
+                                    ? Icons.check_circle
+                                    : Icons.cancel,
+                                key: ValueKey(
+                                  _optimisticEnabled ? 'enabled' : 'disabled',
+                                ),
+                                size: 14,
+                                color: _optimisticEnabled
+                                    ? Colors.white
+                                    : (isDark
+                                          ? Colors.white70
+                                          : Colors.black54),
+                              ),
+                      ),
+                      const SizedBox(width: 6),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        switchInCurve: Curves.easeOut,
+                        switchOutCurve: Curves.easeIn,
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.1, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Text(
+                          _optimisticEnabled
+                              ? (l10n?.enabled ?? 'Enabled')
+                              : (l10n?.disabled ?? 'Disabled'),
+                          key: ValueKey(
+                            _optimisticEnabled
+                                ? 'enabled_text'
+                                : 'disabled_text',
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _optimisticEnabled
+                                ? Colors.white
+                                : (isDark ? Colors.white70 : Colors.black54),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

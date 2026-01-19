@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 /// A premium styled toggle button for enabling/disabling users
 /// Features optimistic updates and animated feedback
@@ -73,45 +72,53 @@ class _UserStatusToggleState extends State<UserStatusToggle> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GestureDetector(
-      onTap: _handleTap,
-      child:
-          AnimatedContainer(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _handleTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            gradient: _optimisticValue
+                ? LinearGradient(
+                    colors: [Colors.green.shade400, Colors.green.shade600],
+                  )
+                : LinearGradient(
+                    colors: isDark
+                        ? [Colors.grey.shade700, Colors.grey.shade800]
+                        : [Colors.grey.shade300, Colors.grey.shade400],
+                  ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: _optimisticValue
+                    ? Colors.green.withOpacity(0.3)
+                    : Colors.grey.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Animated icon with smooth transition
+              AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  gradient: _optimisticValue
-                      ? LinearGradient(
-                          colors: [
-                            Colors.green.shade400,
-                            Colors.green.shade600,
-                          ],
-                        )
-                      : LinearGradient(
-                          colors: isDark
-                              ? [Colors.grey.shade700, Colors.grey.shade800]
-                              : [Colors.grey.shade300, Colors.grey.shade400],
-                        ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _optimisticValue
-                          ? Colors.green.withOpacity(0.3)
-                          : Colors.grey.withOpacity(0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_isLoading)
-                      SizedBox(
+                switchInCurve: Curves.easeOutBack,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) {
+                  return ScaleTransition(
+                    scale: animation,
+                    child: FadeTransition(opacity: animation, child: child),
+                  );
+                },
+                child: _isLoading
+                    ? SizedBox(
+                        key: const ValueKey('loading'),
                         width: 14,
                         height: 14,
                         child: CircularProgressIndicator(
@@ -123,32 +130,55 @@ class _UserStatusToggleState extends State<UserStatusToggle> {
                           ),
                         ),
                       )
-                    else
-                      Icon(
+                    : Icon(
                         _optimisticValue ? Icons.check_circle : Icons.cancel,
+                        key: ValueKey(
+                          _optimisticValue ? 'enabled' : 'disabled',
+                        ),
                         size: 14,
                         color: _optimisticValue
                             ? Colors.white
                             : (isDark ? Colors.white70 : Colors.black54),
                       ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _optimisticValue
-                          ? (widget.enabledLabel ?? 'Enabled')
-                          : (widget.disabledLabel ?? 'Disabled'),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _optimisticValue
-                            ? Colors.white
-                            : (isDark ? Colors.white70 : Colors.black54),
-                      ),
+              ),
+              const SizedBox(width: 6),
+              // Animated text with smooth transition
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0.1, 0),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
                     ),
-                  ],
+                  );
+                },
+                child: Text(
+                  _optimisticValue
+                      ? (widget.enabledLabel ?? 'Enabled')
+                      : (widget.disabledLabel ?? 'Disabled'),
+                  key: ValueKey(
+                    _optimisticValue ? 'enabled_text' : 'disabled_text',
+                  ),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _optimisticValue
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black54),
+                  ),
                 ),
-              )
-              .animate(target: _isLoading ? 1 : 0)
-              .shimmer(duration: 1000.ms, color: Colors.white.withOpacity(0.3)),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
