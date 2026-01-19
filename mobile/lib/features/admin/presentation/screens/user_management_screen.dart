@@ -228,165 +228,17 @@ class _AllUsersTab extends ConsumerWidget {
             itemCount: users.length,
             itemBuilder: (context, index) {
               final user = users[index];
-              final isActive = user['isActive'] == true;
-              final isEnabled = user['isEnabled'] == true;
-              final isAdmin = user['role'] == 'ADMIN';
-
-              return _UserCard(
-                    user: user,
-                    isDark: isDark,
-                    delay: index * 0.1,
-                    showStatusBadge: true,
-                    isActive: isActive,
-                    isEnabled: isEnabled,
-                    isAdmin: isAdmin,
-                    actions: isAdmin
-                        ? [] // Admin users cannot be modified
-                        : [
-                            if (isEnabled)
-                              _ActionButton(
-                                icon: Icons.block,
-                                label: l10n.disableUser,
-                                color: AppColors.redPrimary,
-                                onPressed: () => _showDisableConfirmation(
-                                  context,
-                                  ref,
-                                  user,
-                                  l10n,
-                                ),
-                              )
-                            else
-                              _ActionButton(
-                                icon: Icons.check_circle,
-                                label: l10n.enableUser,
-                                color: Colors.green,
-                                onPressed: () =>
-                                    _enableUser(context, ref, user['id'], l10n),
-                              ),
-                            _ActionButton(
-                              icon: Icons.delete,
-                              label: l10n.deleteUser,
-                              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                              onPressed: () => _showDeleteConfirmation(
-                                context,
-                                ref,
-                                user,
-                                l10n,
-                              ),
-                            ),
-                          ],
-                  )
-                  .animate()
-                  .fade(delay: Duration(milliseconds: (index * 100)))
-                  .slideX(begin: 0.1);
+              return _UserManagementItem(
+                key: ValueKey(user['id']),
+                user: user,
+                isDark: isDark,
+                index: index,
+              );
             },
           ),
         );
       },
     );
-  }
-
-  Future<void> _enableUser(
-    BuildContext context,
-    WidgetRef ref,
-    String userId,
-    AppLocalizations l10n,
-  ) async {
-    final success = await ref
-        .read(adminControllerProvider.notifier)
-        .enableUser(userId);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? l10n.userEnabled : l10n.errorUpdateUser),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
-    }
-  }
-
-  Future<void> _showDisableConfirmation(
-    BuildContext context,
-    WidgetRef ref,
-    Map<String, dynamic> user,
-    AppLocalizations l10n,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.disableUser),
-        content: Text(l10n.disableUserConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.redPrimary,
-            ),
-            child: Text(l10n.disableUser),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      final success = await ref
-          .read(adminControllerProvider.notifier)
-          .disableUser(user['id']);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success ? l10n.userDisabled : l10n.errorUpdateUser),
-            backgroundColor: success ? Colors.orange : Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _showDeleteConfirmation(
-    BuildContext context,
-    WidgetRef ref,
-    Map<String, dynamic> user,
-    AppLocalizations l10n,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.deleteUser),
-        content: Text(l10n.deleteUserConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.redPrimary,
-            ),
-            child: Text(l10n.delete),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      final success = await ref
-          .read(adminControllerProvider.notifier)
-          .deleteUser(user['id']);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success ? l10n.userDeleted : l10n.errorUpdateUser),
-            backgroundColor: success ? Colors.green : Colors.red,
-          ),
-        );
-      }
-    }
   }
 }
 
@@ -465,6 +317,178 @@ class _AbortedUsersTab extends ConsumerWidget {
           backgroundColor: success ? Colors.green : Colors.red,
         ),
       );
+    }
+  }
+
+  Future<void> _showDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> user,
+    AppLocalizations l10n,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteUser),
+        content: Text(l10n.deleteUserConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.redPrimary,
+            ),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      final success = await ref
+          .read(adminControllerProvider.notifier)
+          .deleteUser(user['id']);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success ? l10n.userDeleted : l10n.errorUpdateUser),
+            backgroundColor: success ? Colors.green : Colors.red,
+          ),
+        );
+      }
+    }
+  }
+}
+
+class _UserManagementItem extends ConsumerWidget {
+  const _UserManagementItem({
+    super.key,
+    required this.user,
+    required this.isDark,
+    required this.index,
+  });
+
+  final Map<String, dynamic> user;
+  final bool isDark;
+  final int index;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final isActive = user['isActive'] == true;
+    final isEnabled = user['isEnabled'] == true;
+    final isAdmin = user['role'] == 'ADMIN';
+
+    return _UserCard(
+          user: user,
+          isDark: isDark,
+          delay: index * 0.1,
+          showStatusBadge: true,
+          isActive: isActive,
+          isEnabled: isEnabled,
+          isAdmin: isAdmin,
+          actions: isAdmin
+              ? []
+              : [
+                  if (isEnabled)
+                    _ActionButton(
+                      icon: Icons.block,
+                      label: l10n.disableUser,
+                      color: AppColors.redPrimary,
+                      onPressed: () => _showDisableConfirmation(
+                        context,
+                        ref,
+                        user,
+                        l10n,
+                      ),
+                    )
+                  else
+                    _ActionButton(
+                      icon: Icons.check_circle,
+                      label: l10n.enableUser,
+                      color: Colors.green,
+                      onPressed: () =>
+                          _enableUser(context, ref, user['id'], l10n),
+                    ),
+                  _ActionButton(
+                    icon: Icons.delete,
+                    label: l10n.deleteUser,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                    onPressed: () => _showDeleteConfirmation(
+                      context,
+                      ref,
+                      user,
+                      l10n,
+                    ),
+                  ),
+                ],
+        )
+        .animate()
+        .fade(delay: Duration(milliseconds: (index * 100)))
+        .slideX(begin: 0.1);
+  }
+
+  Future<void> _enableUser(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    AppLocalizations l10n,
+  ) async {
+    final success = await ref
+        .read(adminControllerProvider.notifier)
+        .enableUser(userId);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? l10n.userEnabled : l10n.errorUpdateUser),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _showDisableConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> user,
+    AppLocalizations l10n,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.disableUser),
+        content: Text(l10n.disableUserConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.redPrimary,
+            ),
+            child: Text(l10n.disableUser),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      final success = await ref
+          .read(adminControllerProvider.notifier)
+          .disableUser(user['id']);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(success ? l10n.userDisabled : l10n.errorUpdateUser),
+            backgroundColor: success ? Colors.orange : Colors.red,
+          ),
+        );
+      }
     }
   }
 
