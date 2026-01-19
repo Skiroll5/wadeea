@@ -117,41 +117,110 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           }
 
           if (classes.isEmpty && user?.role != 'ADMIN') {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.class_outlined,
-                    size: 80,
-                    color: isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondaryLight,
-                  ).animate().scale(
-                    duration: 500.ms,
-                    curve: Curves.easeOutBack,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n?.noClassAssigned ?? 'No class assigned',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Animated illustration container
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isDark
+                              ? [
+                                  AppColors.goldPrimary.withValues(alpha: 0.15),
+                                  AppColors.goldPrimary.withValues(alpha: 0.05),
+                                ]
+                              : [
+                                  AppColors.goldPrimary.withValues(alpha: 0.1),
+                                  Colors.orange.shade50,
+                                ],
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.school_rounded,
+                        size: 56,
+                        color: AppColors.goldPrimary,
+                      ),
+                    )
+                        .animate()
+                        .scale(duration: 500.ms, curve: Curves.easeOutBack)
+                        .then()
+                        .shimmer(
+                          duration: 1500.ms,
+                          color: AppColors.goldPrimary.withValues(alpha: 0.3),
+                        ),
+                    const SizedBox(height: 32),
+                    // Title
+                    Text(
+                      l10n?.noClassAssigned ?? 'No class assigned',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ).animate().fade(delay: 200.ms).slideY(begin: 0.2),
+                    const SizedBox(height: 12),
+                    // Description
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        l10n?.contactAdminForActivation ??
+                            'Please contact the administrator to be assigned to a class',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: isDark ? Colors.white60 : Colors.black54,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ).animate().fade(delay: 300.ms).slideY(begin: 0.2),
                     ),
-                  ).animate().fade(delay: 200.ms),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n?.contactAdminForActivation ??
-                        'Please contact the administrator to be assigned to a class',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                    textAlign: TextAlign.center,
-                  ).animate().fade(delay: 300.ms),
-                ],
+                    const SizedBox(height: 32),
+                    // Subtle hint card
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : Colors.grey.shade200,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: isDark ? Colors.white54 : Colors.grey.shade600,
+                          ),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: Text(
+                              l10n?.waitingForClassAssignment ??
+                                  'Waiting for class assignment',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: isDark ? Colors.white54 : Colors.grey.shade600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ).animate().fade(delay: 400.ms).scale(begin: const Offset(0.95, 0.95)),
+                  ],
+                ),
               ),
             );
           }

@@ -30,6 +30,7 @@
   "selectClassToManage": "Select a class to manage students and attendance",
   "noClassesYet": "No classes yet",
   "noClassAssigned": "No class assigned",
+  "waitingForClassAssignment": "Waiting for class assignment",
   "createClass": "Create Class",
   "addClass": "Add Class",
   "cancel": "Cancel",
@@ -294,6 +295,7 @@
       "count": {}
     }
   },
+  "tapToChangeTime": "Tap to change time",
   "morningTime": "Morning (8:00 AM)",
   "eveningTime": "Evening before (8:00 PM)",
   "className": "Class Name",

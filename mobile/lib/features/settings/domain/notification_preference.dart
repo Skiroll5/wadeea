@@ -6,7 +6,7 @@ class NotificationPreference {
   final bool inactiveStudent;
   final bool newUserRegistered;
   final int inactiveThresholdDays;
-  final bool birthdayNotifyMorning;
+  final String birthdayNotifyTime; // Time in "HH:mm" format (e.g., "08:00")
   final int birthdayReminderDays; // How many days before birthday to remind
 
   NotificationPreference({
@@ -17,11 +17,19 @@ class NotificationPreference {
     required this.inactiveStudent,
     required this.newUserRegistered,
     required this.inactiveThresholdDays,
-    required this.birthdayNotifyMorning,
+    required this.birthdayNotifyTime,
     required this.birthdayReminderDays,
   });
 
   factory NotificationPreference.fromJson(Map<String, dynamic> json) {
+    // Handle migration from old birthdayNotifyMorning to new birthdayNotifyTime
+    String notifyTime = json['birthdayNotifyTime'] ?? '08:00';
+    if (json.containsKey('birthdayNotifyMorning') &&
+        !json.containsKey('birthdayNotifyTime')) {
+      // Migrate from old format
+      notifyTime = json['birthdayNotifyMorning'] == true ? '08:00' : '20:00';
+    }
+
     return NotificationPreference(
       noteAdded: json['noteAdded'] ?? true,
       noteUpdated: json['noteUpdated'] ?? true,
@@ -30,7 +38,7 @@ class NotificationPreference {
       inactiveStudent: json['inactiveStudent'] ?? true,
       newUserRegistered: json['newUserRegistered'] ?? true,
       inactiveThresholdDays: json['inactiveThresholdDays'] ?? 14,
-      birthdayNotifyMorning: json['birthdayNotifyMorning'] ?? true,
+      birthdayNotifyTime: notifyTime,
       birthdayReminderDays: json['birthdayReminderDays'] ?? 1,
     );
   }
@@ -44,7 +52,7 @@ class NotificationPreference {
       'inactiveStudent': inactiveStudent,
       'newUserRegistered': newUserRegistered,
       'inactiveThresholdDays': inactiveThresholdDays,
-      'birthdayNotifyMorning': birthdayNotifyMorning,
+      'birthdayNotifyTime': birthdayNotifyTime,
       'birthdayReminderDays': birthdayReminderDays,
     };
   }
@@ -57,7 +65,7 @@ class NotificationPreference {
     bool? inactiveStudent,
     bool? newUserRegistered,
     int? inactiveThresholdDays,
-    bool? birthdayNotifyMorning,
+    String? birthdayNotifyTime,
     int? birthdayReminderDays,
   }) {
     return NotificationPreference(
@@ -69,8 +77,7 @@ class NotificationPreference {
       newUserRegistered: newUserRegistered ?? this.newUserRegistered,
       inactiveThresholdDays:
           inactiveThresholdDays ?? this.inactiveThresholdDays,
-      birthdayNotifyMorning:
-          birthdayNotifyMorning ?? this.birthdayNotifyMorning,
+      birthdayNotifyTime: birthdayNotifyTime ?? this.birthdayNotifyTime,
       birthdayReminderDays: birthdayReminderDays ?? this.birthdayReminderDays,
     );
   }

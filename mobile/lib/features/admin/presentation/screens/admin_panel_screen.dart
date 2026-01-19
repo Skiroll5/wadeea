@@ -559,8 +559,13 @@ class _UsersSection extends ConsumerWidget {
         // Use Consumer to properly access ref and keep UI in sync
         Consumer(
           builder: (context, ref, _) {
-            final users = ref.watch(allUsersProvider).valueOrNull ?? [];
+            final allUsers = ref.watch(allUsersProvider).valueOrNull ?? [];
             final controller = ref.watch(adminControllerProvider.notifier);
+
+            // Filter out denied/rejected users - they should only appear in Denied Activations screen
+            final users = allUsers
+                .where((u) => u['activationDenied'] != true)
+                .toList();
 
             if (users.isEmpty && !allUsersAsync.isLoading) {
               return Center(

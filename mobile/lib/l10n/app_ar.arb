@@ -25,6 +25,7 @@
   "selectClassToManage": "اختر فصلاً لإدارة الطلاب والغياب",
   "noClassesYet": "لا توجد فصول بعد",
   "noClassAssigned": "لم يتم تعيين فصل",
+  "waitingForClassAssignment": "بانتظار تعيين الفصل",
   "createClass": "إنشاء فصل",
   "addClass": "إضافة فصل",
   "cancel": "إلغاء",
@@ -215,6 +216,7 @@
       "count": {}
     }
   },
+  "tapToChangeTime": "اضغط لتغيير الوقت",
   "morningTime": "صباحاً (8:00 ص)",
   "eveningTime": "مساءً (8:00 م)",
   "className": "اسم الفصل",

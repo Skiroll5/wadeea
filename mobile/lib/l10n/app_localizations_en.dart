@@ -78,6 +78,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noClassAssigned => 'No class assigned';
 
   @override
+  String get waitingForClassAssignment => 'Waiting for class assignment';
+
+  @override
   String get createClass => 'Create Class';
 
   @override
@@ -672,6 +675,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String daysBefore(Object count) {
     return '$count days before';
   }
+
+  @override
+  String get tapToChangeTime => 'Tap to change time';
 
   @override
   String get morningTime => 'Morning (8:00 AM)';

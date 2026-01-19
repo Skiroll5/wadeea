@@ -76,6 +76,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noClassAssigned => 'لم يتم تعيين فصل';
 
   @override
+  String get waitingForClassAssignment => 'بانتظار تعيين الفصل';
+
+  @override
   String get createClass => 'إنشاء فصل';
 
   @override
@@ -667,6 +670,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String daysBefore(Object count) {
     return 'قبل $count يوم';
   }
+
+  @override
+  String get tapToChangeTime => 'اضغط لتغيير الوقت';
 
   @override
   String get morningTime => 'صباحاً (8:00 ص)';

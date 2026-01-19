@@ -7,6 +7,17 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../auth/data/auth_controller.dart';
 import '../providers/notification_settings_provider.dart';
 
+/// Format time string from "HH:mm" to readable format
+String _formatTimeString(String timeStr) {
+  final parts = timeStr.split(':');
+  final hour = int.tryParse(parts[0]) ?? 8;
+  final minute = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+  final period = hour >= 12 ? 'PM' : 'AM';
+  final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+  final minuteStr = minute.toString().padLeft(2, '0');
+  return '$displayHour:$minuteStr $period';
+}
+
 class NotificationSettingsPage extends ConsumerWidget {
   const NotificationSettingsPage({super.key});
 
@@ -327,9 +338,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                         ),
                       ),
                       subtitle: Text(
-                        prefs.birthdayNotifyMorning
-                            ? (l10n?.morningTime ?? 'Morning (8:00 AM)')
-                            : (l10n?.eveningTime ?? 'Evening before (8:00 PM)'),
+                        l10n?.tapToChangeTime ?? 'Tap to change time',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark
@@ -337,18 +346,60 @@ class NotificationSettingsPage extends ConsumerWidget {
                               : AppColors.textSecondaryLight,
                         ),
                       ),
-                      trailing: Switch(
-                        value: prefs.birthdayNotifyMorning,
-                        activeTrackColor: AppColors.goldPrimary,
-                        activeThumbColor: Colors.white,
-                        onChanged: (val) {
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white10 : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white24
+                                : Colors.grey.shade300,
+                          ),
+                        ),
+                        child: Text(
+                          _formatTimeString(prefs.birthdayNotifyTime),
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      onTap: () async {
+                        final parts = prefs.birthdayNotifyTime.split(':');
+                        final initialTime = TimeOfDay(
+                          hour: int.tryParse(parts[0]) ?? 8,
+                          minute:
+                              int.tryParse(parts.length > 1 ? parts[1] : '0') ??
+                              0,
+                        );
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: initialTime,
+                          builder: (context, child) {
+                            return Theme(
+                              data: theme.copyWith(
+                                colorScheme: theme.colorScheme.copyWith(
+                                  primary: AppColors.goldPrimary,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null) {
+                          final timeStr =
+                              '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
                           ref
                               .read(notificationSettingsProvider.notifier)
                               .updatePreference(
-                                prefs.copyWith(birthdayNotifyMorning: val),
+                                prefs.copyWith(birthdayNotifyTime: timeStr),
                               );
-                        },
-                      ),
+                        }
+                      },
                     ),
                   ],
                 ),

@@ -224,6 +224,12 @@ abstract class AppLocalizations {
   /// **'No class assigned'**
   String get noClassAssigned;
 
+  /// No description provided for @waitingForClassAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for class assignment'**
+  String get waitingForClassAssignment;
+
   /// No description provided for @createClass.
   ///
   /// In en, this message translates to:
@@ -1327,6 +1333,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} days before'**
   String daysBefore(Object count);
+
+  /// No description provided for @tapToChangeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to change time'**
+  String get tapToChangeTime;
 
   /// No description provided for @morningTime.
   ///
