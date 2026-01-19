@@ -1,6 +1,7 @@
 
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { notifyUser } from '../utils/notificationUtils';
 
 const prisma = new PrismaClient();
 
@@ -11,10 +12,68 @@ export const activateUser = async (req: Request, res: Response) => {
 
         const user = await prisma.user.update({
             where: { id: userId },
-            data: { isActive: true },
+            data: {
+                isActive: true,
+                activationDenied: false,
+                updatedAt: new Date()
+            },
         });
 
+        notifyUser(
+            user.id,
+            '✅ Account Approved',
+            'Your account has been activated!'
+        ).catch(err => console.error('Notification error:', err));
+
+        // Emit real-time update
+        const io = (req as any).app?.get('io');
+        if (io) {
+            io.emit('user_status_changed', {
+                userId: user.id,
+                isActive: user.isActive,
+                isEnabled: user.isEnabled,
+                activationDenied: user.activationDenied
+            });
+        }
+
         res.json({ message: 'User activated', user: { id: user.id, isActive: user.isActive } });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+export const abortActivation = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string;
+        if (!id) return res.status(400).json({ message: 'User ID required' });
+
+        const user = await prisma.user.update({
+            where: { id },
+            data: {
+                activationDenied: true,
+                isActive: false,
+                updatedAt: new Date()
+            },
+        });
+
+        notifyUser(
+            user.id,
+            '❌ Activation Denied',
+            'Your activation request was denied by the administrator.'
+        ).catch(err => console.error('Notification error:', err));
+
+        // Emit real-time update
+        const io = (req as any).app?.get('io');
+        if (io) {
+            io.emit('user_status_changed', {
+                userId: user.id,
+                isActive: user.isActive,
+                isEnabled: user.isEnabled,
+                activationDenied: user.activationDenied
+            });
+        }
+
+        res.json({ message: 'User activation denied', user: { id: user.id, activationDenied: user.activationDenied } });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }
@@ -23,7 +82,28 @@ export const activateUser = async (req: Request, res: Response) => {
 export const listPendingUsers = async (req: Request, res: Response) => {
     try {
         const users = await prisma.user.findMany({
-            where: { isActive: false, role: 'SERVANT', isDeleted: false },
+            where: {
+                isActive: false,
+                isEnabled: true,
+                activationDenied: false,
+                role: 'SERVANT',
+                isDeleted: false
+            },
+            select: { id: true, name: true, email: true, createdAt: true },
+        });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+export const listAbortedUsers = async (req: Request, res: Response) => {
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                activationDenied: true,
+                isDeleted: false
+            },
             select: { id: true, name: true, email: true, createdAt: true },
         });
         res.json(users);
@@ -42,15 +122,16 @@ export const listAllUsers = async (req: Request, res: Response) => {
                 email: true,
                 role: true,
                 isActive: true,
+                isEnabled: true,
+                activationDenied: true,
                 createdAt: true,
-                // TODO: uncomment after running: npx prisma generate
-                // managedClasses: {
-                //     select: {
-                //         class: {
-                //             select: { id: true, name: true }
-                //         }
-                //     }
-                // }
+                managedClasses: {
+                    select: {
+                        class: {
+                            select: { id: true, name: true }
+                        }
+                    }
+                }
             },
             orderBy: { createdAt: 'desc' },
         });
@@ -67,10 +148,30 @@ export const enableUser = async (req: Request, res: Response) => {
 
         const user = await prisma.user.update({
             where: { id },
-            data: { isActive: true },
+            data: {
+                isEnabled: true,
+                updatedAt: new Date()
+            },
         });
 
-        res.json({ message: 'User enabled', user: { id: user.id, isActive: user.isActive } });
+        notifyUser(
+            user.id,
+            '✅ Account Enabled',
+            'Your account has been re-enabled.'
+        ).catch(err => console.error('Notification error:', err));
+
+        // Emit real-time update
+        const io = (req as any).app?.get('io');
+        if (io) {
+            io.emit('user_status_changed', {
+                userId: user.id,
+                isActive: user.isActive,
+                isEnabled: user.isEnabled,
+                activationDenied: user.activationDenied
+            });
+        }
+
+        res.json({ message: 'User enabled', user: { id: user.id, isEnabled: user.isEnabled } });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }
@@ -83,10 +184,61 @@ export const disableUser = async (req: Request, res: Response) => {
 
         const user = await prisma.user.update({
             where: { id },
-            data: { isActive: false },
+            data: {
+                isEnabled: false,
+                updatedAt: new Date()
+            },
         });
 
-        res.json({ message: 'User disabled', user: { id: user.id, isActive: user.isActive } });
+        notifyUser(
+            user.id,
+            '⚠️ Account Disabled',
+            'Your account has been disabled by the administrator.'
+        ).catch(err => console.error('Notification error:', err));
+
+        // Emit real-time update - this will trigger auto-logout on client
+        const io = (req as any).app?.get('io');
+        if (io) {
+            io.emit('user_disabled', { userId: user.id });
+            io.emit('user_status_changed', {
+                userId: user.id,
+                isActive: user.isActive,
+                isEnabled: user.isEnabled,
+                activationDenied: user.activationDenied
+            });
+        }
+
+        res.json({ message: 'User disabled', user: { id: user.id, isEnabled: user.isEnabled } });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id as string;
+        if (!id) return res.status(400).json({ message: 'User ID required' });
+
+        const user = await prisma.user.update({
+            where: { id },
+            data: {
+                isDeleted: true,
+                deletedAt: new Date(),
+                updatedAt: new Date()
+            },
+        });
+
+        // Emit real-time update - this will trigger auto-logout on client
+        const io = (req as any).app?.get('io');
+        if (io) {
+            io.emit('user_deleted', { userId: user.id });
+            io.emit('user_status_changed', {
+                userId: user.id,
+                isDeleted: true
+            });
+        }
+
+        res.json({ message: 'User deleted', user: { id: user.id } });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }
@@ -179,6 +331,84 @@ export const getStudentPreference = async (req: Request, res: Response) => {
         });
 
         res.json(preference || { customWhatsappMessage: null });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+export const getNotificationPreferences = async (req: Request, res: Response) => {
+    try {
+        // @ts-ignore
+        const userId = req.user?.userId;
+        if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+        const prefs = await prisma.notificationPreference.findUnique({
+            where: { userId },
+        });
+
+        // Return default values if no record exists
+        if (!prefs) {
+            return res.json({
+                noteAdded: true,
+                noteUpdated: true,
+                attendanceRecorded: true,
+                birthdayReminder: true,
+                inactiveStudent: true,
+                newUserRegistered: true,
+                inactiveThresholdDays: 14,
+                birthdayNotifyMorning: true,
+            });
+        }
+
+        res.json(prefs);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+export const updateNotificationPreferences = async (req: Request, res: Response) => {
+    try {
+        // @ts-ignore
+        const userId = req.user?.userId;
+        if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+        const {
+            noteAdded,
+            noteUpdated,
+            attendanceRecorded,
+            birthdayReminder,
+            inactiveStudent,
+            newUserRegistered,
+            inactiveThresholdDays,
+            birthdayNotifyMorning
+        } = req.body;
+
+        const prefs = await prisma.notificationPreference.upsert({
+            where: { userId },
+            update: {
+                ...(noteAdded !== undefined && { noteAdded }),
+                ...(noteUpdated !== undefined && { noteUpdated }),
+                ...(attendanceRecorded !== undefined && { attendanceRecorded }),
+                ...(birthdayReminder !== undefined && { birthdayReminder }),
+                ...(inactiveStudent !== undefined && { inactiveStudent }),
+                ...(newUserRegistered !== undefined && { newUserRegistered }),
+                ...(inactiveThresholdDays !== undefined && { inactiveThresholdDays }),
+                ...(birthdayNotifyMorning !== undefined && { birthdayNotifyMorning }),
+            },
+            create: {
+                userId,
+                noteAdded: noteAdded ?? true,
+                noteUpdated: noteUpdated ?? true,
+                attendanceRecorded: attendanceRecorded ?? true,
+                birthdayReminder: birthdayReminder ?? true,
+                inactiveStudent: inactiveStudent ?? true,
+                newUserRegistered: newUserRegistered ?? true,
+                inactiveThresholdDays: inactiveThresholdDays ?? 14,
+                birthdayNotifyMorning: birthdayNotifyMorning ?? true,
+            },
+        });
+
+        res.json({ message: 'Preferences updated', prefs });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/admin_controller.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 class UserManagementScreen extends ConsumerStatefulWidget {
   const UserManagementScreen({super.key});
@@ -28,14 +29,21 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Management'),
+        title: Text(l10n?.userManagement ?? 'User Management'),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Pending Activation', icon: Icon(Icons.pending_actions)),
-            Tab(text: 'All Users', icon: Icon(Icons.people)),
+          tabs: [
+            Tab(
+              text: l10n?.pendingActivation ?? 'Pending Activation',
+              icon: const Icon(Icons.pending_actions),
+            ),
+            Tab(
+              text: l10n?.allUsers ?? 'All Users',
+              icon: const Icon(Icons.people),
+            ),
           ],
         ),
       ),
@@ -54,19 +62,25 @@ class _PendingUsersTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingUsers = ref.watch(pendingUsersProvider);
     final adminController = ref.watch(adminControllerProvider.notifier);
+    final l10n = AppLocalizations.of(context);
 
     return pendingUsers.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(
+        child: Text('${l10n?.errorGeneric(e.toString()) ?? "Error: $e"}'),
+      ),
       data: (users) {
         if (users.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle, size: 64, color: Colors.green),
-                SizedBox(height: 16),
-                Text('No pending users', style: TextStyle(fontSize: 18)),
+                const Icon(Icons.check_circle, size: 64, color: Colors.green),
+                const SizedBox(height: 16),
+                Text(
+                  l10n?.noPendingUsers ?? 'No pending users',
+                  style: const TextStyle(fontSize: 18),
+                ),
               ],
             ),
           );
@@ -86,7 +100,7 @@ class _PendingUsersTab extends ConsumerWidget {
                   subtitle: Text(user['email'] ?? ''),
                   trailing: FilledButton.icon(
                     icon: const Icon(Icons.check),
-                    label: const Text('Activate'),
+                    label: Text(l10n?.activate ?? 'Activate'),
                     onPressed: () async {
                       final success = await adminController.activateUser(
                         user['id'],
@@ -96,8 +110,9 @@ class _PendingUsersTab extends ConsumerWidget {
                           SnackBar(
                             content: Text(
                               success
-                                  ? 'User activated!'
-                                  : 'Failed to activate',
+                                  ? (l10n?.userActivated ?? 'User activated!')
+                                  : (l10n?.userActivationFailed ??
+                                        'Failed to activate'),
                             ),
                             backgroundColor: success
                                 ? Colors.green
@@ -124,13 +139,16 @@ class _AllUsersTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final allUsers = ref.watch(allUsersProvider);
     final adminController = ref.watch(adminControllerProvider.notifier);
+    final l10n = AppLocalizations.of(context);
 
     return allUsers.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(
+        child: Text('${l10n?.errorGeneric(e.toString()) ?? "Error: $e"}'),
+      ),
       data: (users) {
         if (users.isEmpty) {
-          return const Center(child: Text('No users found'));
+          return Center(child: Text(l10n?.noUsersFound ?? 'No users found'));
         }
 
         return RefreshIndicator(
@@ -172,9 +190,9 @@ class _AllUsersTab extends ConsumerWidget {
                             color: Colors.amber.shade100,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
-                            'Admin',
-                            style: TextStyle(fontSize: 10),
+                          child: Text(
+                            l10n?.admin ?? 'Admin',
+                            style: const TextStyle(fontSize: 10),
                           ),
                         ),
                       ],
@@ -191,8 +209,11 @@ class _AllUsersTab extends ConsumerWidget {
                                 : await adminController.disableUser(user['id']);
                             if (context.mounted && !success) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Failed to update user'),
+                                SnackBar(
+                                  content: Text(
+                                    l10n?.errorUpdateUser ??
+                                        'Failed to update user',
+                                  ),
                                   backgroundColor: Colors.red,
                                 ),
                               );

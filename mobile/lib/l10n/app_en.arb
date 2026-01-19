@@ -266,5 +266,117 @@
   "inactiveNotification": "⚠️ Inactive Students",
   "newUserNotification": "👤 New Registrations",
   "morningTime": "Morning (8:00 AM)",
-  "eveningTime": "Evening before (8:00 PM)"
+  "eveningTime": "Evening before (8:00 PM)",
+  "className": "Class Name",
+  "gradeOptional": "Grade (Optional)",
+  "newAttendance": "New Attendance",
+  "noStudentsInClass": "No students in this class",
+  "attendancePresentCount": "{present} of {total} present",
+  "@attendancePresentCount": {
+    "placeholders": {
+      "present": {},
+      "total": {}
+    }
+  },
+  "tapToMark": "Tap students to mark attendance",
+  "clearAll": "Clear",
+  "markAll": "All",
+  "sessionNoteHint": "Add session note...",
+  "saving": "Saving...",
+  "saveAttendance": "Save Attendance",
+  "attendanceSaved": "Attendance saved!",
+  "pendingActivation": "Pending Activation",
+  "allUsers": "All Users",
+  "userActivated": "User activated!",
+  "userActivationFailed": "Failed to activate",
+  "currentManagers": "Current Managers",
+  "noManagersAssigned": "No managers assigned",
+  "removeManagerTitle": "Remove Manager",
+  "removeManagerConfirm": "Remove {name} as manager?",
+  "@removeManagerConfirm": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "addManager": "Add Manager",
+  "managerAdded": "{name} added as manager",
+  "@managerAdded": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "managerAddFailed": "Failed to add manager",
+  "noAdminPrivileges": "You do not have admin privileges.",
+  "adminPanel": "Admin Panel",
+  "adminPanelDesc": "Manage users, classes & data",
+  "management": "Management",
+  "userManagementDesc": "Activate, enable/disable users",
+  "classManagementDesc": "Manage classes and managers",
+  "statistics": "Statistics",
+  "atRiskThreshold": "At Risk Threshold",
+  "thresholdCaption": "Flag student after {threshold} consecutive absences",
+  "@thresholdCaption": {
+    "placeholders": {
+      "threshold": {}
+    }
+  },
+  "dataManagement": "Data Management",
+  "dangerZone": "Danger Zone",
+  "resetDataCaption": "If you manually reset the backend database, use this to clear local data.",
+  "resetSyncData": "Reset Sync & Data",
+  "confirmReset": "Confirm Reset",
+  "resetWarning": "This will delete all local attendance data and force a full re-sync from the server. Use only if backend was cleared.",
+  "delete": "Delete",
+  "successResetData": "Success: Local data reset and re-synced.",
+  "errorResetData": "Error resetting data: {error}",
+  "@errorResetData": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noEligibleUsers": "No eligible users",
+  "allUsersAreManagers": "All eligible users are already managers",
+  "managersForClass": "Managers: {className}",
+  "@managersForClass": {
+    "placeholders": {
+      "className": {}
+    }
+  },
+  "resetAllData": "Reset All Data",
+  "resetAllDataDesc": "Delete all sessions and records",
+  "resetDataTitle": "Reset Data?",
+  "resetDataConfirm": "Are you sure you want to reset all data? This cannot be undone.",
+  "reset": "Reset",
+  "classCreated": "Class created successfully",
+  "classCreationError": "Failed to create class",
+  "enterClassName": "Enter class name",
+  "enterGrade": "Enter grade",
+  
+  "accountPendingActivation": "Your account is awaiting admin activation",
+  "accountDenied": "Your activation request was denied by the administrator",
+  "accountDisabled": "Your account has been disabled by the administrator",
+  "invalidCredentials": "Invalid email or password",
+  "registrationSuccessful": "Registration Successful!",
+  "registrationSuccessfulDesc": "Please wait for the administrator to activate your account",
+  "emailAlreadyExists": "An account with this email already exists",
+  "createAccountToStart": "Create your account to get started",
+  "contactAdminForActivation": "Please contact the administrator to activate your account",
+  
+  "abortActivation": "Deny Activation",
+  "abortActivationConfirm": "Are you sure you want to deny this user's activation request?",
+  "userActivationAborted": "User activation denied",
+  "enableUser": "Enable User",
+  "disableUser": "Disable User",
+  "enableUserConfirm": "Enable this user's access to the app?",
+  "disableUserConfirm": "Disable this user's access? They will be logged out immediately.",
+  "userEnabled": "User enabled successfully",
+  "userDisabled": "User disabled successfully",
+  "deleteUser": "Delete User",
+  "deleteUserConfirm": "Are you sure you want to delete this user? This action cannot be undone.",
+  "userDeleted": "User deleted successfully",
+  "abortedActivations": "Denied Activations",
+  "noAbortedUsers": "No denied activation requests",
+  "reactivate": "Reactivate",
+  "classManagers": "Managers"
 }
+

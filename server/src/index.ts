@@ -7,9 +7,18 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import syncRoutes from './routes/syncRoutes';
 import classRoutes from './routes/classRoutes';
+import fcmRoutes from './routes/fcmRoutes';
+import { initFirebase } from './services/notificationService';
+import { initScheduledJobs } from './jobs/scheduledJobs';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize Firebase Admin SDK
+initFirebase();
+
+// Initialize Scheduled Jobs
+initScheduledJobs();
 
 // Create HTTP server and Socket.io instance
 const httpServer = createServer(app);
@@ -31,6 +40,7 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/sync', syncRoutes);
 app.use('/classes', classRoutes);
+app.use('/fcm', fcmRoutes);
 
 app.get('/', (req, res) => {
     res.send('St. Refqa Efteqad API is running');

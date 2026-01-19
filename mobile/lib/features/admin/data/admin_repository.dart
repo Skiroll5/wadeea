@@ -130,4 +130,51 @@ class AdminRepository {
       options: _authHeaders(token),
     );
   }
+
+  // ===== Class Management =====
+
+  /// Create a new class
+  Future<void> createClass(String name, String grade) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('Not authenticated');
+
+    await _dio.post(
+      '$_baseUrl/classes',
+      data: {'name': name, 'grade': grade},
+      options: _authHeaders(token),
+    );
+  }
+
+  // ===== Additional User Management =====
+
+  /// Abort a pending user's activation (deny)
+  Future<void> abortActivation(String userId) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('Not authenticated');
+
+    await _dio.post(
+      '$_baseUrl/users/$userId/abort-activation',
+      options: _authHeaders(token),
+    );
+  }
+
+  /// Delete a user (soft delete)
+  Future<void> deleteUser(String userId) async {
+    final token = await _getToken();
+    if (token == null) throw Exception('Not authenticated');
+
+    await _dio.delete('$_baseUrl/users/$userId', options: _authHeaders(token));
+  }
+
+  /// Fetch users with aborted activation
+  Future<List<Map<String, dynamic>>> fetchAbortedUsers() async {
+    final token = await _getToken();
+    if (token == null) throw Exception('Not authenticated');
+
+    final response = await _dio.get(
+      '$_baseUrl/users/aborted',
+      options: _authHeaders(token),
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
 }

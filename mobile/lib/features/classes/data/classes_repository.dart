@@ -61,10 +61,10 @@ class ClassesRepository {
 
       // 2. Success: Save to Local DB (As synced)
       await _db.into(_db.classes).insert(localEntity);
-      print('ClassesRepo: Online Add Success');
+      // print('ClassesRepo: Online Add Success');
     } catch (e) {
       // 3. Failure: Save to Local DB + Queue
-      print('ClassesRepo: Online Add Failed ($e). Fallback to Queue.');
+      // print('ClassesRepo: Online Add Failed ($e). Fallback to Queue.');
 
       await _db.transaction(() async {
         await _db.into(_db.classes).insert(localEntity);
@@ -133,7 +133,7 @@ class ClassesRepository {
       )..where((t) => t.id.equals(id))).write(localEntity);
     } catch (e) {
       // 3. Fallback
-      print('ClassesRepo: Online Update Failed ($e). Fallback to Queue.');
+      // print('ClassesRepo: Online Update Failed ($e). Fallback to Queue.');
       await _db.transaction(() async {
         await (_db.update(
           _db.classes,
@@ -181,7 +181,7 @@ class ClassesRepository {
       await _localDelete(id, now);
     } catch (e) {
       // 3. Fallback
-      print('ClassesRepo: Online Delete Failed ($e). Fallback to Queue.');
+      // print('ClassesRepo: Online Delete Failed ($e). Fallback to Queue.');
       await _db.transaction(() async {
         await _localDelete(id, now);
 

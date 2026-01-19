@@ -17,6 +17,14 @@ final pendingUsersProvider = FutureProvider<List<Map<String, dynamic>>>((
   return repo.fetchPendingUsers();
 });
 
+/// Provider for aborted activation users
+final abortedUsersProvider = FutureProvider<List<Map<String, dynamic>>>((
+  ref,
+) async {
+  final repo = ref.watch(adminRepositoryProvider);
+  return repo.fetchAbortedUsers();
+});
+
 /// Provider for all classes (admin view)
 final adminClassesProvider = FutureProvider<List<Map<String, dynamic>>>((
   ref,
@@ -51,6 +59,23 @@ class AdminController extends StateNotifier<AsyncValue<void>> {
       // Invalidate providers to refresh data
       _ref.invalidate(pendingUsersProvider);
       _ref.invalidate(allUsersProvider);
+      _ref.invalidate(abortedUsersProvider);
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
+
+  /// Abort a pending user's activation (deny)
+  Future<bool> abortActivation(String userId) async {
+    state = const AsyncValue.loading();
+    try {
+      await _repository.abortActivation(userId);
+      _ref.invalidate(pendingUsersProvider);
+      _ref.invalidate(allUsersProvider);
+      _ref.invalidate(abortedUsersProvider);
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
@@ -87,6 +112,22 @@ class AdminController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Delete a user (soft delete)
+  Future<bool> deleteUser(String userId) async {
+    state = const AsyncValue.loading();
+    try {
+      await _repository.deleteUser(userId);
+      _ref.invalidate(allUsersProvider);
+      _ref.invalidate(pendingUsersProvider);
+      _ref.invalidate(abortedUsersProvider);
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
+
   /// Assign a class manager
   Future<bool> assignClassManager(String classId, String userId) async {
     state = const AsyncValue.loading();
@@ -108,6 +149,20 @@ class AdminController extends StateNotifier<AsyncValue<void>> {
     try {
       await _repository.removeClassManager(classId, userId);
       _ref.invalidate(classManagersProvider(classId));
+      _ref.invalidate(adminClassesProvider);
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
+
+  /// Create a new class
+  Future<bool> createClass(String name, String grade) async {
+    state = const AsyncValue.loading();
+    try {
+      await _repository.createClass(name, grade);
       _ref.invalidate(adminClassesProvider);
       state = const AsyncValue.data(null);
       return true;

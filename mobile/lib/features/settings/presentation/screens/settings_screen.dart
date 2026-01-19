@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/premium_card.dart';
 import '../../../auth/data/auth_controller.dart';
 import '../../data/settings_controller.dart';
+import '../../../../features/sync/data/sync_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -149,8 +150,10 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 _SettingsTile(
                   icon: Icons.notifications_none_outlined,
-                  title: 'Notifications',
-                  subtitle: 'Manage push notifications',
+                  title: l10n?.notificationSettings ?? 'Notification Settings',
+                  subtitle:
+                      l10n?.notificationSettingsDesc ??
+                      'Manage push notifications',
                   isDark: isDark,
                   onTap: () => context.push('/settings/notifications'),
                   trailing: Icon(
@@ -163,6 +166,73 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ).animate().fade(delay: 100.ms),
+
+          // Statistics Settings (Threshold)
+          Consumer(
+            builder: (context, ref, child) {
+              final threshold = ref.watch(statisticsSettingsProvider);
+              return PremiumCard(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color:
+                              (isDark
+                                      ? AppColors.goldPrimary
+                                      : AppColors.goldPrimary)
+                                  .withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.analytics_outlined,
+                          color: isDark
+                              ? AppColors.goldPrimary
+                              : AppColors.goldDark,
+                        ),
+                      ),
+                      title: Text(
+                        l10n?.atRiskThreshold ?? 'At Risk Threshold',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? Colors.white
+                              : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                      subtitle: Text(
+                        l10n?.thresholdCaption(threshold) ??
+                            'Flag student after $threshold consecutive absences',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
+                        ),
+                      ),
+                    ),
+                    Slider(
+                      value: threshold.toDouble(),
+                      min: 1,
+                      max: 10,
+                      divisions: 9,
+                      label: threshold.toString(),
+                      activeColor: isDark
+                          ? AppColors.goldPrimary
+                          : AppColors.goldPrimary,
+                      onChanged: (val) {
+                        ref
+                            .read(statisticsSettingsProvider.notifier)
+                            .setThreshold(val.toInt());
+                      },
+                    ),
+                  ],
+                ),
+              ).animate().fade(delay: 120.ms);
+            },
+          ),
 
           // Default Attendance Note Card (New)
           PremiumCard(
@@ -274,6 +344,140 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ).animate().fade(delay: 300.ms),
+
+          // Data Management (Reset)
+          if (user?.role == 'ADMIN')
+            PremiumCard(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: isDark
+                              ? AppColors.redLight
+                              : AppColors.redPrimary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n?.dangerZone ?? 'Danger Zone',
+                          style: TextStyle(
+                            color: isDark
+                                ? AppColors.redLight
+                                : AppColors.redPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(
+                    height: 1,
+                    color: isDark
+                        ? AppColors.redLight.withValues(alpha: 0.2)
+                        : AppColors.redPrimary.withValues(alpha: 0.2),
+                  ),
+                  ListTile(
+                    title: Text(
+                      l10n?.resetAllData ?? 'Reset Session Data',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n?.resetAllDataDesc ??
+                          'Delete all attendance records and sessions',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                    trailing: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: isDark
+                            ? AppColors.redLight.withValues(alpha: 0.2)
+                            : AppColors.redPrimary.withValues(alpha: 0.1),
+                        foregroundColor: isDark
+                            ? AppColors.redLight
+                            : AppColors.redPrimary,
+                      ),
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text(
+                              l10n?.resetDataTitle ?? 'Reset All Session Data?',
+                            ),
+                            content: Text(
+                              l10n?.resetDataConfirm ??
+                                  'This action cannot be undone. All attendance sessions and records will be permanently deleted. Students and classes will NOT be deleted.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(l10n?.cancel ?? 'Cancel'),
+                              ),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(
+                                  l10n?.delete ?? 'Delete Everything',
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true) {
+                          try {
+                            // Call SyncService to clear local data
+                            await ref
+                                .read(syncServiceProvider)
+                                .clearLocalData();
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    l10n?.successResetData ??
+                                        'Success: Local data reset.',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    l10n?.errorResetData(e.toString()) ??
+                                        'Error: $e',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      },
+                      child: Text(l10n?.reset ?? 'Reset'),
+                    ),
+                  ),
+                ],
+              ),
+            ).animate().fade(delay: 350.ms),
 
           // Logout Button
           SafeArea(

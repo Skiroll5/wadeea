@@ -45,8 +45,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get atRiskThreshold => 'At Risk Threshold';
 
   @override
-  String thresholdCaption(Object count) {
-    return 'Flag student after $count consecutive absences';
+  String thresholdCaption(Object threshold) {
+    return 'Flag student after $threshold consecutive absences';
   }
 
   @override
@@ -251,7 +251,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get classNameHint => 'e.g. Sunday School - Grade 3';
 
   @override
-  String get gradeOptional => 'Grade (optional)';
+  String get gradeOptional => 'Grade (Optional)';
 
   @override
   String get gradeHint => 'e.g. Grade 3';
@@ -426,16 +426,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tapToMark => 'Tap students to mark attendance';
 
   @override
-  String get markAll => 'Mark All';
+  String get markAll => 'All';
 
   @override
-  String get clearAll => 'Clear All';
+  String get clearAll => 'Clear';
 
   @override
   String get sessionNote => 'Session Note';
 
   @override
-  String get sessionNoteHint => 'Add any note about this session...';
+  String get sessionNoteHint => 'Add session note...';
 
   @override
   String get saving => 'Saving...';
@@ -626,4 +626,176 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eveningTime => 'Evening before (8:00 PM)';
+
+  @override
+  String get pendingActivation => 'Pending Activation';
+
+  @override
+  String get allUsers => 'All Users';
+
+  @override
+  String get userActivated => 'User activated!';
+
+  @override
+  String get userActivationFailed => 'Failed to activate';
+
+  @override
+  String get currentManagers => 'Current Managers';
+
+  @override
+  String get noManagersAssigned => 'No managers assigned';
+
+  @override
+  String get removeManagerTitle => 'Remove Manager';
+
+  @override
+  String removeManagerConfirm(Object name) {
+    return 'Remove $name as manager?';
+  }
+
+  @override
+  String get addManager => 'Add Manager';
+
+  @override
+  String managerAdded(Object name) {
+    return '$name added as manager';
+  }
+
+  @override
+  String get managerAddFailed => 'Failed to add manager';
+
+  @override
+  String get noAdminPrivileges => 'You do not have admin privileges.';
+
+  @override
+  String get adminPanel => 'Admin Panel';
+
+  @override
+  String get adminPanelDesc => 'Manage users, classes & data';
+
+  @override
+  String get management => 'Management';
+
+  @override
+  String get userManagementDesc => 'Activate, enable/disable users';
+
+  @override
+  String get classManagementDesc => 'Manage classes and managers';
+
+  @override
+  String get statistics => 'Statistics';
+
+  @override
+  String get dangerZone => 'Danger Zone';
+
+  @override
+  String get resetAllData => 'Reset All Data';
+
+  @override
+  String get resetAllDataDesc => 'Delete all sessions and records';
+
+  @override
+  String get resetDataTitle => 'Reset Data?';
+
+  @override
+  String get resetDataConfirm =>
+      'Are you sure you want to reset all data? This cannot be undone.';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get classCreated => 'Class created successfully';
+
+  @override
+  String get classCreationError => 'Failed to create class';
+
+  @override
+  String get enterClassName => 'Enter class name';
+
+  @override
+  String get enterGrade => 'Enter grade';
+
+  @override
+  String get accountPendingActivation =>
+      'Your account is awaiting admin activation';
+
+  @override
+  String get accountDenied =>
+      'Your activation request was denied by the administrator';
+
+  @override
+  String get accountDisabled =>
+      'Your account has been disabled by the administrator';
+
+  @override
+  String get invalidCredentials => 'Invalid email or password';
+
+  @override
+  String get registrationSuccessful => 'Registration Successful!';
+
+  @override
+  String get registrationSuccessfulDesc =>
+      'Please wait for the administrator to activate your account';
+
+  @override
+  String get emailAlreadyExists => 'An account with this email already exists';
+
+  @override
+  String get createAccountToStart => 'Create your account to get started';
+
+  @override
+  String get contactAdminForActivation =>
+      'Please contact the administrator to activate your account';
+
+  @override
+  String get abortActivation => 'Deny Activation';
+
+  @override
+  String get abortActivationConfirm =>
+      'Are you sure you want to deny this user\'s activation request?';
+
+  @override
+  String get userActivationAborted => 'User activation denied';
+
+  @override
+  String get enableUser => 'Enable User';
+
+  @override
+  String get disableUser => 'Disable User';
+
+  @override
+  String get enableUserConfirm => 'Enable this user\'s access to the app?';
+
+  @override
+  String get disableUserConfirm =>
+      'Disable this user\'s access? They will be logged out immediately.';
+
+  @override
+  String get userEnabled => 'User enabled successfully';
+
+  @override
+  String get userDisabled => 'User disabled successfully';
+
+  @override
+  String get deleteUser => 'Delete User';
+
+  @override
+  String get deleteUserConfirm =>
+      'Are you sure you want to delete this user? This action cannot be undone.';
+
+  @override
+  String get userDeleted => 'User deleted successfully';
+
+  @override
+  String get abortedActivations => 'Denied Activations';
+
+  @override
+  String get noAbortedUsers => 'No denied activation requests';
+
+  @override
+  String get reactivate => 'Reactivate';
+
+  @override
+  String get classManagers => 'Managers';
 }

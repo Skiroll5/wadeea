@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mobile/features/admin/data/admin_controller.dart';
+import 'package:mobile/features/admin/presentation/screens/class_management_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/premium_card.dart';
+import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/data/auth_controller.dart';
-import '../../../statistics/data/statistics_repository.dart';
-import '../../../sync/data/sync_service.dart';
+import '../../../classes/presentation/widgets/class_list_item.dart';
+import '../../../classes/presentation/widgets/class_dialogs.dart';
 
 class AdminPanelScreen extends ConsumerWidget {
   const AdminPanelScreen({super.key});
@@ -23,14 +26,18 @@ class AdminPanelScreen extends ConsumerWidget {
     // Check if user is admin
     if (user?.role != 'ADMIN') {
       return Scaffold(
-        appBar: AppBar(title: const Text('Access Denied')),
-        body: const Center(child: Text('You do not have admin privileges.')),
+        appBar: AppBar(title: Text(l10n?.accessDenied ?? 'Access Denied')),
+        body: Center(
+          child: Text(
+            l10n?.noAdminPrivileges ?? 'You do not have admin privileges.',
+          ),
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Panel'),
+        title: Text(l10n?.adminPanel ?? 'Admin Panel'),
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -40,338 +47,352 @@ class AdminPanelScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Header Logic (Greetings or Summary could go here, but keeping it clean for now)
+          // 1. Class Management Section
+          _ClassesSection(isDark: isDark),
 
-          // 1. User & Class Management Section
-          Text(
-            'Management',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
-            ),
-          ).animate().fade(),
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
 
-          PremiumCard(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              children: [
-                _AdminTile(
-                  icon: Icons.people_outline,
-                  title: 'User Management',
-                  subtitle: 'Activate, enable/disable users',
-                  isDark: isDark,
-                  onTap: () => context.push('/admin/users'),
-                ),
-                Divider(
-                  height: 1,
-                  color: isDark ? Colors.white10 : Colors.grey.shade100,
-                  indent: 50,
-                ),
-                _AdminTile(
-                  icon: Icons.class_outlined,
-                  title: 'Class Management',
-                  subtitle: 'Manage classes and managers',
-                  isDark: isDark,
-                  onTap: () => context.push('/admin/classes'),
-                ),
-              ],
-            ),
-          ).animate().fade(delay: 100.ms),
-
-          const SizedBox(height: 16),
-
-          // 2. Statistics Settings (Threshold)
-          Text(
-            l10n?.statistics ?? 'Statistics',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
-            ),
-          ).animate().fade(delay: 150.ms),
-          const SizedBox(height: 8),
-
-          Consumer(
-            builder: (context, ref, child) {
-              final threshold = ref.watch(statisticsSettingsProvider);
-              return PremiumCard(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color:
-                              (isDark
-                                      ? AppColors.goldPrimary
-                                      : AppColors.goldPrimary)
-                                  .withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.analytics_outlined,
-                          color: isDark
-                              ? AppColors.goldPrimary
-                              : AppColors.goldDark,
-                        ),
-                      ),
-                      title: Text(
-                        l10n?.atRiskThreshold ?? 'At Risk Threshold',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? Colors.white
-                              : AppColors.textPrimaryLight,
-                        ),
-                      ),
-                      subtitle: Text(
-                        l10n?.thresholdCaption(threshold) ??
-                            'Flag student after $threshold consecutive absences',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: isDark
-                              ? AppColors.textSecondaryDark
-                              : AppColors.textSecondaryLight,
-                        ),
-                      ),
-                    ),
-                    Slider(
-                      value: threshold.toDouble(),
-                      min: 1,
-                      max: 10,
-                      divisions: 9,
-                      label: threshold.toString(),
-                      activeColor: isDark
-                          ? AppColors.goldPrimary
-                          : AppColors.goldPrimary,
-                      onChanged: (val) {
-                        ref
-                            .read(statisticsSettingsProvider.notifier)
-                            .setThreshold(val.toInt());
-                      },
-                    ),
-                  ],
-                ),
-              ).animate().fade(delay: 200.ms);
-            },
-          ),
-
-          const SizedBox(height: 16),
-
-          // 3. Data Management
-          Text(
-            l10n?.dataManagement ?? 'Data Management',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
-            ),
-          ).animate().fade(delay: 250.ms),
-          const SizedBox(height: 8),
-
-          PremiumCard(
-            margin: const EdgeInsets.only(bottom: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.warning_amber_rounded,
-                        color: isDark
-                            ? AppColors.redLight
-                            : AppColors.redPrimary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n?.dangerZone ?? 'Danger Zone',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: isDark
-                              ? AppColors.textPrimaryDark
-                              : AppColors.textPrimaryLight,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    l10n?.resetDataCaption ??
-                        'If you manually reset the backend database, use this to clear local data.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: () => _confirmDataReset(context, ref, l10n),
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: Text(l10n?.resetSyncData ?? 'Reset Sync & Data'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: isDark
-                        ? AppColors.redLight
-                        : AppColors.redPrimary,
-                    side: BorderSide(
-                      color:
-                          (isDark ? AppColors.redLight : AppColors.redPrimary)
-                              .withValues(alpha: 0.3),
-                    ),
-                    minimumSize: const Size.fromHeight(45),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ).animate().fade(delay: 300.ms),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDataReset(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations? l10n,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n?.confirmReset ?? 'Confirm Reset'),
-        content: Text(
-          l10n?.resetWarning ??
-              'This will delete all local attendance data and force a full re-sync from the server. Use only if backend was cleared.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n?.cancel ?? 'Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final messenger = ScaffoldMessenger.of(context);
-              final theme = Theme.of(context);
-              final isDark = theme.brightness == Brightness.dark;
-              try {
-                final syncService = ref.read(syncServiceProvider);
-                await syncService.clearLocalData();
-                await syncService.pullChanges();
-
-                messenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Success: Local data reset and re-synced.'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } catch (e) {
-                messenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Error resetting data: $e'),
-                    backgroundColor: isDark
-                        ? AppColors.redLight
-                        : AppColors.redPrimary,
-                  ),
-                );
-              }
-            },
-            child: Text(
-              l10n?.delete ?? 'Delete',
-              style: const TextStyle(
-                color: AppColors.redPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+          // 2. User Management Section
+          _UsersSection(isDark: isDark),
         ],
       ),
     );
   }
 }
 
-class _AdminTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
+class _ClassesSection extends ConsumerWidget {
   final bool isDark;
-  final VoidCallback onTap;
 
-  const _AdminTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.isDark,
-    required this.onTap,
-  });
+  const _ClassesSection({required this.isDark});
 
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final classesAsync = ref.watch(adminClassesProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: (isDark ? AppColors.goldPrimary : AppColors.goldPrimary)
-                    .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                icon,
-                size: 22,
-                color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
+            Text(
+              l10n?.classes ?? 'Classes',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : AppColors.textPrimaryLight,
               ),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                ],
+            IconButton.filled(
+              onPressed: () async {
+                await showAddClassDialog(context, ref);
+                ref.invalidate(adminClassesProvider);
+              },
+              icon: const Icon(Icons.add),
+              style: IconButton.styleFrom(
+                backgroundColor: isDark
+                    ? AppColors.goldPrimary
+                    : AppColors.goldPrimary,
+                foregroundColor: isDark ? Colors.black : Colors.white,
               ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
+              tooltip: l10n?.addClass ?? 'Add Class',
             ),
           ],
         ),
-      ),
-    );
+        const SizedBox(height: 8),
+        classesAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(
+            child: Text(l10n?.errorGeneric(e.toString()) ?? "Error: $e"),
+          ),
+          data: (classes) {
+            if (classes.isEmpty) {
+              return PremiumCard(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.class_outlined,
+                          size: 48,
+                          color: isDark ? Colors.white24 : Colors.black12,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n?.noClassesFoundAdd ??
+                              'No classes found. Add one!',
+                          style: TextStyle(
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return Column(
+              children: classes.map((classData) {
+                // Manually construct ClassesData from Map since Admin logic uses Map
+                final cls = ClassesData(
+                  id: classData['id'] as String? ?? '',
+                  name: classData['name'] as String? ?? 'Unknown',
+                  grade: classData['grade'] as String?,
+                  createdAt: DateTime.now(), // Dummy for display
+                  updatedAt: DateTime.now(), // Dummy for display
+                  isDeleted: false,
+                );
+
+                return ClassListItem(
+                  key: ValueKey(cls.id),
+                  cls: cls,
+                  isAdmin: true, // User is Admin in this screen
+                  isDark: isDark,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ClassManagerAssignmentScreen(
+                          classId: cls.id,
+                          className: cls.name,
+                        ),
+                      ),
+                    );
+                  },
+                  onRefresh: () => ref.invalidate(adminClassesProvider),
+                );
+              }).toList(),
+            );
+          },
+        ),
+      ],
+    ).animate().fade();
+  }
+}
+
+class _UsersSection extends ConsumerWidget {
+  final bool isDark;
+
+  const _UsersSection({required this.isDark});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    // We fetch separate providers for pending and all users
+    final pendingUsersAsync = ref.watch(pendingUsersProvider);
+    final allUsersAsync = ref.watch(allUsersProvider);
+    final adminController = ref.watch(adminControllerProvider.notifier);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n?.userManagement ?? 'User Management',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : AppColors.textPrimaryLight,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // Pending Users Sub-section
+        Consumer(
+          builder: (context, ref, _) {
+            return pendingUsersAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) =>
+                  const SizedBox.shrink(), // Don't show error here to avoid clutter
+              data: (users) {
+                if (users.isEmpty) return const SizedBox.shrink();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        l10n?.pendingActivation ?? 'Pending Activation',
+                        style: TextStyle(
+                          color: isDark
+                              ? AppColors.goldPrimary
+                              : AppColors.goldDark,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: users.length,
+                      itemBuilder: (context, index) {
+                        final user = users[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          color: isDark
+                              ? AppColors.goldPrimary.withValues(alpha: 0.1)
+                              : Colors.orange.shade50,
+                          child: ListTile(
+                            leading: const CircleAvatar(
+                              child: Icon(Icons.person_outline),
+                            ),
+                            title: Text(user['name'] ?? 'Unknown'),
+                            subtitle: Text(user['email'] ?? ''),
+                            trailing: FilledButton.icon(
+                              icon: const Icon(Icons.check, size: 16),
+                              label: Text(l10n?.activate ?? 'Activate'),
+                              style: FilledButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              onPressed: () async {
+                                final success = await adminController
+                                    .activateUser(user['id']);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        success
+                                            ? (l10n?.userActivated ??
+                                                  'User activated!')
+                                            : (l10n?.userActivationFailed ??
+                                                  'Failed to activate'),
+                                      ),
+                                      backgroundColor: success
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+
+        // All Users Sub-section
+        Text(
+          l10n?.allUsers ?? 'All Users',
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.black54,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        allUsersAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(
+            child: Text(l10n?.errorGeneric(e.toString()) ?? "Error: $e"),
+          ),
+          data: (users) {
+            if (users.isEmpty) {
+              return Center(
+                child: Text(l10n?.noUsersFound ?? 'No users found'),
+              );
+            }
+
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                final user = users[index];
+                final isActive = user['isActive'] == true;
+                final isAdmin = user['role'] == 'ADMIN';
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: isAdmin
+                          ? Colors.amber.shade100
+                          : (isActive
+                                ? Colors.green.shade100
+                                : Colors.grey.shade200),
+                      child: Icon(
+                        isAdmin ? Icons.admin_panel_settings : Icons.person,
+                        color: isAdmin
+                            ? Colors.amber.shade700
+                            : (isActive ? Colors.green : Colors.grey),
+                        size: 20,
+                      ),
+                    ),
+                    title: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            user['name'] ?? 'Unknown',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isAdmin) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade100,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              l10n?.admin ?? 'Admin',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    subtitle: Text(user['email'] ?? ''),
+                    trailing: isAdmin
+                        ? null // Don't allow modifying admin users
+                        : Switch(
+                            value: isActive,
+                            onChanged: (value) async {
+                              final success = value
+                                  ? await adminController.enableUser(user['id'])
+                                  : await adminController.disableUser(
+                                      user['id'],
+                                    );
+                              if (context.mounted && !success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      l10n?.errorUpdateUser ??
+                                          'Failed to update user',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ],
+    ).animate().fade(delay: 100.ms);
   }
 }

@@ -555,14 +555,14 @@ class _TakeAttendanceScreenState extends ConsumerState<TakeAttendanceScreen> {
                               enableAnimation: shouldAnimate,
                               margin: const EdgeInsets.only(bottom: 8),
                               color: isPresent
-                                  ? AppColors.goldPrimary.withOpacity(
-                                      isDark ? 0.12 : 0.06,
+                                  ? AppColors.goldPrimary.withValues(
+                                      alpha: isDark ? 0.12 : 0.06,
                                     )
                                   : null,
                               border: isPresent
                                   ? Border.all(
-                                      color: AppColors.goldPrimary.withOpacity(
-                                        0.4,
+                                      color: AppColors.goldPrimary.withValues(
+                                        alpha: 0.4,
                                       ),
                                     )
                                   : null,
@@ -659,7 +659,7 @@ class _TakeAttendanceScreenState extends ConsumerState<TakeAttendanceScreen> {
               color: theme.colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -708,7 +708,7 @@ class _TakeAttendanceScreenState extends ConsumerState<TakeAttendanceScreen> {
 
     if (selectedClassId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No class selected')),
+        SnackBar(content: Text(l10n?.noClassSelected ?? 'No class selected')),
       ); // Should be impossible in flow, but kept safe.
       return;
     }

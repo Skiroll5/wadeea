@@ -118,7 +118,9 @@ class StatisticsDashboard extends ConsumerWidget {
                             Icon(
                               Icons.check_circle_outline,
                               size: 48,
-                              color: AppColors.goldPrimary.withOpacity(0.5),
+                              color: AppColors.goldPrimary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -258,7 +260,7 @@ class _AtRiskStudentCard extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
-          backgroundColor: AppColors.redPrimary.withOpacity(0.1),
+          backgroundColor: AppColors.redPrimary.withValues(alpha: 0.1),
           child: Text(
             item.student.name.characters.first.toUpperCase(),
             style: const TextStyle(
@@ -285,7 +287,7 @@ class _AtRiskStudentCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.redPrimary.withOpacity(0.1),
+                color: AppColors.redPrimary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -304,7 +306,7 @@ class _AtRiskStudentCard extends StatelessWidget {
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.goldPrimary.withOpacity(0.1),
+              color: AppColors.goldPrimary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.call, color: AppColors.goldDark, size: 20),

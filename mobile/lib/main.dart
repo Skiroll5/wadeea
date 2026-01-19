@@ -8,12 +8,9 @@ import 'core/router/router_provider.dart';
 import 'core/database/app_database.dart';
 import 'features/settings/data/settings_controller.dart';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'core/services/notification_service.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  // await Firebase.initializeApp(); // Bypassed for now
 
   final db = AppDatabase();
   final container = ProviderContainer(
@@ -21,7 +18,7 @@ void main() async {
   );
 
   // Initialize Notification Service
-  await container.read(notificationServiceProvider).initialize();
+  // await container.read(notificationServiceProvider).initialize(); // Bypassed for now
 
   runApp(
     UncontrolledProviderScope(container: container, child: const MainApp()),

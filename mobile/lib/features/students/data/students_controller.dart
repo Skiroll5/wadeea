@@ -67,7 +67,7 @@ class StudentsController {
     final attendanceRepo = _ref.read(attendanceRepositoryProvider);
     final uuid = _ref.read(uuidProvider);
 
-    print('Controller: Adding student $name to class $classId');
+    // print('Controller: Adding student $name to class $classId');
     try {
       final newStudentId = uuid.v4();
       await repo.addStudent(
@@ -91,9 +91,9 @@ class StudentsController {
         );
       }
 
-      print('Controller: Add student done');
+      // print('Controller: Add student done');
     } catch (e) {
-      print('Controller Error: $e');
+      // print('Controller Error: $e');
       rethrow;
     }
   }
@@ -103,7 +103,7 @@ class StudentsController {
     try {
       await repo.updateStudent(student);
     } catch (e) {
-      print('Controller Error: $e');
+      // print('Controller Error: $e');
       rethrow;
     }
   }
@@ -113,7 +113,7 @@ class StudentsController {
     try {
       await repo.deleteStudent(id);
     } catch (e) {
-      print('Controller Error: $e');
+      // print('Controller Error: $e');
       rethrow;
     }
   }

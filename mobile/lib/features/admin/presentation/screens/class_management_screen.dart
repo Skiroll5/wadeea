@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/admin_controller.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 class ClassManagementScreen extends ConsumerWidget {
   const ClassManagementScreen({super.key});
@@ -8,15 +9,20 @@ class ClassManagementScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final classesAsync = ref.watch(adminClassesProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Class Management')),
+      appBar: AppBar(title: Text(l10n?.classManagement ?? 'Class Management')),
       body: classesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(
+          child: Text('${l10n?.errorGeneric(e.toString()) ?? "Error: $e"}'),
+        ),
         data: (classes) {
           if (classes.isEmpty) {
-            return const Center(child: Text('No classes found'));
+            return Center(
+              child: Text(l10n?.noClassesFound ?? 'No classes found'),
+            );
           }
 
           return RefreshIndicator(
@@ -31,7 +37,7 @@ class ClassManagementScreen extends ConsumerWidget {
                     leading: CircleAvatar(
                       backgroundColor: Theme.of(
                         context,
-                      ).primaryColor.withOpacity(0.1),
+                      ).primaryColor.withValues(alpha: 0.1),
                       child: Icon(
                         Icons.class_,
                         color: Theme.of(context).primaryColor,
@@ -76,30 +82,39 @@ class ClassManagerAssignmentScreen extends ConsumerWidget {
     final managersAsync = ref.watch(classManagersProvider(classId));
     final allUsersAsync = ref.watch(allUsersProvider);
     final adminController = ref.watch(adminControllerProvider.notifier);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text('Managers: $className')),
+      appBar: AppBar(
+        title: Text(
+          l10n?.managersForClass(className) ?? 'Managers: $className',
+        ),
+      ),
       body: Column(
         children: [
           // Current managers
           Container(
             padding: const EdgeInsets.all(16),
-            child: const Text(
-              'Current Managers',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            child: Text(
+              l10n?.currentManagers ?? 'Current Managers',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(
             flex: 1,
             child: managersAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              error: (e, _) => Center(
+                child: Text(
+                  '${l10n?.errorGeneric(e.toString()) ?? "Error: $e"}',
+                ),
+              ),
               data: (managers) {
                 if (managers.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
-                      'No managers assigned',
-                      style: TextStyle(color: Colors.grey),
+                      l10n?.noManagersAssigned ?? 'No managers assigned',
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   );
                 }
@@ -124,18 +139,23 @@ class ClassManagerAssignmentScreen extends ConsumerWidget {
                             final confirmed = await showDialog<bool>(
                               context: context,
                               builder: (ctx) => AlertDialog(
-                                title: const Text('Remove Manager'),
+                                title: Text(
+                                  l10n?.removeManagerTitle ?? 'Remove Manager',
+                                ),
                                 content: Text(
-                                  'Remove ${userData?['name']} as manager?',
+                                  l10n?.removeManagerConfirm(
+                                        userData?['name'] ?? '',
+                                      ) ??
+                                      'Remove ${userData?['name']} as manager?',
                                 ),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(ctx, false),
-                                    child: const Text('Cancel'),
+                                    child: Text(l10n?.cancel ?? 'Cancel'),
                                   ),
                                   FilledButton(
                                     onPressed: () => Navigator.pop(ctx, true),
-                                    child: const Text('Remove'),
+                                    child: Text(l10n?.remove ?? 'Remove'),
                                   ),
                                 ],
                               ),
@@ -159,16 +179,20 @@ class ClassManagerAssignmentScreen extends ConsumerWidget {
           // Add new manager
           Container(
             padding: const EdgeInsets.all(16),
-            child: const Text(
-              'Add Manager',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            child: Text(
+              l10n?.addManager ?? 'Add Manager',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(
             flex: 2,
             child: allUsersAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              error: (e, _) => Center(
+                child: Text(
+                  '${l10n?.errorGeneric(e.toString()) ?? "Error: $e"}',
+                ),
+              ),
               data: (users) {
                 // Filter to show only non-admin users
                 final eligibleUsers = users
@@ -176,7 +200,9 @@ class ClassManagerAssignmentScreen extends ConsumerWidget {
                     .toList();
 
                 if (eligibleUsers.isEmpty) {
-                  return const Center(child: Text('No eligible users'));
+                  return Center(
+                    child: Text(l10n?.noEligibleUsers ?? 'No eligible users'),
+                  );
                 }
 
                 return managersAsync.when(
@@ -192,8 +218,11 @@ class ClassManagerAssignmentScreen extends ConsumerWidget {
                         .toList();
 
                     if (availableUsers.isEmpty) {
-                      return const Center(
-                        child: Text('All eligible users are already managers'),
+                      return Center(
+                        child: Text(
+                          l10n?.allUsersAreManagers ??
+                              'All eligible users are already managers',
+                        ),
                       );
                     }
 
@@ -223,8 +252,12 @@ class ClassManagerAssignmentScreen extends ConsumerWidget {
                                     SnackBar(
                                       content: Text(
                                         success
-                                            ? '${user['name']} added as manager'
-                                            : 'Failed to add manager',
+                                            ? (l10n?.managerAdded(
+                                                    user['name'],
+                                                  ) ??
+                                                  '${user['name']} added as manager')
+                                            : (l10n?.managerAddFailed ??
+                                                  'Failed to add manager'),
                                       ),
                                       backgroundColor: success
                                           ? Colors.green

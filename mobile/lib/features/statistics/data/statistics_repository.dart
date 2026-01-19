@@ -61,6 +61,9 @@ class StatisticsRepository {
               .get();
 
       // If not enough sessions to judge, skip
+      // print(
+      //   'DEBUG: Class $className ($classId) - Recent Sessions: ${recentSessions.length}, Threshold: $threshold',
+      // );
       if (recentSessions.isEmpty) continue;
 
       // Get ALL sessions for this class (for total stats)
@@ -116,6 +119,11 @@ class StatisticsRepository {
         }
 
         // Condition: Consecutive >= threshold
+        if (currentConsecutive > 0) {
+          // print(
+          //   'DEBUG: Student ${student.name} - Consecutive: $currentConsecutive',
+          // );
+        }
         if (currentConsecutive >= threshold) {
           atRiskList.add(
             AtRiskStudent(

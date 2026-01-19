@@ -65,7 +65,7 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
           await fcmRepo.registerToken(token);
         }
       } catch (e) {
-        print('FCM Registration Warning: $e');
+        // print('FCM Registration Warning: $e');
       }
 
       state = AsyncValue.data(user);

@@ -7,6 +7,7 @@ import '../../../../core/components/premium_card.dart';
 import '../../../../core/components/premium_button.dart';
 import '../../../../core/components/premium_text_field.dart';
 import '../../data/auth_controller.dart';
+import '../../data/auth_repository.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -21,29 +22,140 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String? _errorMessage;
+  bool _isLoading = false;
 
   @override
-  Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final success = await ref
+          .read(authControllerProvider.notifier)
+          .register(
+            _emailController.text,
+            _passwordController.text,
+            _nameController.text,
+          );
+
+      if (!mounted) return;
+
+      if (success) {
+        _showSuccessDialog();
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      final l10n = AppLocalizations.of(context)!;
+      String message;
+
+      if (e is AuthError) {
+        switch (e.code) {
+          case 'EMAIL_EXISTS':
+            message = l10n.emailAlreadyExists;
+            break;
+          default:
+            message = e.message;
+        }
+      } else {
+        message = e.toString();
+      }
+
+      setState(() {
+        _errorMessage = message;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showSuccessDialog() {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    ref.listen(authControllerProvider, (previous, next) {
-      next.whenOrNull(
-        error: (err, st) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(err.toString()),
-              backgroundColor: AppColors.redPrimary,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 48,
               ),
             ),
-          );
-        },
-      );
-    });
+            const SizedBox(height: 16),
+            Text(
+              l10n.registrationSuccessful,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.registrationSuccessfulDesc,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.go('/login');
+            },
+            child: Text(
+              l10n.login,
+              style: TextStyle(
+                color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
@@ -100,7 +212,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 8),
 
                 Text(
-                  'Create your account to get started',
+                  l10n.createAccountToStart,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: isDark
                         ? AppColors.textSecondaryDark
@@ -118,13 +230,51 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     key: _formKey,
                     child: Column(
                       children: [
+                        // Error message display
+                        if (_errorMessage != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.redPrimary.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.redPrimary.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: AppColors.redPrimary,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: TextStyle(
+                                      color: AppColors.redPrimary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ).animate().fade().slideY(begin: -0.2),
+                          const SizedBox(height: 16),
+                        ],
+
                         PremiumTextField(
                           controller: _nameController,
                           label: l10n.name,
                           prefixIcon: Icons.person_outline,
                           keyboardType: TextInputType.name,
                           validator: (value) =>
-                              value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? l10n.pleaseEnterName : null,
                           delay: 0.3,
                         ),
                         const SizedBox(height: 16),
@@ -134,7 +284,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           prefixIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) =>
-                              value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? l10n.pleaseEnterName : null,
                           delay: 0.4,
                         ),
                         const SizedBox(height: 16),
@@ -144,42 +294,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           prefixIcon: Icons.lock_outline,
                           isPassword: true,
                           validator: (value) =>
-                              value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? l10n.pleaseEnterName : null,
                           delay: 0.5,
                         ),
                         const SizedBox(height: 32),
                         PremiumButton(
                           label: l10n.register,
                           isFullWidth: true,
-                          isLoading: authState.isLoading,
+                          isLoading: _isLoading,
                           delay: 0.6,
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              final success = await ref
-                                  .read(authControllerProvider.notifier)
-                                  .register(
-                                    _emailController.text,
-                                    _passwordController.text,
-                                    _nameController.text,
-                                  );
-
-                              if (!mounted) return;
-
-                              if (success) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(l10n.waitActivation),
-                                    backgroundColor: AppColors.goldPrimary,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                );
-                                context.pop();
-                              }
-                            }
-                          },
+                          onPressed: _handleRegister,
                         ),
                         const SizedBox(height: 16),
                         PremiumButton(

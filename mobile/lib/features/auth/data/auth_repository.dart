@@ -4,9 +4,19 @@ import 'package:mobile/core/config/api_config.dart';
 
 final authRepositoryProvider = Provider((ref) => AuthRepository(Dio()));
 
+/// Error class to hold structured error information
+class AuthError {
+  final String message;
+  final String code;
+
+  AuthError(this.message, this.code);
+
+  @override
+  String toString() => message;
+}
+
 class AuthRepository {
   final Dio _dio;
-  // TODO: Move base URL to config
   final String _baseUrl = ApiConfig.baseUrl;
 
   AuthRepository(this._dio);
@@ -19,7 +29,10 @@ class AuthRepository {
       );
       return response.data; // { token, user }
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Login failed';
+      final data = e.response?.data;
+      final message = data?['message'] ?? 'Login failed';
+      final code = data?['code'] ?? 'UNKNOWN';
+      throw AuthError(message, code);
     }
   }
 
@@ -35,7 +48,10 @@ class AuthRepository {
       );
       return response.data;
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Registration failed';
+      final data = e.response?.data;
+      final message = data?['message'] ?? 'Registration failed';
+      final code = data?['code'] ?? 'UNKNOWN';
+      throw AuthError(message, code);
     }
   }
 

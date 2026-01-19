@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/core/config/api_config.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../../core/database/app_database.dart';
 import '../../classes/data/classes_repository.dart';
 import '../../classes/data/classes_controller.dart';
@@ -43,7 +43,7 @@ class SyncService {
   StreamSubscription? _queueSubscription;
   bool _isSyncing = false;
   Timer? _retryTimer;
-  IO.Socket? _socket;
+  io.Socket? _socket;
 
   SyncService(
     this._db,
@@ -71,7 +71,7 @@ class SyncService {
       try {
         await sync();
       } catch (e) {
-        print('SyncService: Initial sync failed: $e');
+        // print('SyncService: Initial sync failed: $e');
       }
     });
 
@@ -80,30 +80,69 @@ class SyncService {
   }
 
   void _initSocket() {
-    print('SyncService: Initializing Socket.io connection to $_baseUrl');
-    _socket = IO.io(
+    // print('SyncService: Initializing Socket.io connection to $_baseUrl');
+    _socket = io.io(
       _baseUrl,
-      IO.OptionBuilder()
+      io.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect() // We connect manually
+          .enableReconnection() // Reconnect on disconnect
+          .setReconnectionAttempts(double.infinity.toInt())
+          .setReconnectionDelay(1000)
           .build(),
     );
 
     _socket?.onConnect((_) {
-      print('SyncService: Socket Connected');
+      // print('SyncService: Socket Connected');
+      // Pull changes on reconnect to catch up
+      if (!_isSyncing) {
+        pullChanges().catchError((_) {});
+      }
     });
 
     _socket?.onDisconnect((_) {
-      print('SyncService: Socket Disconnected');
+      // print('SyncService: Socket Disconnected');
     });
 
     _socket?.on('sync_update', (_) async {
-      print('SyncService: Received sync_update event from server');
+      // print('SyncService: Received sync_update event from server');
       if (!_isSyncing) {
         try {
           await pullChanges();
         } catch (e) {
-          print('SyncService: Automatic pull failed: $e');
+          // print('SyncService: Automatic pull failed: $e');
+        }
+      }
+    });
+
+    // Listen for user disabled event - auto logout
+    _socket?.on('user_disabled', (data) async {
+      if (data != null && data['userId'] != null) {
+        final currentUser = _ref.read(authControllerProvider).asData?.value;
+        if (currentUser != null && currentUser.id == data['userId']) {
+          // User was disabled, logout immediately
+          await _ref.read(authControllerProvider.notifier).logout();
+        }
+      }
+    });
+
+    // Listen for user deleted event - auto logout
+    _socket?.on('user_deleted', (data) async {
+      if (data != null && data['userId'] != null) {
+        final currentUser = _ref.read(authControllerProvider).asData?.value;
+        if (currentUser != null && currentUser.id == data['userId']) {
+          await _ref.read(authControllerProvider.notifier).logout();
+        }
+      }
+    });
+
+    // Listen for user status changes to refresh providers
+    _socket?.on('user_status_changed', (_) async {
+      if (!_isSyncing) {
+        try {
+          await pullChanges();
+        } catch (e) {
+          // Silently fail
         }
       }
     });
@@ -128,7 +167,7 @@ class SyncService {
       // If successful, also pull changes
       await pullChanges();
     } catch (e) {
-      print('AutoSync: Push failed, will retry later: $e');
+      // print('AutoSync: Push failed, will retry later: $e');
       // Schedule a retry after 30 seconds
       _scheduleRetry();
     }
@@ -154,7 +193,7 @@ class SyncService {
 
     try {
       final queueItems = await _db.select(_db.syncQueue).get();
-      print('SyncService: Found ${queueItems.length} items in sync queue');
+      // print('SyncService: Found ${queueItems.length} items in sync queue');
 
       if (queueItems.isEmpty) {
         _isSyncing = false;
@@ -163,7 +202,7 @@ class SyncService {
 
       final token = await _getToken();
       if (token == null) {
-        print('SyncService: No token found, aborting push');
+        // print('SyncService: No token found, aborting push');
         _isSyncing = false;
         return;
       }
@@ -180,7 +219,7 @@ class SyncService {
         };
       }).toList();
 
-      print('SyncService: Pushing ${changes.length} changes to $_baseUrl/sync');
+      // print('SyncService: Pushing ${changes.length} changes to $_baseUrl/sync');
 
       final response = await _dio.post(
         '$_baseUrl/sync',
@@ -192,7 +231,7 @@ class SyncService {
         ),
       );
 
-      print('SyncService: Push success, response code: ${response.statusCode}');
+      // print('SyncService: Push success, response code: ${response.statusCode}');
       final responseData = response.data;
 
       // Extract processed UUIDs if available
@@ -215,14 +254,14 @@ class SyncService {
         }
       });
 
-      print('SyncService: Queue processing complete');
+      // print('SyncService: Queue processing complete');
     } catch (e) {
-      print('SyncService: Push failed: $e');
+      // print('SyncService: Push failed: $e');
       if (e is DioException) {
-        print('SyncService: DioError: ${e.response?.data}');
+        // print('SyncService: DioError: ${e.response?.data}');
         // Auto-logout on 401/403 (token expired/invalid)
         if (e.response?.statusCode == 403 || e.response?.statusCode == 401) {
-          print('SyncService: Token expired/invalid, logging out user');
+          // print('SyncService: Token expired/invalid, logging out user');
           await _ref.read(authControllerProvider.notifier).logout();
           // Don't rethrow on auth errors since we've handled it by logging out
           return;
@@ -288,15 +327,21 @@ class SyncService {
             await _upsertAttendanceSession(s);
           }
         }
+        // Sync class managers
+        if (changes['class_managers'] != null) {
+          for (var cm in changes['class_managers']) {
+            await _upsertClassManager(cm);
+          }
+        }
       });
 
       await prefs.setString('last_sync_timestamp', serverTimestamp);
     } catch (e) {
-      print('Pull failed: $e');
+      // print('Pull failed: $e');
       // Auto-logout on 401/403 (token expired/invalid)
       if (e is DioException &&
           (e.response?.statusCode == 403 || e.response?.statusCode == 401)) {
-        print('SyncService: Token expired/invalid, logging out user');
+        // print('SyncService: Token expired/invalid, logging out user');
         await _ref.read(authControllerProvider.notifier).logout();
         // Don't rethrow on auth errors since we've handled it by logging out
         return;
@@ -362,6 +407,8 @@ class SyncService {
       classId: Value(data['classId']),
       whatsappTemplate: Value(data['whatsappTemplate']),
       isActive: Value(data['isActive'] ?? false),
+      isEnabled: Value(data['isEnabled'] ?? true),
+      activationDenied: Value(data['activationDenied'] ?? false),
       createdAt: Value(DateTime.parse(data['createdAt'])),
       updatedAt: Value(DateTime.parse(data['updatedAt'])),
       isDeleted: Value(data['isDeleted'] ?? false),
@@ -370,6 +417,17 @@ class SyncService {
       ),
     );
     await _db.into(_db.users).insertOnConflictUpdate(entity);
+  }
+
+  Future<void> _upsertClassManager(Map<String, dynamic> data) async {
+    final entity = ClassManagersCompanion(
+      id: Value(data['id']),
+      classId: Value(data['classId']),
+      userId: Value(data['userId']),
+      createdAt: Value(DateTime.parse(data['createdAt'])),
+      updatedAt: Value(DateTime.parse(data['updatedAt'])),
+    );
+    await _db.into(_db.classManagers).insertOnConflictUpdate(entity);
   }
 
   Future<String?> _getToken() async {
@@ -393,6 +451,6 @@ class SyncService {
       await _db.delete(_db.syncQueue).go();
     });
 
-    print('SyncService: Local data and sync timestamp cleared');
+    // print('SyncService: Local data and sync timestamp cleared');
   }
 }

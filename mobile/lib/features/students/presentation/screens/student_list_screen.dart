@@ -502,8 +502,11 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, st) =>
-            Center(child: Text(context.l10n.errorGeneric(err.toString()))),
+        error: (err, st) => Center(
+          child: Text(
+            AppLocalizations.of(context)!.errorGeneric(err.toString()),
+          ),
+        ),
       ),
       // No bottom nav bar needed if actions are inline
     );

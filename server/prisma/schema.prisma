@@ -15,6 +15,8 @@ model User {
   name      String
   role      Role     @default(SERVANT)
   isActive  Boolean  @default(false)
+  isEnabled Boolean  @default(true)  // Admin can enable/disable user access
+  activationDenied Boolean @default(false)  // Admin denied the activation request
   classId   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -28,6 +30,7 @@ model User {
   notes     Note[]
   studentPreferences UserStudentPreference[]
   managedClasses ClassManager[]
+  notificationPreference NotificationPreference?
 
   // FCM token for push notifications
   fcmToken  String?
@@ -156,4 +159,27 @@ model ClassManager {
 
   @@unique([classId, userId])
   @@map("class_managers")
+}
+
+model NotificationPreference {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  
+  // Toggle each notification type
+  noteAdded           Boolean @default(true)
+  noteUpdated         Boolean @default(true)
+  attendanceRecorded  Boolean @default(true)
+  birthdayReminder    Boolean @default(true)
+  inactiveStudent     Boolean @default(true)
+  newUserRegistered   Boolean @default(true)
+  
+  // Customizable settings
+  inactiveThresholdDays  Int     @default(14)
+  birthdayNotifyMorning  Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_preferences")
 }

@@ -81,6 +81,36 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _isEnabledMeta = const VerificationMeta(
+    'isEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> isEnabled = GeneratedColumn<bool>(
+    'is_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _activationDeniedMeta = const VerificationMeta(
+    'activationDenied',
+  );
+  @override
+  late final GeneratedColumn<bool> activationDenied = GeneratedColumn<bool>(
+    'activation_denied',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("activation_denied" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _fcmTokenMeta = const VerificationMeta(
     'fcmToken',
   );
@@ -149,6 +179,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     classId,
     whatsappTemplate,
     isActive,
+    isEnabled,
+    activationDenied,
     fcmToken,
     createdAt,
     updatedAt,
@@ -215,6 +247,21 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       context.handle(
         _isActiveMeta,
         isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('is_enabled')) {
+      context.handle(
+        _isEnabledMeta,
+        isEnabled.isAcceptableOrUnknown(data['is_enabled']!, _isEnabledMeta),
+      );
+    }
+    if (data.containsKey('activation_denied')) {
+      context.handle(
+        _activationDeniedMeta,
+        activationDenied.isAcceptableOrUnknown(
+          data['activation_denied']!,
+          _activationDeniedMeta,
+        ),
       );
     }
     if (data.containsKey('fcm_token')) {
@@ -288,6 +335,14 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      isEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_enabled'],
+      )!,
+      activationDenied: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}activation_denied'],
+      )!,
       fcmToken: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}fcm_token'],
@@ -325,6 +380,8 @@ class User extends DataClass implements Insertable<User> {
   final String? classId;
   final String? whatsappTemplate;
   final bool isActive;
+  final bool isEnabled;
+  final bool activationDenied;
   final String? fcmToken;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -338,6 +395,8 @@ class User extends DataClass implements Insertable<User> {
     this.classId,
     this.whatsappTemplate,
     required this.isActive,
+    required this.isEnabled,
+    required this.activationDenied,
     this.fcmToken,
     required this.createdAt,
     required this.updatedAt,
@@ -358,6 +417,8 @@ class User extends DataClass implements Insertable<User> {
       map['whatsapp_template'] = Variable<String>(whatsappTemplate);
     }
     map['is_active'] = Variable<bool>(isActive);
+    map['is_enabled'] = Variable<bool>(isEnabled);
+    map['activation_denied'] = Variable<bool>(activationDenied);
     if (!nullToAbsent || fcmToken != null) {
       map['fcm_token'] = Variable<String>(fcmToken);
     }
@@ -383,6 +444,8 @@ class User extends DataClass implements Insertable<User> {
           ? const Value.absent()
           : Value(whatsappTemplate),
       isActive: Value(isActive),
+      isEnabled: Value(isEnabled),
+      activationDenied: Value(activationDenied),
       fcmToken: fcmToken == null && nullToAbsent
           ? const Value.absent()
           : Value(fcmToken),
@@ -408,6 +471,8 @@ class User extends DataClass implements Insertable<User> {
       classId: serializer.fromJson<String?>(json['classId']),
       whatsappTemplate: serializer.fromJson<String?>(json['whatsappTemplate']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      isEnabled: serializer.fromJson<bool>(json['isEnabled']),
+      activationDenied: serializer.fromJson<bool>(json['activationDenied']),
       fcmToken: serializer.fromJson<String?>(json['fcmToken']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -426,6 +491,8 @@ class User extends DataClass implements Insertable<User> {
       'classId': serializer.toJson<String?>(classId),
       'whatsappTemplate': serializer.toJson<String?>(whatsappTemplate),
       'isActive': serializer.toJson<bool>(isActive),
+      'isEnabled': serializer.toJson<bool>(isEnabled),
+      'activationDenied': serializer.toJson<bool>(activationDenied),
       'fcmToken': serializer.toJson<String?>(fcmToken),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -442,6 +509,8 @@ class User extends DataClass implements Insertable<User> {
     Value<String?> classId = const Value.absent(),
     Value<String?> whatsappTemplate = const Value.absent(),
     bool? isActive,
+    bool? isEnabled,
+    bool? activationDenied,
     Value<String?> fcmToken = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -457,6 +526,8 @@ class User extends DataClass implements Insertable<User> {
         ? whatsappTemplate.value
         : this.whatsappTemplate,
     isActive: isActive ?? this.isActive,
+    isEnabled: isEnabled ?? this.isEnabled,
+    activationDenied: activationDenied ?? this.activationDenied,
     fcmToken: fcmToken.present ? fcmToken.value : this.fcmToken,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -474,6 +545,10 @@ class User extends DataClass implements Insertable<User> {
           ? data.whatsappTemplate.value
           : this.whatsappTemplate,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      isEnabled: data.isEnabled.present ? data.isEnabled.value : this.isEnabled,
+      activationDenied: data.activationDenied.present
+          ? data.activationDenied.value
+          : this.activationDenied,
       fcmToken: data.fcmToken.present ? data.fcmToken.value : this.fcmToken,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -492,6 +567,8 @@ class User extends DataClass implements Insertable<User> {
           ..write('classId: $classId, ')
           ..write('whatsappTemplate: $whatsappTemplate, ')
           ..write('isActive: $isActive, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('activationDenied: $activationDenied, ')
           ..write('fcmToken: $fcmToken, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -510,6 +587,8 @@ class User extends DataClass implements Insertable<User> {
     classId,
     whatsappTemplate,
     isActive,
+    isEnabled,
+    activationDenied,
     fcmToken,
     createdAt,
     updatedAt,
@@ -527,6 +606,8 @@ class User extends DataClass implements Insertable<User> {
           other.classId == this.classId &&
           other.whatsappTemplate == this.whatsappTemplate &&
           other.isActive == this.isActive &&
+          other.isEnabled == this.isEnabled &&
+          other.activationDenied == this.activationDenied &&
           other.fcmToken == this.fcmToken &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -542,6 +623,8 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String?> classId;
   final Value<String?> whatsappTemplate;
   final Value<bool> isActive;
+  final Value<bool> isEnabled;
+  final Value<bool> activationDenied;
   final Value<String?> fcmToken;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -556,6 +639,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.classId = const Value.absent(),
     this.whatsappTemplate = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.activationDenied = const Value.absent(),
     this.fcmToken = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -571,6 +656,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.classId = const Value.absent(),
     this.whatsappTemplate = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.activationDenied = const Value.absent(),
     this.fcmToken = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -591,6 +678,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<String>? classId,
     Expression<String>? whatsappTemplate,
     Expression<bool>? isActive,
+    Expression<bool>? isEnabled,
+    Expression<bool>? activationDenied,
     Expression<String>? fcmToken,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -606,6 +695,8 @@ class UsersCompanion extends UpdateCompanion<User> {
       if (classId != null) 'class_id': classId,
       if (whatsappTemplate != null) 'whatsapp_template': whatsappTemplate,
       if (isActive != null) 'is_active': isActive,
+      if (isEnabled != null) 'is_enabled': isEnabled,
+      if (activationDenied != null) 'activation_denied': activationDenied,
       if (fcmToken != null) 'fcm_token': fcmToken,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -623,6 +714,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     Value<String?>? classId,
     Value<String?>? whatsappTemplate,
     Value<bool>? isActive,
+    Value<bool>? isEnabled,
+    Value<bool>? activationDenied,
     Value<String?>? fcmToken,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -638,6 +731,8 @@ class UsersCompanion extends UpdateCompanion<User> {
       classId: classId ?? this.classId,
       whatsappTemplate: whatsappTemplate ?? this.whatsappTemplate,
       isActive: isActive ?? this.isActive,
+      isEnabled: isEnabled ?? this.isEnabled,
+      activationDenied: activationDenied ?? this.activationDenied,
       fcmToken: fcmToken ?? this.fcmToken,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -671,6 +766,12 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (isEnabled.present) {
+      map['is_enabled'] = Variable<bool>(isEnabled.value);
+    }
+    if (activationDenied.present) {
+      map['activation_denied'] = Variable<bool>(activationDenied.value);
+    }
     if (fcmToken.present) {
       map['fcm_token'] = Variable<String>(fcmToken.value);
     }
@@ -702,6 +803,8 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('classId: $classId, ')
           ..write('whatsappTemplate: $whatsappTemplate, ')
           ..write('isActive: $isActive, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('activationDenied: $activationDenied, ')
           ..write('fcmToken: $fcmToken, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -4587,6 +4690,8 @@ typedef $$UsersTableCreateCompanionBuilder =
       Value<String?> classId,
       Value<String?> whatsappTemplate,
       Value<bool> isActive,
+      Value<bool> isEnabled,
+      Value<bool> activationDenied,
       Value<String?> fcmToken,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -4603,6 +4708,8 @@ typedef $$UsersTableUpdateCompanionBuilder =
       Value<String?> classId,
       Value<String?> whatsappTemplate,
       Value<bool> isActive,
+      Value<bool> isEnabled,
+      Value<bool> activationDenied,
       Value<String?> fcmToken,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -4721,6 +4828,16 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
 
   ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get activationDenied => $composableBuilder(
+    column: $table.activationDenied,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4870,6 +4987,16 @@ class $$UsersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get activationDenied => $composableBuilder(
+    column: $table.activationDenied,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get fcmToken => $composableBuilder(
     column: $table.fcmToken,
     builder: (column) => ColumnOrderings(column),
@@ -4927,6 +5054,14 @@ class $$UsersTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<bool> get isEnabled =>
+      $composableBuilder(column: $table.isEnabled, builder: (column) => column);
+
+  GeneratedColumn<bool> get activationDenied => $composableBuilder(
+    column: $table.activationDenied,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get fcmToken =>
       $composableBuilder(column: $table.fcmToken, builder: (column) => column);
@@ -5059,6 +5194,8 @@ class $$UsersTableTableManager
                 Value<String?> classId = const Value.absent(),
                 Value<String?> whatsappTemplate = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> isEnabled = const Value.absent(),
+                Value<bool> activationDenied = const Value.absent(),
                 Value<String?> fcmToken = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -5073,6 +5210,8 @@ class $$UsersTableTableManager
                 classId: classId,
                 whatsappTemplate: whatsappTemplate,
                 isActive: isActive,
+                isEnabled: isEnabled,
+                activationDenied: activationDenied,
                 fcmToken: fcmToken,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -5089,6 +5228,8 @@ class $$UsersTableTableManager
                 Value<String?> classId = const Value.absent(),
                 Value<String?> whatsappTemplate = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> isEnabled = const Value.absent(),
+                Value<bool> activationDenied = const Value.absent(),
                 Value<String?> fcmToken = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -5103,6 +5244,8 @@ class $$UsersTableTableManager
                 classId: classId,
                 whatsappTemplate: whatsappTemplate,
                 isActive: isActive,
+                isEnabled: isEnabled,
+                activationDenied: activationDenied,
                 fcmToken: fcmToken,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

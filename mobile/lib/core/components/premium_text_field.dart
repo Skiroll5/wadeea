@@ -60,7 +60,7 @@ class _PremiumTextFieldState extends State<PremiumTextField> {
             color: _isFocused
                 ? (isDark ? AppColors.surfaceDark : Colors.white)
                 : (isDark
-                      ? Colors.white.withOpacity(0.05)
+                      ? Colors.white.withValues(alpha: 0.05)
                       : Colors.grey.shade100),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
@@ -72,7 +72,7 @@ class _PremiumTextFieldState extends State<PremiumTextField> {
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: theme.primaryColor.withOpacity(0.2),
+                      color: theme.primaryColor.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),

@@ -28,15 +28,18 @@ class PremiumNavBar extends StatelessWidget {
           child: Container(
             height: 70,
             decoration: BoxDecoration(
-              color: (isDark ? AppColors.surfaceDark : Colors.white)
-                  .withOpacity(0.8),
+              color: (isDark ? AppColors.surfaceDark : Colors.white).withValues(
+                alpha: 0.8,
+              ),
               borderRadius: BorderRadius.circular(32),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.black.withValues(alpha: 0.05),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -63,7 +66,7 @@ class PremiumNavBar extends StatelessWidget {
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.goldPrimary.withOpacity(0.2)
+                                ? AppColors.goldPrimary.withValues(alpha: 0.2)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),

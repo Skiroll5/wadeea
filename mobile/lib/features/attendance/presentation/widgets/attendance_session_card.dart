@@ -76,7 +76,9 @@ class AttendanceSessionCard extends ConsumerWidget {
                   : Colors.grey.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.black.withValues(alpha: 0.05),
               ),
             ),
             child: Row(

@@ -45,8 +45,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get atRiskThreshold => 'حد الخطر';
 
   @override
-  String thresholdCaption(Object count) {
-    return 'تنبيه بعد $count غيابات متتالية';
+  String thresholdCaption(Object threshold) {
+    return 'تنبيه بعد $threshold غيابات متتالية';
   }
 
   @override
@@ -249,7 +249,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get classNameHint => 'مثال: مدرسة الأحد - الصف الثالث';
 
   @override
-  String get gradeOptional => 'الصف (اختياري)';
+  String get gradeOptional => 'السنة الدراسية (اختياري)';
 
   @override
   String get gradeHint => 'مثال: الصف الثالث';
@@ -298,17 +298,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get resetDataCaption =>
-      'إذا قمت بإعادة تعيين قاعدة البيانات على الخادم، استخدم هذا لمسح البيانات المحلية.';
+      'استخدم هذا الخيار فقط إذا تم إعادة تعيين قاعدة البيانات. سيتم مسح البيانات المحلية.';
 
   @override
-  String get resetSyncData => 'إعادة تعيين البيانات والمزامنة';
+  String get resetSyncData => 'إعادة تعيين المزامنة والبيانات';
 
   @override
   String get confirmReset => 'تأكيد إعادة التعيين';
 
   @override
   String get resetWarning =>
-      'سيتم حذف جميع سجلات الغياب المحلية وفرض مزامنة كاملة من الخادم. استخدمه فقط إذا تم مسح البيانات على الخادم.';
+      'سيؤدي هذا لعملية مسح كاملة للبيانات المحلية وإعادة المزامنة.';
 
   @override
   String get lastSession => 'آخر حصة';
@@ -406,7 +406,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get takeAttendance => 'تسجيل الغياب';
 
   @override
-  String get newAttendance => 'حصة جديدة';
+  String get newAttendance => 'تسجيل حضور جديد';
 
   @override
   String get changeDateTime => 'تغيير التاريخ والوقت';
@@ -416,32 +416,32 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String attendancePresentCount(Object present, Object total) {
-    return 'حضور $present من $total';
+    return '$present من $total حاضر';
   }
 
   @override
-  String get tapToMark => 'اضغط على الطالب لتسجيل الحضور';
+  String get tapToMark => 'اضغط على الطالب لتسجيل حضوره';
 
   @override
-  String get markAll => 'تحديد الكل';
+  String get markAll => 'الكل';
 
   @override
-  String get clearAll => 'الغاء الكل';
+  String get clearAll => 'مسح';
 
   @override
   String get sessionNote => 'ملاحظة الحصة';
 
   @override
-  String get sessionNoteHint => 'أضف ملاحظة...';
+  String get sessionNoteHint => 'إضافة ملاحظة للحصة...';
 
   @override
-  String get saving => 'جاري الحفظ...';
+  String get saving => 'جار الحفظ...';
 
   @override
-  String get saveAttendance => 'حفظ الغياب';
+  String get saveAttendance => 'حفظ الحضور';
 
   @override
-  String get attendanceSaved => 'تم حفظ الغياب!';
+  String get attendanceSaved => 'تم حفظ الحضور!';
 
   @override
   String get defaultAttendanceNote => 'ملاحظة الحصة الافتراضية';
@@ -504,7 +504,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get successResetData =>
-      'نجاح: تم إعادة تعيين البيانات المحلية وإعادة المزامنة.';
+      'تم إعادة تعيين البيانات المحلية والمزامنة بنجاح.';
 
   @override
   String errorResetData(Object error) {
@@ -563,7 +563,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String managersForClass(Object className) {
-    return 'مديري: $className';
+    return 'مديرو: $className';
   }
 
   @override
@@ -624,4 +624,172 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get eveningTime => 'مساءً (8:00 م)';
+
+  @override
+  String get pendingActivation => 'بانتظار التفعيل';
+
+  @override
+  String get allUsers => 'كل المستخدمين';
+
+  @override
+  String get userActivated => 'تم تفعيل المستخدم!';
+
+  @override
+  String get userActivationFailed => 'فشل التفعيل';
+
+  @override
+  String get currentManagers => 'المديرون الحاليون';
+
+  @override
+  String get noManagersAssigned => 'لا يوجد مديرين معينين';
+
+  @override
+  String get removeManagerTitle => 'إزالة المدير';
+
+  @override
+  String removeManagerConfirm(Object name) {
+    return 'هل تريد إزالة $name من الإدارة؟';
+  }
+
+  @override
+  String get addManager => 'إضافة مدير';
+
+  @override
+  String managerAdded(Object name) {
+    return 'تم إضافة $name كمدير';
+  }
+
+  @override
+  String get managerAddFailed => 'فشل إضافة المدير';
+
+  @override
+  String get noAdminPrivileges => 'ليس لديك صلاحيات المسؤول.';
+
+  @override
+  String get adminPanel => 'لوحة التحكم';
+
+  @override
+  String get adminPanelDesc => 'إدارة المستخدمين والفصول والبيانات';
+
+  @override
+  String get management => 'الإدارة';
+
+  @override
+  String get userManagementDesc => 'تفعيل، تمكين/تعطيل المستخدمين';
+
+  @override
+  String get classManagementDesc => 'إدارة الفصول والمديرين';
+
+  @override
+  String get statistics => 'الإحصائيات';
+
+  @override
+  String get dangerZone => 'منطقة الخطر';
+
+  @override
+  String get resetAllData => 'إعادة تعيين جميع البيانات';
+
+  @override
+  String get resetAllDataDesc => 'حذف جميع الجلسات والسجلات';
+
+  @override
+  String get resetDataTitle => 'إعادة تعيين البيانات؟';
+
+  @override
+  String get resetDataConfirm =>
+      'هل أنت متأكد من أنك تريد إعادة تعيين جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get reset => 'إعادة تعيين';
+
+  @override
+  String get classCreated => 'تم إنشاء الفصل بنجاح';
+
+  @override
+  String get classCreationError => 'فشل إنشاء الفصل';
+
+  @override
+  String get enterClassName => 'أدخل اسم الفصل';
+
+  @override
+  String get enterGrade => 'أدخل الصف';
+
+  @override
+  String get accountPendingActivation => 'حسابك في انتظار تفعيل المسؤول';
+
+  @override
+  String get accountDenied => 'تم رفض طلب التفعيل من قبل المسؤول';
+
+  @override
+  String get accountDisabled => 'تم تعطيل حسابك من قبل المسؤول';
+
+  @override
+  String get invalidCredentials => 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+
+  @override
+  String get registrationSuccessful => 'تم التسجيل بنجاح!';
+
+  @override
+  String get registrationSuccessfulDesc => 'يرجى انتظار المسؤول لتفعيل حسابك';
+
+  @override
+  String get emailAlreadyExists => 'يوجد حساب مرتبط بهذا البريد الإلكتروني';
+
+  @override
+  String get createAccountToStart => 'أنشئ حسابك للبدء';
+
+  @override
+  String get contactAdminForActivation =>
+      'يرجى التواصل مع المسؤول لتفعيل حسابك';
+
+  @override
+  String get abortActivation => 'رفض التفعيل';
+
+  @override
+  String get abortActivationConfirm =>
+      'هل أنت متأكد أنك تريد رفض طلب تفعيل هذا المستخدم؟';
+
+  @override
+  String get userActivationAborted => 'تم رفض تفعيل المستخدم';
+
+  @override
+  String get enableUser => 'تمكين المستخدم';
+
+  @override
+  String get disableUser => 'تعطيل المستخدم';
+
+  @override
+  String get enableUserConfirm => 'هل تريد تمكين وصول هذا المستخدم للتطبيق؟';
+
+  @override
+  String get disableUserConfirm =>
+      'هل تريد تعطيل وصول هذا المستخدم؟ سيتم تسجيل خروجه فوراً.';
+
+  @override
+  String get userEnabled => 'تم تمكين المستخدم بنجاح';
+
+  @override
+  String get userDisabled => 'تم تعطيل المستخدم بنجاح';
+
+  @override
+  String get deleteUser => 'حذف المستخدم';
+
+  @override
+  String get deleteUserConfirm =>
+      'هل أنت متأكد أنك تريد حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get userDeleted => 'تم حذف المستخدم بنجاح';
+
+  @override
+  String get abortedActivations => 'طلبات التفعيل المرفوضة';
+
+  @override
+  String get noAbortedUsers => 'لا توجد طلبات تفعيل مرفوضة';
+
+  @override
+  String get reactivate => 'إعادة التفعيل';
+
+  @override
+  String get classManagers => 'المديرون';
 }

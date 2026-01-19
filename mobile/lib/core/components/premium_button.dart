@@ -113,7 +113,7 @@ class _PremiumButtonState extends State<PremiumButton> {
                     ? []
                     : [
                         BoxShadow(
-                          color: backgroundColor.withOpacity(0.3),
+                          color: backgroundColor.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),

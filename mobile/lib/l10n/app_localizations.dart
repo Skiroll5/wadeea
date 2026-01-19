@@ -173,8 +173,8 @@ abstract class AppLocalizations {
   /// No description provided for @thresholdCaption.
   ///
   /// In en, this message translates to:
-  /// **'Flag student after {count} consecutive absences'**
-  String thresholdCaption(Object count);
+  /// **'Flag student after {threshold} consecutive absences'**
+  String thresholdCaption(Object threshold);
 
   /// No description provided for @attendanceTrends.
   ///
@@ -563,7 +563,7 @@ abstract class AppLocalizations {
   /// No description provided for @gradeOptional.
   ///
   /// In en, this message translates to:
-  /// **'Grade (optional)'**
+  /// **'Grade (Optional)'**
   String get gradeOptional;
 
   /// No description provided for @gradeHint.
@@ -887,13 +887,13 @@ abstract class AppLocalizations {
   /// No description provided for @markAll.
   ///
   /// In en, this message translates to:
-  /// **'Mark All'**
+  /// **'All'**
   String get markAll;
 
   /// No description provided for @clearAll.
   ///
   /// In en, this message translates to:
-  /// **'Clear All'**
+  /// **'Clear'**
   String get clearAll;
 
   /// No description provided for @sessionNote.
@@ -905,7 +905,7 @@ abstract class AppLocalizations {
   /// No description provided for @sessionNoteHint.
   ///
   /// In en, this message translates to:
-  /// **'Add any note about this session...'**
+  /// **'Add session note...'**
   String get sessionNoteHint;
 
   /// No description provided for @saving.
@@ -1255,6 +1255,324 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Evening before (8:00 PM)'**
   String get eveningTime;
+
+  /// No description provided for @pendingActivation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Activation'**
+  String get pendingActivation;
+
+  /// No description provided for @allUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'All Users'**
+  String get allUsers;
+
+  /// No description provided for @userActivated.
+  ///
+  /// In en, this message translates to:
+  /// **'User activated!'**
+  String get userActivated;
+
+  /// No description provided for @userActivationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to activate'**
+  String get userActivationFailed;
+
+  /// No description provided for @currentManagers.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Managers'**
+  String get currentManagers;
+
+  /// No description provided for @noManagersAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'No managers assigned'**
+  String get noManagersAssigned;
+
+  /// No description provided for @removeManagerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Manager'**
+  String get removeManagerTitle;
+
+  /// No description provided for @removeManagerConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} as manager?'**
+  String removeManagerConfirm(Object name);
+
+  /// No description provided for @addManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Manager'**
+  String get addManager;
+
+  /// No description provided for @managerAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added as manager'**
+  String managerAdded(Object name);
+
+  /// No description provided for @managerAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add manager'**
+  String get managerAddFailed;
+
+  /// No description provided for @noAdminPrivileges.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have admin privileges.'**
+  String get noAdminPrivileges;
+
+  /// No description provided for @adminPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Panel'**
+  String get adminPanel;
+
+  /// No description provided for @adminPanelDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage users, classes & data'**
+  String get adminPanelDesc;
+
+  /// No description provided for @management.
+  ///
+  /// In en, this message translates to:
+  /// **'Management'**
+  String get management;
+
+  /// No description provided for @userManagementDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate, enable/disable users'**
+  String get userManagementDesc;
+
+  /// No description provided for @classManagementDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage classes and managers'**
+  String get classManagementDesc;
+
+  /// No description provided for @statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statistics;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger Zone'**
+  String get dangerZone;
+
+  /// No description provided for @resetAllData.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset All Data'**
+  String get resetAllData;
+
+  /// No description provided for @resetAllDataDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all sessions and records'**
+  String get resetAllDataDesc;
+
+  /// No description provided for @resetDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Data?'**
+  String get resetDataTitle;
+
+  /// No description provided for @resetDataConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to reset all data? This cannot be undone.'**
+  String get resetDataConfirm;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
+
+  /// No description provided for @classCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Class created successfully'**
+  String get classCreated;
+
+  /// No description provided for @classCreationError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create class'**
+  String get classCreationError;
+
+  /// No description provided for @enterClassName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter class name'**
+  String get enterClassName;
+
+  /// No description provided for @enterGrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter grade'**
+  String get enterGrade;
+
+  /// No description provided for @accountPendingActivation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is awaiting admin activation'**
+  String get accountPendingActivation;
+
+  /// No description provided for @accountDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Your activation request was denied by the administrator'**
+  String get accountDenied;
+
+  /// No description provided for @accountDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been disabled by the administrator'**
+  String get accountDisabled;
+
+  /// No description provided for @invalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password'**
+  String get invalidCredentials;
+
+  /// No description provided for @registrationSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration Successful!'**
+  String get registrationSuccessful;
+
+  /// No description provided for @registrationSuccessfulDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait for the administrator to activate your account'**
+  String get registrationSuccessfulDesc;
+
+  /// No description provided for @emailAlreadyExists.
+  ///
+  /// In en, this message translates to:
+  /// **'An account with this email already exists'**
+  String get emailAlreadyExists;
+
+  /// No description provided for @createAccountToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account to get started'**
+  String get createAccountToStart;
+
+  /// No description provided for @contactAdminForActivation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please contact the administrator to activate your account'**
+  String get contactAdminForActivation;
+
+  /// No description provided for @abortActivation.
+  ///
+  /// In en, this message translates to:
+  /// **'Deny Activation'**
+  String get abortActivation;
+
+  /// No description provided for @abortActivationConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to deny this user\'s activation request?'**
+  String get abortActivationConfirm;
+
+  /// No description provided for @userActivationAborted.
+  ///
+  /// In en, this message translates to:
+  /// **'User activation denied'**
+  String get userActivationAborted;
+
+  /// No description provided for @enableUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable User'**
+  String get enableUser;
+
+  /// No description provided for @disableUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable User'**
+  String get disableUser;
+
+  /// No description provided for @enableUserConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable this user\'s access to the app?'**
+  String get enableUserConfirm;
+
+  /// No description provided for @disableUserConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable this user\'s access? They will be logged out immediately.'**
+  String get disableUserConfirm;
+
+  /// No description provided for @userEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'User enabled successfully'**
+  String get userEnabled;
+
+  /// No description provided for @userDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'User disabled successfully'**
+  String get userDisabled;
+
+  /// No description provided for @deleteUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete User'**
+  String get deleteUser;
+
+  /// No description provided for @deleteUserConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this user? This action cannot be undone.'**
+  String get deleteUserConfirm;
+
+  /// No description provided for @userDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'User deleted successfully'**
+  String get userDeleted;
+
+  /// No description provided for @abortedActivations.
+  ///
+  /// In en, this message translates to:
+  /// **'Denied Activations'**
+  String get abortedActivations;
+
+  /// No description provided for @noAbortedUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'No denied activation requests'**
+  String get noAbortedUsers;
+
+  /// No description provided for @reactivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get reactivate;
+
+  /// No description provided for @classManagers.
+  ///
+  /// In en, this message translates to:
+  /// **'Managers'**
+  String get classManagers;
 }
 
 class _AppLocalizationsDelegate

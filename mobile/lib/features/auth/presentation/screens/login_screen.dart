@@ -7,6 +7,7 @@ import '../../../../core/components/premium_card.dart';
 import '../../../../core/components/premium_button.dart';
 import '../../../../core/components/premium_text_field.dart';
 import '../../data/auth_controller.dart';
+import '../../data/auth_repository.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -20,34 +21,77 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String? _errorMessage;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final success = await ref
+          .read(authControllerProvider.notifier)
+          .login(_emailController.text, _passwordController.text);
+
+      if (!mounted) return;
+
+      if (success) {
+        context.go('/');
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      final l10n = AppLocalizations.of(context)!;
+      String message;
+
+      if (e is AuthError) {
+        switch (e.code) {
+          case 'PENDING_ACTIVATION':
+            message = l10n.accountPendingActivation;
+            break;
+          case 'ACTIVATION_DENIED':
+            message = l10n.accountDenied;
+            break;
+          case 'ACCOUNT_DISABLED':
+            message = l10n.accountDisabled;
+            break;
+          case 'INVALID_CREDENTIALS':
+            message = l10n.invalidCredentials;
+            break;
+          default:
+            message = e.message;
+        }
+      } else {
+        message = e.toString();
+      }
+
+      setState(() {
+        _errorMessage = message;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    ref.listen(authControllerProvider, (previous, next) {
-      next.whenOrNull(
-        data: (user) {
-          if (user != null) {
-            context.go('/');
-          }
-        },
-        error: (err, st) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(err.toString()),
-              backgroundColor: AppColors.redPrimary,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          );
-        },
-      );
-    });
 
     return Scaffold(
       body: Container(
@@ -90,7 +134,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 PremiumCard(
                   delay: 0.2,
-                  isGlass: true, // Subtle glass effect
+                  isGlass: true,
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -101,13 +145,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 24),
+
+                        // Error message display
+                        if (_errorMessage != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.redPrimary.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.redPrimary.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: AppColors.redPrimary,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: TextStyle(
+                                      color: AppColors.redPrimary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ).animate().fade().slideY(begin: -0.2),
+                          const SizedBox(height: 16),
+                        ],
+
                         PremiumTextField(
                           controller: _emailController,
                           label: l10n.email,
                           prefixIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) =>
-                              value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? l10n.pleaseEnterName : null,
                           delay: 0.3,
                         ),
                         const SizedBox(height: 16),
@@ -117,25 +200,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           prefixIcon: Icons.lock_outline,
                           isPassword: true,
                           validator: (value) =>
-                              value!.isEmpty ? 'Required' : null,
+                              value!.isEmpty ? l10n.pleaseEnterName : null,
                           delay: 0.4,
                         ),
                         const SizedBox(height: 32),
                         PremiumButton(
                           label: l10n.login,
                           isFullWidth: true,
-                          isLoading: authState.isLoading,
+                          isLoading: _isLoading,
                           delay: 0.5,
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              ref
-                                  .read(authControllerProvider.notifier)
-                                  .login(
-                                    _emailController.text,
-                                    _passwordController.text,
-                                  );
-                            }
-                          },
+                          onPressed: _handleLogin,
                         ),
                         const SizedBox(height: 16),
                         PremiumButton(

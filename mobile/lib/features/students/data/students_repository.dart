@@ -79,10 +79,10 @@ class StudentsRepository {
 
       // 2. Success: Save to Local DB
       await _db.into(_db.students).insert(localEntity);
-      print('StudentsRepo: Online Add Success');
+      // print('StudentsRepo: Online Add Success');
     } catch (e) {
       // 3. Fallback: Save to Local + Queue
-      print('StudentsRepo: Online Add Failed ($e). Fallback to Queue.');
+      // print('StudentsRepo: Online Add Failed ($e). Fallback to Queue.');
 
       await _db.transaction(() async {
         await _db.into(_db.students).insert(localEntity);
@@ -140,7 +140,7 @@ class StudentsRepository {
       await _db.update(_db.students).replace(localEntity);
     } catch (e) {
       // 3. Fallback
-      print('StudentsRepo: Online Update Failed ($e). Fallback to Queue.');
+      // print('StudentsRepo: Online Update Failed ($e). Fallback to Queue.');
 
       await _db.transaction(() async {
         await _db.update(_db.students).replace(localEntity);
@@ -183,7 +183,7 @@ class StudentsRepository {
       );
     } catch (e) {
       // 3. Fallback
-      print('StudentsRepo: Online Delete Failed ($e). Fallback to Queue.');
+      // print('StudentsRepo: Online Delete Failed ($e). Fallback to Queue.');
 
       await _db.transaction(() async {
         await (_db.update(_db.students)..where((t) => t.id.equals(id))).write(
@@ -253,7 +253,7 @@ class StudentsRepository {
         ),
       );
     } catch (e) {
-      print('StudentsRepo: Save Student Preference Failed ($e)');
+      // print('StudentsRepo: Save Student Preference Failed ($e)');
       rethrow;
     }
   }
@@ -277,7 +277,7 @@ class StudentsRepository {
       }
       return null;
     } catch (e) {
-      print('StudentsRepo: Get Student Preference Failed ($e)');
+      // print('StudentsRepo: Get Student Preference Failed ($e)');
       return null;
     }
   }

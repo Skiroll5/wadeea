@@ -805,7 +805,9 @@ class StudentDetailScreen extends ConsumerWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      context.l10n.errorSave(e.toString()),
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.errorSave(e.toString()),
                                     ),
                                   ),
                                 );

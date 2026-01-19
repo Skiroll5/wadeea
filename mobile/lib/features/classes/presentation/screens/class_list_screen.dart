@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../data/classes_controller.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ClassListScreen extends ConsumerWidget {
   const ClassListScreen({super.key});
@@ -10,28 +11,33 @@ class ClassListScreen extends ConsumerWidget {
   void _showAddClassDialog(BuildContext context, WidgetRef ref) {
     final nameController = TextEditingController();
     final gradeController = TextEditingController();
+    final l10n = AppLocalizations.of(context);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add New Class'),
+        title: Text(l10n?.addNewClassTitle ?? 'Add New Class'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: 'Class Name'),
+              decoration: InputDecoration(
+                labelText: l10n?.className ?? 'Class Name',
+              ),
             ),
             TextField(
               controller: gradeController,
-              decoration: const InputDecoration(labelText: 'Grade (Optional)'),
+              decoration: InputDecoration(
+                labelText: l10n?.gradeOptional ?? 'Grade (Optional)',
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n?.cancel ?? 'Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -47,7 +53,7 @@ class ClassListScreen extends ConsumerWidget {
                 if (context.mounted) Navigator.pop(context);
               }
             },
-            child: const Text('Add'),
+            child: Text(l10n?.add ?? 'Add'),
           ),
         ],
       ),
@@ -57,13 +63,18 @@ class ClassListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final classesAsync = ref.watch(classesStreamProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Manage Classes')),
+      appBar: AppBar(title: Text(l10n?.manageClasses ?? 'Manage Classes')),
       body: classesAsync.when(
         data: (classes) {
           if (classes.isEmpty) {
-            return const Center(child: Text('No classes found. Add one!'));
+            return Center(
+              child: Text(
+                l10n?.noClassesFoundAdd ?? 'No classes found. Add one!',
+              ),
+            );
           }
           return ListView.builder(
             itemCount: classes.length,
@@ -95,7 +106,9 @@ class ClassListScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e')),
+        error: (e, s) => Center(
+          child: Text(l10n?.errorGeneric(e.toString()) ?? 'Error: $e'),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddClassDialog(context, ref),

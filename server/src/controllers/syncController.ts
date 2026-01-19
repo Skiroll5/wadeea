@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middleware/authMiddleware';
+import { notifyClassManagers } from '../utils/notificationUtils';
 
 const prisma = new PrismaClient();
 
@@ -56,6 +57,7 @@ const handlePush = async (req: AuthRequest, res: Response) => {
         try {
             const dbModel = (prisma as any)[modelName];
 
+
             if (operation === 'VIRTUAL_DELETE' || operation === 'DELETE') {
                 const deleteData: any = {
                     isDeleted: true,
@@ -76,6 +78,49 @@ const handlePush = async (req: AuthRequest, res: Response) => {
                     create: { ...sanitizedPayload, id: entityId },
                     update: { ...sanitizedPayload },
                 });
+
+                // --- Notification Triggers ---
+                // Fire and forget to not block sync response
+                (async () => {
+                    try {
+                        // @ts-ignore
+                        const authorId = req.user?.userId;
+
+                        if (entityType === 'NOTE' && operation === 'CREATE') {
+                            const student = await prisma.student.findUnique({ where: { id: sanitizedPayload.studentId } });
+                            if (student && student.classId && authorId) {
+                                const author = await prisma.user.findUnique({ where: { id: authorId } });
+                                const authorName = author?.name || 'A servant';
+
+                                await notifyClassManagers(
+                                    student.classId,
+                                    'noteAdded',
+                                    '📝 New Note',
+                                    `${authorName} added a note for ${student.name}`,
+                                    { studentId: student.id },
+                                    authorId
+                                );
+                            }
+                        } else if (entityType === 'ATTENDANCE_SESSION' && operation === 'CREATE') {
+                            if (sanitizedPayload.classId && authorId) {
+                                const cls = await prisma.class.findUnique({ where: { id: sanitizedPayload.classId } });
+                                const author = await prisma.user.findUnique({ where: { id: authorId } });
+                                const authorName = author?.name || 'A servant';
+
+                                await notifyClassManagers(
+                                    sanitizedPayload.classId,
+                                    'attendanceRecorded',
+                                    '📊 Attendance Recorded',
+                                    `${authorName} recorded attendance for ${cls?.name || 'class'}`,
+                                    { classId: sanitizedPayload.classId },
+                                    authorId
+                                );
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Notification trigger error:', err);
+                    }
+                })();
             }
             processedUuids.push(uuid);
         } catch (e: any) {
@@ -149,11 +194,18 @@ const handlePull = async (req: AuthRequest, res: Response) => {
             classId: true,
             whatsappTemplate: true,
             isActive: true,
+            isEnabled: true,
+            activationDenied: true,
             createdAt: true,
             updatedAt: true,
             deletedAt: true,
             isDeleted: true,
         }
+    });
+
+    // Fetch class managers
+    const classManagers = await prisma.classManager.findMany({
+        where: { updatedAt: { gt: sinceDate } },
     });
 
     res.json({
@@ -165,9 +217,11 @@ const handlePull = async (req: AuthRequest, res: Response) => {
             notes,
             classes,
             users,
+            class_managers: classManagers,
         },
     });
 };
+
 
 const mapEntityToModel = (type: string): string | null => {
     switch (type) {

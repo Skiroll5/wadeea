@@ -151,7 +151,7 @@ class _AttendanceSessionListScreenState
               border: Border(
                 top: BorderSide(
                   color: isDark
-                      ? Colors.white.withOpacity(0.1)
+                      ? Colors.white.withValues(alpha: 0.1)
                       : Colors.grey.shade200,
                 ),
               ),

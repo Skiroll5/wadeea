@@ -10,6 +10,9 @@ class Users extends Table {
   TextColumn get classId => text().nullable()();
   TextColumn get whatsappTemplate => text().nullable()();
   BoolColumn get isActive => boolean().withDefault(const Constant(false))();
+  BoolColumn get isEnabled => boolean().withDefault(const Constant(true))();
+  BoolColumn get activationDenied =>
+      boolean().withDefault(const Constant(false))();
   TextColumn get fcmToken => text().nullable()(); // For push notifications
 
   // Sync Fields

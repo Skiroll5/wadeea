@@ -46,17 +46,17 @@ class PremiumCard extends StatelessWidget {
         border:
             border ??
             (isGlass
-                ? Border.all(color: Colors.white.withOpacity(0.2))
+                ? Border.all(color: Colors.white.withValues(alpha: 0.2))
                 : Border.all(
                     color: isDark
                         ? Colors.white10
-                        : Colors.black.withOpacity(0.05),
+                        : Colors.black.withValues(alpha: 0.05),
                   )),
         boxShadow: isGlass
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -71,7 +71,7 @@ class PremiumCard extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            color: (color ?? theme.colorScheme.surface).withOpacity(0.7),
+            color: (color ?? theme.colorScheme.surface).withValues(alpha: 0.7),
             child: cardContent,
           ),
         ),
