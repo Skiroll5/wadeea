@@ -32,7 +32,7 @@ class PendingActivationScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 32),
               Text(
-                l10n.accountPendingActivation ?? 'Account Pending Activation',
+                l10n.accountPendingActivation,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : Colors.black87,
@@ -41,8 +41,7 @@ class PendingActivationScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                l10n.accountPendingActivationDesc ??
-                    'Your account has been created successfully but is waiting for administrator approval. You will be notified once your account is active.',
+                l10n.accountPendingActivationDesc,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: isDark ? Colors.white70 : Colors.black54,
                   height: 1.5,
@@ -50,29 +49,29 @@ class PendingActivationScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
               if (user != null) ...[
-                 const SizedBox(height: 24),
-                 Container(
-                   padding: const EdgeInsets.all(12),
-                   decoration: BoxDecoration(
-                     color: isDark ? Colors.white10 : Colors.grey.shade100,
-                     borderRadius: BorderRadius.circular(12),
-                   ),
-                   child: Column(
-                     children: [
-                       Text(
-                         user.name,
-                         style: const TextStyle(fontWeight: FontWeight.bold),
-                       ),
-                       Text(
-                         user.email,
-                         style: TextStyle(
-                           fontSize: 12,
-                           color: isDark ? Colors.white54 : Colors.black54,
-                         ),
-                       ),
-                     ],
-                   ),
-                 ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white10 : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        user.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        user.email,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white54 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
               const Spacer(),
 
@@ -86,7 +85,9 @@ class PendingActivationScreen extends ConsumerWidget {
                       // Or maybe just show logout directly?
                       // The user asked for "settings button should be visible in order to make him able to sign out".
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.settings),
@@ -98,7 +99,7 @@ class PendingActivationScreen extends ConsumerWidget {
                       ref.read(authControllerProvider.notifier).logout();
                     },
                     icon: const Icon(Icons.logout),
-                    label: Text(l10n.logout ?? 'Logout'),
+                    label: Text(l10n.logout),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.redPrimary,
                     ),

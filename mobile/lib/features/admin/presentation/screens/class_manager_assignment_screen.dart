@@ -4,7 +4,7 @@ import 'package:mobile/core/components/premium_card.dart';
 import 'package:mobile/core/theme/app_colors.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:mobile/features/admin/data/admin_controller.dart';
-import 'package:mobile/features/classes/presentation/widgets/class_list_item.dart';
+// import 'package:mobile/features/classes/presentation/widgets/class_list_item.dart'; // Removed unused import
 
 class ClassManagerAssignmentScreen extends ConsumerStatefulWidget {
   final String classId;
@@ -31,8 +31,13 @@ class _ClassManagerAssignmentScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.manageClassManagers),
-        subtitle: Text(widget.className, style: const TextStyle(fontSize: 14)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.manageClassManagers),
+            Text(widget.className, style: const TextStyle(fontSize: 14)),
+          ],
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -46,7 +51,8 @@ class _ClassManagerAssignmentScreenState
         ),
         child: managersAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, st) => Center(child: Text(l10n.errorGeneric(e.toString()))),
+          error: (e, st) =>
+              Center(child: Text(l10n.errorGeneric(e.toString()))),
           data: (managers) {
             return ListView(
               padding: const EdgeInsets.all(16),
@@ -69,7 +75,12 @@ class _ClassManagerAssignmentScreenState
                       ),
                     ),
                     FilledButton.icon(
-                      onPressed: () => _showAddManagerDialog(context, ref, widget.classId, l10n),
+                      onPressed: () => _showAddManagerDialog(
+                        context,
+                        ref,
+                        widget.classId,
+                        l10n,
+                      ),
                       icon: const Icon(Icons.add, size: 18),
                       label: Text(l10n.addManager),
                       style: FilledButton.styleFrom(
@@ -84,12 +95,14 @@ class _ClassManagerAssignmentScreenState
                 if (managers.isEmpty)
                   _EmptyState(l10n: l10n, isDark: isDark)
                 else
-                  ...managers.map((manager) => _ManagerCard(
-                        manager: manager,
-                        classId: widget.classId,
-                        l10n: l10n,
-                        isDark: isDark,
-                      )),
+                  ...managers.map(
+                    (manager) => _ManagerCard(
+                      manager: manager,
+                      classId: widget.classId,
+                      l10n: l10n,
+                      isDark: isDark,
+                    ),
+                  ),
               ],
             );
           },
@@ -141,7 +154,9 @@ class _HeaderSection extends StatelessWidget {
               l10n.classManagersDescription(className),
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
               ),
             ),
           ],
@@ -174,7 +189,9 @@ class _EmptyState extends StatelessWidget {
               l10n.noManagersAssigned,
               style: TextStyle(
                 fontSize: 16,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
               ),
             ),
           ],
@@ -219,7 +236,10 @@ class _ManagerCard extends ConsumerWidget {
           ),
           subtitle: Text(manager['email'] ?? ''),
           trailing: IconButton(
-            icon: const Icon(Icons.remove_circle_outline, color: AppColors.redPrimary),
+            icon: const Icon(
+              Icons.remove_circle_outline,
+              color: AppColors.redPrimary,
+            ),
             onPressed: () => _confirmRemove(context, ref),
           ),
         ),
@@ -240,7 +260,9 @@ class _ManagerCard extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.redPrimary),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.redPrimary,
+            ),
             child: Text(l10n.remove),
           ),
         ],
@@ -255,7 +277,9 @@ class _ManagerCard extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? l10n.managerRemoved : l10n.errorGeneric('Failed')),
+            content: Text(
+              success ? l10n.managerRemoved : l10n.errorGeneric('Failed'),
+            ),
             backgroundColor: success ? Colors.green : Colors.red,
           ),
         );
@@ -292,32 +316,30 @@ class _AddManagerDialogState extends ConsumerState<_AddManagerDialog> {
             data: (managers) {
               final managerIds = managers.map((m) => m['id']).toSet();
               // Filter out admins and existing managers
-              final eligibleUsers =
-                  allUsers
-                      .where(
-                        (u) =>
-                            !managerIds.contains(u['id']) &&
-                            u['role'] != 'ADMIN' &&
-                            u['isActive'] == true &&
-                            u['isDeleted'] == false,
-                      )
-                      .toList();
+              final eligibleUsers = allUsers
+                  .where(
+                    (u) =>
+                        !managerIds.contains(u['id']) &&
+                        u['role'] != 'ADMIN' &&
+                        u['isActive'] == true &&
+                        u['isDeleted'] == false,
+                  )
+                  .toList();
 
               if (eligibleUsers.isEmpty) {
                 return Text(l10n.allUsersAreManagers);
               }
 
               return DropdownButtonFormField<String>(
-                value: _selectedUserId,
+                initialValue: _selectedUserId,
                 hint: Text(l10n.selectClassToManage), // "Select..."
                 isExpanded: true,
-                items:
-                    eligibleUsers.map((user) {
-                      return DropdownMenuItem(
-                        value: user['id'] as String,
-                        child: Text(user['name']),
-                      );
-                    }).toList(),
+                items: eligibleUsers.map((user) {
+                  return DropdownMenuItem(
+                    value: user['id'] as String,
+                    child: Text(user['name']),
+                  );
+                }).toList(),
                 onChanged: (value) {
                   setState(() {
                     _selectedUserId = value;
@@ -325,19 +347,17 @@ class _AddManagerDialogState extends ConsumerState<_AddManagerDialog> {
                 },
               );
             },
-            loading:
-                () => const SizedBox(
-                  height: 50,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-            error: (e, _) => Text(l10n.errorGeneric(e.toString())),
-          );
-        },
-        loading:
-            () => const SizedBox(
+            loading: () => const SizedBox(
               height: 50,
               child: Center(child: CircularProgressIndicator()),
             ),
+            error: (e, _) => Text(l10n.errorGeneric(e.toString())),
+          );
+        },
+        loading: () => const SizedBox(
+          height: 50,
+          child: Center(child: CircularProgressIndicator()),
+        ),
         error: (e, _) => Text(l10n.errorGeneric(e.toString())),
       ),
       actions: [
@@ -346,28 +366,26 @@ class _AddManagerDialogState extends ConsumerState<_AddManagerDialog> {
           child: Text(l10n.cancel),
         ),
         FilledButton(
-          onPressed:
-              _selectedUserId == null
-                  ? null
-                  : () async {
-                    final success = await ref
-                        .read(adminControllerProvider.notifier)
-                        .assignClassManager(widget.classId, _selectedUserId!);
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            success
-                                ? l10n.managerAdded('') // Placeholder
-                                : l10n.managerAddFailed,
-                          ),
-                          backgroundColor:
-                              success ? Colors.green : Colors.red,
+          onPressed: _selectedUserId == null
+              ? null
+              : () async {
+                  final success = await ref
+                      .read(adminControllerProvider.notifier)
+                      .assignClassManager(widget.classId, _selectedUserId!);
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? l10n.managerAdded('') // Placeholder
+                              : l10n.managerAddFailed,
                         ),
-                      );
-                    }
-                  },
+                        backgroundColor: success ? Colors.green : Colors.red,
+                      ),
+                    );
+                  }
+                },
           style: FilledButton.styleFrom(backgroundColor: AppColors.goldPrimary),
           child: Text(l10n.add),
         ),

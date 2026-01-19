@@ -384,5 +384,20 @@
   "events": "Events",
   "alerts": "Alerts",
   "configuration": "Configuration",
-  "notesNotificationDesc": "Get notified when a note is added"
+  "configuration": "Configuration",
+  "notesNotificationDesc": "Get notified when a note is added",
+  "manage": "Manage",
+  "good": "Good",
+  "average": "Average",
+  "poor": "Poor",
+  "manageClassManagers": "Manage Managers",
+  "classManagersDescription": "Managers for {className}",
+  "@classManagersDescription": {
+    "placeholders": {
+      "className": {}
+    }
+  },
+  "managerRemoved": "Manager removed",
+  "enabled": "Enabled",
+  "accountPendingActivationDesc": "Your account has been created successfully but is waiting for administrator approval. You will be notified once your account is active."
 }

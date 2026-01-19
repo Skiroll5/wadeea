@@ -813,4 +813,34 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notesNotificationDesc => 'تلقي إشعار عند إضافة ملاحظة';
+
+  @override
+  String get manage => 'Manage';
+
+  @override
+  String get good => 'Good';
+
+  @override
+  String get average => 'Average';
+
+  @override
+  String get poor => 'Poor';
+
+  @override
+  String get manageClassManagers => 'Manage Managers';
+
+  @override
+  String classManagersDescription(Object className) {
+    return 'Managers for $className';
+  }
+
+  @override
+  String get managerRemoved => 'Manager removed';
+
+  @override
+  String get enabled => 'Enabled';
+
+  @override
+  String get accountPendingActivationDesc =>
+      'Your account has been created successfully but is waiting for administrator approval. You will be notified once your account is active.';
 }

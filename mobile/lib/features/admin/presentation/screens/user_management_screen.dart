@@ -291,63 +291,63 @@ class _UserManagementItemState extends ConsumerState<_UserManagementItem> {
     // unless we pass a stateful widget as an action.
 
     return _UserCard(
-      user: widget.user,
-      isDark: widget.isDark,
-      delay: widget.index * 0.1,
-      showStatusBadge: true,
-      isActive: isActive,
-      isEnabled: _isEnabled, // Use optimistic state for visual consistency
-      isAdmin: isAdmin,
-      actions: isAdmin
-          ? []
-          : [
-              // Use a custom widget for the toggle action to handle state
-              _SwitchAction(
-                value: _isEnabled,
-                label: _isEnabled ? l10n.enabled : l10n.disabled,
-                onChanged: (val) async {
-                  setState(() {
-                    _isEnabled = val;
-                  });
+          user: widget.user,
+          isDark: widget.isDark,
+          delay: widget.index * 0.1,
+          showStatusBadge: true,
+          isActive: isActive,
+          isEnabled: _isEnabled, // Use optimistic state for visual consistency
+          isAdmin: isAdmin,
+          actions: isAdmin
+              ? []
+              : [
+                  // Use a custom widget for the toggle action to handle state
+                  _SwitchAction(
+                    value: _isEnabled,
+                    label: _isEnabled ? l10n.enabled : l10n.disabled,
+                    onChanged: (val) async {
+                      setState(() {
+                        _isEnabled = val;
+                      });
 
-                  final success = val
-                      ? await ref
-                          .read(adminControllerProvider.notifier)
-                          .enableUser(widget.user['id'])
-                      : await ref
-                          .read(adminControllerProvider.notifier)
-                          .disableUser(widget.user['id']);
+                      final success = val
+                          ? await ref
+                                .read(adminControllerProvider.notifier)
+                                .enableUser(widget.user['id'])
+                          : await ref
+                                .read(adminControllerProvider.notifier)
+                                .disableUser(widget.user['id']);
 
-                  if (!success && mounted) {
-                    // Revert if failed
-                    setState(() {
-                      _isEnabled = !val;
-                    });
-                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.errorUpdateUser),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-              ),
-              _ActionButton(
-                icon: Icons.delete,
-                label: l10n.deleteUser,
-                color: Colors.grey,
-                onPressed: () => _showDeleteConfirmation(
-                  context,
-                  ref,
-                  widget.user,
-                  l10n,
-                ),
-              ),
-            ],
-    )
-    .animate()
-    .fade(delay: Duration(milliseconds: (widget.index * 100)))
-    .slideX(begin: 0.1);
+                      if (!success && context.mounted) {
+                        // Revert if failed
+                        setState(() {
+                          _isEnabled = !val;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.errorUpdateUser),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  _ActionButton(
+                    icon: Icons.delete,
+                    label: l10n.deleteUser,
+                    color: Colors.grey,
+                    onPressed: () => _showDeleteConfirmation(
+                      context,
+                      ref,
+                      widget.user,
+                      l10n,
+                    ),
+                  ),
+                ],
+        )
+        .animate()
+        .fade(delay: Duration(milliseconds: (widget.index * 100)))
+        .slideX(begin: 0.1);
   }
 
   Future<void> _showDeleteConfirmation(
@@ -558,7 +558,7 @@ class _SwitchAction extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
@@ -568,7 +568,7 @@ class _SwitchAction extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.green,
+            activeThumbColor: Colors.green,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ],
