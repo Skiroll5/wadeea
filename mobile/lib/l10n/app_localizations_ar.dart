@@ -929,4 +929,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get disable => 'تعطيل';
+
+  @override
+  String get noStudentsYet => 'لا يوجد طلاب بعد';
+
+  @override
+  String get tapAddStudentsAbove => 'اضغط على زر + أعلاه لإضافة طلاب';
 }

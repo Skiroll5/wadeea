@@ -8,10 +8,12 @@ import 'package:mobile/features/attendance/data/attendance_repository.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/upcoming_birthdays_section.dart';
+import '../../../../core/components/global_at_risk_widget.dart';
 import '../../../../core/components/premium_card.dart';
 import '../../../../core/database/app_database.dart';
 import '../../data/students_controller.dart';
 import 'package:mobile/features/classes/data/classes_controller.dart';
+import 'package:mobile/features/statistics/data/statistics_repository.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import '../../../../features/auth/data/auth_controller.dart';
 import '../../../../features/settings/data/settings_controller.dart';
@@ -147,7 +149,30 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                 ),
               ),
 
-              // 3. Student List Header
+              // 3. At Risk Students Section
+              if (selectedClassId != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        final atRiskAsync = ref.watch(
+                          classAtRiskStudentsProvider(selectedClassId!),
+                        );
+                        return atRiskAsync.when(
+                          data: (atRiskStudents) => GlobalAtRiskWidget(
+                            atRiskStudents: atRiskStudents,
+                            isDark: isDark,
+                          ),
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+              // 4. Student List Header
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -454,7 +479,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'No students yet',
+                                l10n?.noStudentsYet ?? 'No students yet',
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   color: isDark
                                       ? Colors.grey.shade400
@@ -464,7 +489,8 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Tap the + button above to add students',
+                                l10n?.tapAddStudentsAbove ??
+                                    'Tap the + button above to add students',
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: isDark
                                       ? Colors.grey.shade500
@@ -933,7 +959,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
     DateTime? selectedBirthdate;
     String? nameError;
     String? serverError;
-    bool markAbsentPast = false;
+    bool markAbsentPast = true;
 
     // Logic to determine class ID based on user role
     final user = ref.read(authControllerProvider).asData?.value;
@@ -1279,7 +1305,12 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                     subtitle: Text(
                       l10n?.markAbsentPastCaption ??
                           "Student will be recorded as ABSENT for all previous sessions.",
-                      style: TextStyle(fontSize: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade600,
+                      ),
                     ),
                     activeColor: AppColors.goldPrimary,
                     contentPadding: EdgeInsets.zero,

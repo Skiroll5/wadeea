@@ -19,7 +19,9 @@ import '../../../classes/presentation/widgets/class_list_item.dart';
 import '../../../classes/presentation/widgets/class_dialogs.dart';
 
 /// Provider for optimistic class order - shared between HomeScreen and InsightsSection
-final optimisticClassOrderProvider = StateProvider<List<String>?>((ref) => null);
+final optimisticClassOrderProvider = StateProvider<List<String>?>(
+  (ref) => null,
+);
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +31,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  bool _hasAutoNavigated = false;
+
   @override
   void initState() {
     super.initState();
@@ -96,6 +100,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: classesAsync.when(
         data: (classes) {
+          // Auto-redirect for single-class managers (non-admins)
+          // If user has exactly 1 class and hasn't been redirected yet, go directly to students
+          if (!_hasAutoNavigated &&
+              classes.length == 1 &&
+              user?.role != 'ADMIN') {
+            _hasAutoNavigated = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ref.read(selectedClassIdProvider.notifier).state =
+                  classes.first.id;
+              context.go('/students');
+            });
+            // Return loading indicator while navigating
+            return const Center(child: CircularProgressIndicator());
+          }
+
           if (classes.isEmpty && user?.role != 'ADMIN') {
             return Center(
               child: Column(
@@ -173,7 +192,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 sortedClasses.insert(newIndex, item);
 
                 final newOrderIds = sortedClasses.map((c) => c.id).toList();
-                ref.read(optimisticClassOrderProvider.notifier).state = newOrderIds;
+                ref.read(optimisticClassOrderProvider.notifier).state =
+                    newOrderIds;
 
                 // 2. Persist to storage
                 ref
@@ -182,6 +202,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               header: Column(
                 children: [
+                  // Admin Panel Card - only for admins
                   if (user?.role == 'ADMIN') ...[
                     PremiumCard(
                       margin: EdgeInsets.zero,
@@ -255,7 +276,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ).animate().fade().slideY(begin: -0.2, end: 0),
                     const SizedBox(height: 24),
+                  ],
 
+                  // Insights Section - show for ALL users with classes (not just admins)
+                  if (classes.isNotEmpty) ...[
                     const _InsightsSection(),
                     const SizedBox(height: 24),
                   ],
@@ -269,7 +293,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Row(
                             children: [
                               Text(
-                                user?.role == 'ADMIN'
+                                // Show "Your Classes" for admin or if user has multiple classes
+                                (user?.role == 'ADMIN' || classes.length > 1)
                                     ? (l10n?.yourClasses ?? 'Your Classes')
                                     : (l10n?.yourClass ?? 'Your Class'),
                                 style: theme.textTheme.headlineSmall?.copyWith(
@@ -364,7 +389,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     showDragHandle: true,
                     reorderIndex: i,
                     onTap: () {
-                      ref.read(selectedClassIdProvider.notifier).state = sortedClasses[i].id;
+                      ref.read(selectedClassIdProvider.notifier).state =
+                          sortedClasses[i].id;
                       context.push('/students');
                     },
                   ),

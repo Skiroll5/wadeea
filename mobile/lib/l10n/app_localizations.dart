@@ -1813,6 +1813,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Disable'**
   String get disable;
+
+  /// No description provided for @noStudentsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No students yet'**
+  String get noStudentsYet;
+
+  /// No description provided for @tapAddStudentsAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the + button above to add students'**
+  String get tapAddStudentsAbove;
 }
 
 class _AppLocalizationsDelegate

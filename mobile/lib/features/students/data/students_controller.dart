@@ -22,12 +22,9 @@ final classStudentsProvider = StreamProvider.autoDispose<List<Student>>((ref) {
   final user = ref.watch(authControllerProvider).asData?.value;
   if (user == null) return Stream.value([]);
 
-  String? targetClassId;
-  if (user.role == 'ADMIN') {
-    targetClassId = ref.watch(selectedClassIdProvider);
-  } else {
-    targetClassId = user.classId;
-  }
+  // Use selectedClassIdProvider for all users (admin and servant/manager)
+  // Class managers are assigned via ClassManagers table, not user.classId
+  final targetClassId = ref.watch(selectedClassIdProvider);
 
   if (targetClassId == null) return Stream.value([]);
 

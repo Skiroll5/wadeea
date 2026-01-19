@@ -349,5 +349,7 @@
     }
   },
   "enable": "تفعيل",
-  "disable": "تعطيل"
+  "disable": "تعطيل",
+  "noStudentsYet": "لا يوجد طلاب بعد",
+  "tapAddStudentsAbove": "اضغط على زر + أعلاه لإضافة طلاب"
 }

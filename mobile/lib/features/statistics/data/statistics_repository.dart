@@ -15,6 +15,19 @@ final atRiskStudentsProvider = StreamProvider<List<AtRiskStudent>>((ref) {
   return repo.watchAtRiskStudents(threshold);
 });
 
+/// Provider for at-risk students filtered by a specific class
+final classAtRiskStudentsProvider =
+    StreamProvider.family<List<AtRiskStudent>, String>((ref, classId) {
+  final allAtRisk = ref.watch(atRiskStudentsProvider);
+  return allAtRisk.when(
+    data: (students) => Stream.value(
+      students.where((s) => s.student.classId == classId).toList(),
+    ),
+    loading: () => const Stream.empty(),
+    error: (e, st) => Stream.error(e, st),
+  );
+});
+
 final weeklyStatsProvider = FutureProvider<List<WeeklyStats>>((ref) async {
   final repo = ref.watch(statisticsRepositoryProvider);
   return repo.getWeeklyAttendanceStats();

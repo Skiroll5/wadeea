@@ -935,4 +935,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get disable => 'Disable';
+
+  @override
+  String get noStudentsYet => 'No students yet';
+
+  @override
+  String get tapAddStudentsAbove => 'Tap the + button above to add students';
 }

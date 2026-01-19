@@ -463,5 +463,7 @@
     }
   },
   "enable": "Enable",
-  "disable": "Disable"
+  "disable": "Disable",
+  "noStudentsYet": "No students yet",
+  "tapAddStudentsAbove": "Tap the + button above to add students"
 }
