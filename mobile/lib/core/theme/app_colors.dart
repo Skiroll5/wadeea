@@ -33,4 +33,11 @@ class AppColors {
   // Modal UI elements (theme-aware)
   static const Color dragHandleLight = Color(0xFFD1D5DB); // grey-300 equivalent
   static const Color dragHandleDark = Color(0xFF4B5563); // grey-600 equivalent
+
+  // Gradients
+  static const LinearGradient goldGradient = LinearGradient(
+    colors: [goldPrimary, goldLight],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }

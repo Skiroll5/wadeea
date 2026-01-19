@@ -279,6 +279,8 @@
   "abortedActivations": "طلبات التفعيل المرفوضة",
   "noAbortedUsers": "لا توجد طلبات تفعيل مرفوضة",
   "reactivate": "إعادة التفعيل",
-  "classManagers": "المديرون"
+  "classManagers": "المديرون",
+  "disabled": "معطّل",
+  "active": "نشط",
+  "pending": "قيد الانتظار"
 }
-

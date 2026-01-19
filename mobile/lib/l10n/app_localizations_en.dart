@@ -798,4 +798,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get classManagers => 'Managers';
+
+  @override
+  String get disabled => 'Disabled';
+
+  @override
+  String get active => 'Active';
+
+  @override
+  String get pending => 'Pending';
 }

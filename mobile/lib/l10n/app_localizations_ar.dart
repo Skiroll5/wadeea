@@ -792,4 +792,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get classManagers => 'المديرون';
+
+  @override
+  String get disabled => 'معطّل';
+
+  @override
+  String get active => 'نشط';
+
+  @override
+  String get pending => 'قيد الانتظار';
 }

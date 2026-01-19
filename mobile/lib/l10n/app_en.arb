@@ -377,6 +377,8 @@
   "abortedActivations": "Denied Activations",
   "noAbortedUsers": "No denied activation requests",
   "reactivate": "Reactivate",
-  "classManagers": "Managers"
+  "classManagers": "Managers",
+  "disabled": "Disabled",
+  "active": "Active",
+  "pending": "Pending"
 }
-
