@@ -5,9 +5,12 @@ import '../../auth/data/auth_controller.dart';
 
 import 'classes_repository.dart';
 
+import '../../sync/data/sync_service.dart';
+
 final classesRepositoryProvider = Provider((ref) {
   final db = ref.watch(appDatabaseProvider);
-  return ClassesRepository(db, Dio());
+  final syncService = ref.watch(syncServiceProvider);
+  return ClassesRepository(db, Dio(), syncService);
 });
 
 /// Stream of all classes (for admins)

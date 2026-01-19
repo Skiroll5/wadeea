@@ -1,17 +1,18 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
+
 import '../../../core/database/app_database.dart';
 import '../../../core/config/api_config.dart';
+import '../../sync/data/sync_service.dart';
 
 class StudentsRepository {
   final AppDatabase _db;
   final Dio _dio;
+  final SyncService _syncService;
   final String _baseUrl = ApiConfig.baseUrl;
 
-  StudentsRepository(this._db, this._dio);
+  StudentsRepository(this._db, this._dio, this._syncService);
 
   Stream<List<Student>> watchStudentsByClass(String classId) {
     return (_db.select(_db.students)
@@ -63,44 +64,28 @@ class StudentsRepository {
       'isDeleted': false,
     };
 
-    try {
-      // 1. Try Online First
-      final token = await _getToken();
-      if (token == null) throw Exception('No token');
+    await _syncService.trySyncFirst(
+      entityType: 'STUDENT',
+      entityId: student.id.value,
+      operation: 'CREATE',
+      payload: apiPayload,
+      performOnline: () async {
+        final token = await _getToken();
+        if (token == null) throw Exception('No token');
 
-      await _dio.post(
-        '$_baseUrl/students',
-        data: apiPayload,
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-          sendTimeout: const Duration(seconds: 5),
-        ),
-      );
-
-      // 2. Success: Save to Local DB
-      await _db.into(_db.students).insert(localEntity);
-      // print('StudentsRepo: Online Add Success');
-    } catch (e) {
-      // 3. Fallback: Save to Local + Queue
-      // print('StudentsRepo: Online Add Failed ($e). Fallback to Queue.');
-
-      await _db.transaction(() async {
+        await _dio.post(
+          '$_baseUrl/students',
+          data: apiPayload,
+          options: Options(
+            headers: {'Authorization': 'Bearer $token'},
+            sendTimeout: const Duration(seconds: 5),
+          ),
+        );
+      },
+      performLocal: () async {
         await _db.into(_db.students).insert(localEntity);
-
-        await _db
-            .into(_db.syncQueue)
-            .insert(
-              SyncQueueCompanion(
-                uuid: Value(const Uuid().v4()),
-                entityType: const Value('STUDENT'),
-                entityId: student.id,
-                operation: const Value('CREATE'),
-                payload: Value(jsonEncode(apiPayload)),
-                createdAt: Value(now),
-              ),
-            );
-      });
-    }
+      },
+    );
   }
 
   Future<void> updateStudent(Student student) async {
@@ -122,118 +107,64 @@ class StudentsRepository {
       'isDeleted': student.isDeleted,
     };
 
-    try {
-      // 1. Try Online
-      final token = await _getToken();
-      if (token == null) throw Exception('No token');
+    await _syncService.trySyncFirst(
+      entityType: 'STUDENT',
+      entityId: student.id,
+      operation: 'UPDATE',
+      payload: apiPayload,
+      performOnline: () async {
+        final token = await _getToken();
+        if (token == null) throw Exception('No token');
 
-      await _dio.put(
-        '$_baseUrl/students/${student.id}',
-        data: apiPayload,
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-          sendTimeout: const Duration(seconds: 5),
-        ),
-      );
-
-      // 2. Success: Update Local
-      await _db.update(_db.students).replace(localEntity);
-    } catch (e) {
-      // 3. Fallback
-      // print('StudentsRepo: Online Update Failed ($e). Fallback to Queue.');
-
-      await _db.transaction(() async {
+        await _dio.put(
+          '$_baseUrl/students/${student.id}',
+          data: apiPayload,
+          options: Options(
+            headers: {'Authorization': 'Bearer $token'},
+            sendTimeout: const Duration(seconds: 5),
+          ),
+        );
+      },
+      performLocal: () async {
         await _db.update(_db.students).replace(localEntity);
-
-        await _db
-            .into(_db.syncQueue)
-            .insert(
-              SyncQueueCompanion(
-                uuid: Value(const Uuid().v4()),
-                entityType: const Value('STUDENT'),
-                entityId: Value(student.id),
-                operation: const Value('UPDATE'),
-                payload: Value(jsonEncode(apiPayload)),
-                createdAt: Value(now),
-              ),
-            );
-      });
-    }
+      },
+    );
   }
 
   Future<void> deleteStudent(String id) async {
     final now = DateTime.now();
 
-    try {
-      // 1. Try Online
-      final token = await _getToken();
-      if (token == null) throw Exception('No token');
+    await _syncService.trySyncFirst(
+      entityType: 'STUDENT',
+      entityId: id,
+      operation: 'DELETE',
+      payload: {
+        'id': id,
+        'isDeleted': true,
+        'deletedAt': now.toIso8601String(),
+        'updatedAt': now.toIso8601String(),
+      },
+      performOnline: () async {
+        final token = await _getToken();
+        if (token == null) throw Exception('No token');
 
-      await _dio.delete(
-        '$_baseUrl/students/$id',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-          sendTimeout: const Duration(seconds: 5),
-        ),
-      );
-
-      // 2. Success: Local Delete
-      await (_db.update(_db.students)..where((t) => t.id.equals(id))).write(
-        StudentsCompanion(isDeleted: const Value(true), deletedAt: Value(now)),
-      );
-    } catch (e) {
-      // 3. Fallback
-      // print('StudentsRepo: Online Delete Failed ($e). Fallback to Queue.');
-
-      await _db.transaction(() async {
+        await _dio.delete(
+          '$_baseUrl/students/$id',
+          options: Options(
+            headers: {'Authorization': 'Bearer $token'},
+            sendTimeout: const Duration(seconds: 5),
+          ),
+        );
+      },
+      performLocal: () async {
         await (_db.update(_db.students)..where((t) => t.id.equals(id))).write(
           StudentsCompanion(
             isDeleted: const Value(true),
             deletedAt: Value(now),
           ),
         );
-
-        await _db
-            .into(_db.syncQueue)
-            .insert(
-              SyncQueueCompanion(
-                uuid: Value(const Uuid().v4()),
-                entityType: const Value('STUDENT'),
-                entityId: Value(id),
-                operation: const Value('DELETE'),
-                payload: Value(
-                  jsonEncode({
-                    'id': id,
-                    'isDeleted': true,
-                    'deletedAt': now.toIso8601String(),
-                    'updatedAt': now.toIso8601String(),
-                  }),
-                ),
-                createdAt: Value(now),
-              ),
-            );
-      });
-    }
-  }
-
-  Future<void> upsertStudentFromSync(Map<String, dynamic> data) async {
-    final entity = StudentsCompanion(
-      id: Value(data['id']),
-      name: Value(data['name']),
-      phone: Value(data['phone']),
-      address: Value(data['address']),
-      birthdate: Value(
-        data['birthdate'] != null ? DateTime.parse(data['birthdate']) : null,
-      ),
-      classId: Value(data['classId']),
-      createdAt: Value(DateTime.parse(data['createdAt'])),
-      updatedAt: Value(DateTime.parse(data['updatedAt'])),
-      isDeleted: Value(data['isDeleted'] ?? false),
-      deletedAt: Value(
-        data['deletedAt'] != null ? DateTime.parse(data['deletedAt']) : null,
-      ),
+      },
     );
-    await _db.into(_db.students).insertOnConflictUpdate(entity);
   }
 
   Future<void> saveStudentPreference(

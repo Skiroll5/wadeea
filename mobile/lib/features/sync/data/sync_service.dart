@@ -3,25 +3,16 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/core/config/api_config.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../../core/database/app_database.dart';
-import '../../classes/data/classes_repository.dart';
-import '../../classes/data/classes_controller.dart';
-import '../../students/data/students_repository.dart';
-import '../../students/data/students_controller.dart';
 import '../../auth/data/auth_controller.dart';
 
 /// Provider for the SyncService with auto-sync capability
 final syncServiceProvider = Provider((ref) {
-  final service = SyncService(
-    ref.read(appDatabaseProvider),
-    Dio(),
-    ref.read(classesRepositoryProvider),
-    ref.read(studentsRepositoryProvider),
-    ref,
-  );
+  final service = SyncService(ref.read(appDatabaseProvider), Dio(), ref);
   // Start watching the sync queue for auto-sync
   service.startAutoSync();
   // Ensure disposal when provider is disposed
@@ -35,8 +26,6 @@ final isOnlineProvider = StateProvider<bool>((ref) => true);
 class SyncService {
   final AppDatabase _db;
   final Dio _dio;
-  final ClassesRepository _classesRepo;
-  final StudentsRepository _studentsRepo;
   final Ref _ref;
   final String _baseUrl = ApiConfig.baseUrl;
 
@@ -45,13 +34,7 @@ class SyncService {
   Timer? _retryTimer;
   io.Socket? _socket;
 
-  SyncService(
-    this._db,
-    this._dio,
-    this._classesRepo,
-    this._studentsRepo,
-    this._ref,
-  );
+  SyncService(this._db, this._dio, this._ref);
 
   /// Start watching the sync queue and auto-push when items are added
   void startAutoSync() {
@@ -181,6 +164,75 @@ class SyncService {
     });
   }
 
+  /// Try to perform an action online first, falling back to local+queue if failed
+  Future<void> trySyncFirst({
+    required Future<void> Function() performOnline,
+    required Future<void> Function() performLocal,
+    required String entityType,
+    required String entityId,
+    required String operation,
+    required Map<String, dynamic> payload,
+  }) async {
+    try {
+      // 1. Try Online
+      await performOnline();
+
+      // 2. Success: Perform Local Write (without queueing)
+      await performLocal();
+
+      // Optional: Pull changes to get any server-side computed fields / triggers
+      // catchError to ensure we don't block UI if pull fails
+      pullChanges().catchError((_) {});
+    } catch (e) {
+      // 3. Failure: Check if we should fallback
+      // If it's a client error (4xx), rethrow (e.g. validation failed) unless it's 408 (Timeout)
+      if (e is DioException) {
+        final statusCode = e.response?.statusCode;
+        if (statusCode != null &&
+            statusCode >= 400 &&
+            statusCode < 500 &&
+            statusCode != 408) {
+          rethrow;
+        }
+      }
+
+      // Fallback: Local Write + Queue
+      await _db.transaction(() async {
+        await performLocal();
+        await enqueue(
+          entityType: entityType,
+          entityId: entityId,
+          operation: operation,
+          payload: payload,
+        );
+      });
+    }
+  }
+
+  /// Add an item to the sync queue
+  Future<void> enqueue({
+    required String entityType,
+    required String entityId,
+    required String operation,
+    required Map<String, dynamic> payload,
+  }) async {
+    await _db
+        .into(_db.syncQueue)
+        .insert(
+          SyncQueueCompanion(
+            uuid: Value(const Uuid().v4()),
+            entityType: Value(entityType),
+            entityId: Value(entityId),
+            operation: Value(operation),
+            payload: Value(jsonEncode(payload)),
+            createdAt: Value(DateTime.now()),
+          ),
+        );
+
+    // Trigger auto-sync attempt (debounced by listener)
+    // The listener on `syncQueue` in `startAutoSync` will pick this up
+  }
+
   /// Manually trigger a full sync
   Future<void> sync() async {
     await pushChanges();
@@ -304,7 +356,7 @@ class SyncService {
         }
         if (changes['students'] != null) {
           for (var s in changes['students']) {
-            await _studentsRepo.upsertStudentFromSync(s);
+            await _upsertStudentFromSync(s);
           }
         }
         if (changes['attendance'] != null) {
@@ -319,7 +371,7 @@ class SyncService {
         }
         if (changes['classes'] != null) {
           for (var c in changes['classes']) {
-            await _classesRepo.upsertClassFromSync(c);
+            await _upsertClassFromSync(c);
           }
         }
         if (changes['attendance_sessions'] != null) {
@@ -428,6 +480,41 @@ class SyncService {
       updatedAt: Value(DateTime.parse(data['updatedAt'])),
     );
     await _db.into(_db.classManagers).insertOnConflictUpdate(entity);
+  }
+
+  Future<void> _upsertClassFromSync(Map<String, dynamic> data) async {
+    final entity = ClassesCompanion(
+      id: Value(data['id']),
+      name: Value(data['name']),
+      grade: Value(data['grade']),
+      createdAt: Value(DateTime.parse(data['createdAt'])),
+      updatedAt: Value(DateTime.parse(data['updatedAt'])),
+      isDeleted: Value(data['isDeleted'] ?? false),
+      deletedAt: Value(
+        data['deletedAt'] != null ? DateTime.parse(data['deletedAt']) : null,
+      ),
+    );
+    await _db.into(_db.classes).insertOnConflictUpdate(entity);
+  }
+
+  Future<void> _upsertStudentFromSync(Map<String, dynamic> data) async {
+    final entity = StudentsCompanion(
+      id: Value(data['id']),
+      name: Value(data['name']),
+      phone: Value(data['phone']),
+      address: Value(data['address']),
+      birthdate: Value(
+        data['birthdate'] != null ? DateTime.parse(data['birthdate']) : null,
+      ),
+      classId: Value(data['classId']),
+      createdAt: Value(DateTime.parse(data['createdAt'])),
+      updatedAt: Value(DateTime.parse(data['updatedAt'])),
+      isDeleted: Value(data['isDeleted'] ?? false),
+      deletedAt: Value(
+        data['deletedAt'] != null ? DateTime.parse(data['deletedAt']) : null,
+      ),
+    );
+    await _db.into(_db.students).insertOnConflictUpdate(entity);
   }
 
   Future<String?> _getToken() async {

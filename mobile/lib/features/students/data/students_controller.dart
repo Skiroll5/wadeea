@@ -6,12 +6,14 @@ import '../../../core/database/app_database.dart';
 import '../../auth/data/auth_controller.dart';
 import '../../attendance/data/attendance_controller.dart';
 import 'students_repository.dart';
+import '../../sync/data/sync_service.dart';
 
 final uuidProvider = Provider((ref) => const Uuid());
 
 final studentsRepositoryProvider = Provider((ref) {
   final db = ref.watch(appDatabaseProvider);
-  return StudentsRepository(db, Dio());
+  final syncService = ref.watch(syncServiceProvider);
+  return StudentsRepository(db, Dio(), syncService);
 });
 
 final selectedClassIdProvider = StateProvider<String?>((ref) => null);
