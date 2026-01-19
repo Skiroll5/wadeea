@@ -1244,11 +1244,23 @@ abstract class AppLocalizations {
   /// **'Notes'**
   String get notesNotification;
 
+  /// No description provided for @notesNotificationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when a note is added'**
+  String get notesNotificationDesc;
+
   /// No description provided for @attendanceNotification.
   ///
   /// In en, this message translates to:
   /// **'Attendance'**
   String get attendanceNotification;
+
+  /// No description provided for @attendanceNotificationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when attendance is recorded'**
+  String get attendanceNotificationDesc;
 
   /// No description provided for @birthdayNotification.
   ///
@@ -1256,17 +1268,65 @@ abstract class AppLocalizations {
   /// **'Birthday Reminders'**
   String get birthdayNotification;
 
+  /// No description provided for @birthdayNotificationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Get reminders for student birthdays'**
+  String get birthdayNotificationDesc;
+
   /// No description provided for @inactiveNotification.
   ///
   /// In en, this message translates to:
   /// **'Inactive Students'**
   String get inactiveNotification;
 
+  /// No description provided for @inactiveNotificationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert when a student becomes inactive'**
+  String get inactiveNotificationDesc;
+
   /// No description provided for @newUserNotification.
   ///
   /// In en, this message translates to:
   /// **'New Registrations'**
   String get newUserNotification;
+
+  /// No description provided for @newUserNotificationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify when a new user registers'**
+  String get newUserNotificationDesc;
+
+  /// No description provided for @inactiveThresholdDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Threshold to consider a student inactive'**
+  String get inactiveThresholdDesc;
+
+  /// No description provided for @birthdayReminderDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days before birthday'**
+  String get birthdayReminderDays;
+
+  /// No description provided for @birthdayReminderDaysDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'How many days before to send reminder'**
+  String get birthdayReminderDaysDesc;
+
+  /// No description provided for @sameDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Same day'**
+  String get sameDay;
+
+  /// No description provided for @daysBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days before'**
+  String daysBefore(Object count);
 
   /// No description provided for @morningTime.
   ///
@@ -1604,6 +1664,18 @@ abstract class AppLocalizations {
   /// **'Reactivate'**
   String get reactivate;
 
+  /// No description provided for @reactivateConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to reactivate {name}? They will be able to log in again.'**
+  String reactivateConfirmation(Object name);
+
+  /// No description provided for @deny.
+  ///
+  /// In en, this message translates to:
+  /// **'Deny'**
+  String get deny;
+
   /// No description provided for @classManagers.
   ///
   /// In en, this message translates to:
@@ -1645,12 +1717,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Configuration'**
   String get configuration;
-
-  /// No description provided for @notesNotificationDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Get notified when a note is added'**
-  String get notesNotificationDesc;
 
   /// No description provided for @manage.
   ///

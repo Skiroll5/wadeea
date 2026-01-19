@@ -38,9 +38,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _SectionHeader(
-                      title:
-                          l10n?.events ??
-                          'Events', // Need to check if 'events' key exists, fallback provided
+                      title: l10n?.events ?? 'Events',
                       isDark: isDark,
                     ),
                     const SizedBox(height: 8),
@@ -49,7 +47,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                       icon: Icons.note_alt_outlined,
                       description:
                           l10n?.notesNotificationDesc ??
-                          'Get notified when a note is added', // Fallback
+                          'Get notified when a note is added',
                       value: prefs.noteAdded,
                       onChanged: (val) => ref
                           .read(notificationSettingsProvider.notifier)
@@ -65,7 +63,9 @@ class NotificationSettingsPage extends ConsumerWidget {
                     _NotificationSwitchTile(
                       title: l10n?.attendanceNotification ?? 'Attendance',
                       icon: Icons.fact_check_outlined,
-                      description: 'Get notified when attendance is recorded',
+                      description:
+                          l10n?.attendanceNotificationDesc ??
+                          'Get notified when attendance is recorded',
                       value: prefs.attendanceRecorded,
                       onChanged: (val) => ref
                           .read(notificationSettingsProvider.notifier)
@@ -83,7 +83,9 @@ class NotificationSettingsPage extends ConsumerWidget {
                     _NotificationSwitchTile(
                       title: l10n?.birthdayNotification ?? 'Birthday Reminders',
                       icon: Icons.cake_outlined,
-                      description: 'Get reminders for student birthdays',
+                      description:
+                          l10n?.birthdayNotificationDesc ??
+                          'Get reminders for student birthdays',
                       value: prefs.birthdayReminder,
                       onChanged: (val) => ref
                           .read(notificationSettingsProvider.notifier)
@@ -110,7 +112,9 @@ class NotificationSettingsPage extends ConsumerWidget {
                     _NotificationSwitchTile(
                       title: l10n?.inactiveNotification ?? 'Inactive Students',
                       icon: Icons.person_off_outlined,
-                      description: 'Alert when a student becomes inactive',
+                      description:
+                          l10n?.inactiveNotificationDesc ??
+                          'Alert when a student becomes inactive',
                       value: prefs.inactiveStudent,
                       onChanged: (val) => ref
                           .read(notificationSettingsProvider.notifier)
@@ -129,7 +133,9 @@ class NotificationSettingsPage extends ConsumerWidget {
                       _NotificationSwitchTile(
                         title: l10n?.newUserNotification ?? 'New Registrations',
                         icon: Icons.person_add_outlined,
-                        description: 'Notify when a new user registers',
+                        description:
+                            l10n?.newUserNotificationDesc ??
+                            'Notify when a new user registers',
                         value: prefs.newUserRegistered,
                         onChanged: (val) => ref
                             .read(notificationSettingsProvider.notifier)
@@ -165,7 +171,8 @@ class NotificationSettingsPage extends ConsumerWidget {
                         ),
                       ),
                       subtitle: Text(
-                        'Threshold to consider a student inactive',
+                        l10n?.inactiveThresholdDesc ??
+                            'Threshold to consider a student inactive',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark
@@ -217,6 +224,85 @@ class NotificationSettingsPage extends ConsumerWidget {
                                       prefs.copyWith(
                                         inactiveThresholdDays: val,
                                       ),
+                                    );
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    Divider(
+                      height: 1,
+                      indent: 16,
+                      endIndent: 16,
+                      color: isDark ? Colors.white10 : Colors.grey.shade100,
+                    ),
+                    // Birthday reminder days
+                    ListTile(
+                      title: Text(
+                        l10n?.birthdayReminderDays ?? 'Days before birthday',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? Colors.white
+                              : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                      subtitle: Text(
+                        l10n?.birthdayReminderDaysDesc ??
+                            'How many days before to send reminder',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
+                        ),
+                      ),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white10 : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white24
+                                : Colors.grey.shade300,
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            value: prefs.birthdayReminderDays,
+                            icon: Icon(
+                              Icons.arrow_drop_down,
+                              color: isDark
+                                  ? Colors.white70
+                                  : Colors.grey.shade600,
+                            ),
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            dropdownColor: isDark
+                                ? AppColors.surfaceDark
+                                : AppColors.surfaceLight,
+                            items: [0, 1, 2, 3, 7].map((e) {
+                              final label = e == 0
+                                  ? (l10n?.sameDay ?? 'Same day')
+                                  : (l10n?.daysBefore(e) ?? '$e days before');
+                              return DropdownMenuItem(
+                                value: e,
+                                child: Text(label),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                ref
+                                    .read(notificationSettingsProvider.notifier)
+                                    .updatePreference(
+                                      prefs.copyWith(birthdayReminderDays: val),
                                     );
                               }
                             },

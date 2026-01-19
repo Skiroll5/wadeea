@@ -275,10 +275,25 @@
   "whatsappMessageHint": "Hello {firstname}, how are you?",
   "notificationSettingsDesc": "Manage push notifications",
   "notesNotification": "Notes",
+  "notesNotificationDesc": "Get notified when a note is added",
   "attendanceNotification": "Attendance",
+  "attendanceNotificationDesc": "Get notified when attendance is recorded",
   "birthdayNotification": "Birthday Reminders",
+  "birthdayNotificationDesc": "Get reminders for student birthdays",
   "inactiveNotification": "Inactive Students",
+  "inactiveNotificationDesc": "Alert when a student becomes inactive",
   "newUserNotification": "New Registrations",
+  "newUserNotificationDesc": "Notify when a new user registers",
+  "inactiveThresholdDesc": "Threshold to consider a student inactive",
+  "birthdayReminderDays": "Days before birthday",
+  "birthdayReminderDaysDesc": "How many days before to send reminder",
+  "sameDay": "Same day",
+  "daysBefore": "{count} days before",
+  "@daysBefore": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "morningTime": "Morning (8:00 AM)",
   "eveningTime": "Evening before (8:00 PM)",
   "className": "Class Name",

@@ -624,16 +624,49 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notesNotification => 'الملاحظات';
 
   @override
+  String get notesNotificationDesc => 'تلقي إشعار عند إضافة ملاحظة';
+
+  @override
   String get attendanceNotification => 'الغياب';
+
+  @override
+  String get attendanceNotificationDesc => 'تلقي إشعار عند تسجيل الحضور';
 
   @override
   String get birthdayNotification => 'أعياد الميلاد';
 
   @override
+  String get birthdayNotificationDesc => 'تلقي تذكيرات بأعياد ميلاد الطلاب';
+
+  @override
   String get inactiveNotification => 'الطلاب غير النشطين';
 
   @override
+  String get inactiveNotificationDesc => 'تنبيه عند عدم نشاط طالب';
+
+  @override
   String get newUserNotification => 'تسجيلات جديدة';
+
+  @override
+  String get newUserNotificationDesc => 'تلقي إشعار عند تسجيل مستخدم جديد';
+
+  @override
+  String get inactiveThresholdDesc => 'الحد الأدنى لاعتبار الطالب غير نشط';
+
+  @override
+  String get birthdayReminderDays => 'أيام قبل عيد الميلاد';
+
+  @override
+  String get birthdayReminderDaysDesc =>
+      'كم يوم قبل عيد الميلاد لإرسال التذكير';
+
+  @override
+  String get sameDay => 'نفس اليوم';
+
+  @override
+  String daysBefore(Object count) {
+    return 'قبل $count يوم';
+  }
 
   @override
   String get morningTime => 'صباحاً (8:00 ص)';
@@ -815,6 +848,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reactivate => 'إعادة التفعيل';
 
   @override
+  String reactivateConfirmation(Object name) {
+    return 'هل أنت متأكد من إعادة تفعيل $name؟ سيتمكن من تسجيل الدخول مرة أخرى.';
+  }
+
+  @override
+  String get deny => 'رفض';
+
+  @override
   String get classManagers => 'المديرون';
 
   @override
@@ -834,9 +875,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get configuration => 'إعدادات';
-
-  @override
-  String get notesNotificationDesc => 'تلقي إشعار عند إضافة ملاحظة';
 
   @override
   String get manage => 'إدارة';

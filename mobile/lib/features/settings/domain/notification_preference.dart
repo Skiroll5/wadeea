@@ -7,6 +7,7 @@ class NotificationPreference {
   final bool newUserRegistered;
   final int inactiveThresholdDays;
   final bool birthdayNotifyMorning;
+  final int birthdayReminderDays; // How many days before birthday to remind
 
   NotificationPreference({
     required this.noteAdded,
@@ -17,6 +18,7 @@ class NotificationPreference {
     required this.newUserRegistered,
     required this.inactiveThresholdDays,
     required this.birthdayNotifyMorning,
+    required this.birthdayReminderDays,
   });
 
   factory NotificationPreference.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class NotificationPreference {
       newUserRegistered: json['newUserRegistered'] ?? true,
       inactiveThresholdDays: json['inactiveThresholdDays'] ?? 14,
       birthdayNotifyMorning: json['birthdayNotifyMorning'] ?? true,
+      birthdayReminderDays: json['birthdayReminderDays'] ?? 1,
     );
   }
 
@@ -42,6 +45,7 @@ class NotificationPreference {
       'newUserRegistered': newUserRegistered,
       'inactiveThresholdDays': inactiveThresholdDays,
       'birthdayNotifyMorning': birthdayNotifyMorning,
+      'birthdayReminderDays': birthdayReminderDays,
     };
   }
 
@@ -54,6 +58,7 @@ class NotificationPreference {
     bool? newUserRegistered,
     int? inactiveThresholdDays,
     bool? birthdayNotifyMorning,
+    int? birthdayReminderDays,
   }) {
     return NotificationPreference(
       noteAdded: noteAdded ?? this.noteAdded,
@@ -66,6 +71,7 @@ class NotificationPreference {
           inactiveThresholdDays ?? this.inactiveThresholdDays,
       birthdayNotifyMorning:
           birthdayNotifyMorning ?? this.birthdayNotifyMorning,
+      birthdayReminderDays: birthdayReminderDays ?? this.birthdayReminderDays,
     );
   }
 }

@@ -196,10 +196,25 @@
   "whatsappMessageHint": "أهلاً {firstname}، كيف حالك؟",
   "notificationSettingsDesc": "إدارة الإشعارات",
   "notesNotification": "الملاحظات",
+  "notesNotificationDesc": "تلقي إشعار عند إضافة ملاحظة",
   "attendanceNotification": "الغياب",
+  "attendanceNotificationDesc": "تلقي إشعار عند تسجيل الحضور",
   "birthdayNotification": "أعياد الميلاد",
+  "birthdayNotificationDesc": "تلقي تذكيرات بأعياد ميلاد الطلاب",
   "inactiveNotification": "الطلاب غير النشطين",
+  "inactiveNotificationDesc": "تنبيه عند عدم نشاط طالب",
   "newUserNotification": "تسجيلات جديدة",
+  "newUserNotificationDesc": "تلقي إشعار عند تسجيل مستخدم جديد",
+  "inactiveThresholdDesc": "الحد الأدنى لاعتبار الطالب غير نشط",
+  "birthdayReminderDays": "أيام قبل عيد الميلاد",
+  "birthdayReminderDaysDesc": "كم يوم قبل عيد الميلاد لإرسال التذكير",
+  "sameDay": "نفس اليوم",
+  "daysBefore": "قبل {count} يوم",
+  "@daysBefore": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "morningTime": "صباحاً (8:00 ص)",
   "eveningTime": "مساءً (8:00 م)",
   "className": "اسم الفصل",

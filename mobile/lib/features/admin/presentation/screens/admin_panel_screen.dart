@@ -440,29 +440,40 @@ class _UsersSection extends ConsumerWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Reject button
-                            IconButton.outlined(
-                              icon: const Icon(Icons.close, size: 18),
-                              tooltip: l10n?.abortActivation ?? 'Deny',
-                              visualDensity: VisualDensity.compact,
-                              style: IconButton.styleFrom(
+                            // Reject button - subtle text button with red styling
+                            TextButton(
+                              style: TextButton.styleFrom(
                                 foregroundColor: Colors.red.shade600,
-                                side: BorderSide(color: Colors.red.shade300),
+                                visualDensity: VisualDensity.compact,
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
                               ),
                               onPressed: () async {
-                                final userName = user['name'] ?? 'Unknown';
+                                final dialogTheme = Theme.of(context);
                                 final confirmed = await showDialog<bool>(
                                   context: context,
                                   builder: (ctx) => AlertDialog(
-                                    icon: Icon(
-                                      Icons.block_rounded,
-                                      color: Colors.red.shade600,
-                                      size: 32,
+                                    icon: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red.shade50,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.person_off_rounded,
+                                        color: Colors.red.shade600,
+                                        size: 28,
+                                      ),
                                     ),
-                                    title: Text(l10n?.abortActivation ?? 'Deny Activation'),
+                                    title: Text(
+                                      l10n?.abortActivation ?? 'Deny Activation',
+                                      style: dialogTheme.textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     content: Text(
                                       l10n?.abortActivationConfirm ??
                                           'Are you sure you want to deny this user\'s activation request?',
+                                      style: dialogTheme.textTheme.bodyMedium,
                                     ),
                                     actions: [
                                       TextButton(
@@ -496,8 +507,9 @@ class _UsersSection extends ConsumerWidget {
                                   );
                                 }
                               },
+                              child: Text(l10n?.deny ?? 'Deny'),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 4),
                             // Activate button
                             FilledButton.icon(
                               icon: const Icon(Icons.check, size: 16),

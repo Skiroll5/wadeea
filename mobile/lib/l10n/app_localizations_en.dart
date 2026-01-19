@@ -626,16 +626,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notesNotification => 'Notes';
 
   @override
+  String get notesNotificationDesc => 'Get notified when a note is added';
+
+  @override
   String get attendanceNotification => 'Attendance';
+
+  @override
+  String get attendanceNotificationDesc =>
+      'Get notified when attendance is recorded';
 
   @override
   String get birthdayNotification => 'Birthday Reminders';
 
   @override
+  String get birthdayNotificationDesc => 'Get reminders for student birthdays';
+
+  @override
   String get inactiveNotification => 'Inactive Students';
 
   @override
+  String get inactiveNotificationDesc =>
+      'Alert when a student becomes inactive';
+
+  @override
   String get newUserNotification => 'New Registrations';
+
+  @override
+  String get newUserNotificationDesc => 'Notify when a new user registers';
+
+  @override
+  String get inactiveThresholdDesc =>
+      'Threshold to consider a student inactive';
+
+  @override
+  String get birthdayReminderDays => 'Days before birthday';
+
+  @override
+  String get birthdayReminderDaysDesc =>
+      'How many days before to send reminder';
+
+  @override
+  String get sameDay => 'Same day';
+
+  @override
+  String daysBefore(Object count) {
+    return '$count days before';
+  }
 
   @override
   String get morningTime => 'Morning (8:00 AM)';
@@ -821,6 +857,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reactivate => 'Reactivate';
 
   @override
+  String reactivateConfirmation(Object name) {
+    return 'Are you sure you want to reactivate $name? They will be able to log in again.';
+  }
+
+  @override
+  String get deny => 'Deny';
+
+  @override
   String get classManagers => 'Managers';
 
   @override
@@ -840,9 +884,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get configuration => 'Configuration';
-
-  @override
-  String get notesNotificationDesc => 'Get notified when a note is added';
 
   @override
   String get manage => 'Manage';
