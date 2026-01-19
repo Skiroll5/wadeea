@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/premium_card.dart';
-import '../../../../core/components/premium_button.dart';
+// import '../../../../core/components/premium_button.dart';
 import '../../data/admin_controller.dart';
-import '../../data/classes_controller.dart';
+// import '../../data/classes_controller.dart'; // Removed invalid import
 import '../../../classes/data/classes_controller.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import 'class_manager_assignment_screen.dart';
 
 class ClassManagementScreen extends ConsumerStatefulWidget {
   const ClassManagementScreen({super.key});
@@ -96,8 +95,9 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
                 final item = displayClasses.removeAt(oldIndex);
                 displayClasses.insert(newIndex, item);
 
-                final newOrderIds =
-                    displayClasses.map((c) => c['id'] as String).toList();
+                final newOrderIds = displayClasses
+                    .map((c) => c['id'] as String)
+                    .toList();
 
                 setState(() {
                   _optimisticOrder = newOrderIds;
@@ -121,10 +121,45 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddClassDialog(context, ref, l10n),
-        backgroundColor: isDark ? AppColors.goldPrimary : AppColors.goldPrimary,
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showAddClassDialog(context, ref, l10n),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? AppColors.goldPrimary.withValues(alpha: 0.1)
+                  : AppColors.goldPrimary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark
+                    ? AppColors.goldPrimary.withValues(alpha: 0.2)
+                    : AppColors.goldPrimary.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.add,
+                  size: 18,
+                  color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  l10n.addClass,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -173,9 +208,7 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
                     .read(adminControllerProvider.notifier)
                     .createClass(
                       nameController.text,
-                      gradeController.text.isEmpty
-                          ? null
-                          : gradeController.text,
+                      gradeController.text, // Pass directly as String
                     );
 
                 if (context.mounted) {
@@ -228,7 +261,8 @@ class _AdminClassCard extends ConsumerWidget {
     final managersAsync = ref.watch(classManagersProvider(classId));
 
     // Calculate attendance percentage from backend data
-    final attendancePercentage = (classData['attendancePercentage'] as num?)?.toDouble() ?? 0.0;
+    final attendancePercentage =
+        (classData['attendancePercentage'] as num?)?.toDouble() ?? 0.0;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -247,9 +281,7 @@ class _AdminClassCard extends ConsumerWidget {
                   ),
                   child: Icon(
                     Icons.class_outlined,
-                    color: isDark
-                        ? AppColors.goldPrimary
-                        : AppColors.goldDark,
+                    color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -283,8 +315,9 @@ class _AdminClassCard extends ConsumerWidget {
                               ),
                             );
                           }
-                          final names =
-                              managers.map((m) => m['name']).join(' • ');
+                          final names = managers
+                              .map((m) => m['name'])
+                              .join(' • ');
                           return Text(
                             names,
                             style: TextStyle(
@@ -309,23 +342,34 @@ class _AdminClassCard extends ConsumerWidget {
                 ),
               ],
             ),
+
             // Progress Bar in subtitle area or bottom of tile header?
             // ExpansionTile doesn't easily support custom layout below title without hacking.
             // Let's put the progress bar in the children or try to use subtitle for it?
             // User requested: "For the class cards you should add a progress bar with the average percentage of presence"
             // Let's add it as a child of the card content (ExpansionTile children).
-
             childrenPadding: const EdgeInsets.all(16),
             children: [
               // Attendance Progress
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         l10n.attendanceRate,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _getAttendanceStatusText(attendancePercentage, l10n),
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark
@@ -333,28 +377,34 @@ class _AdminClassCard extends ConsumerWidget {
                               : AppColors.textSecondaryLight,
                         ),
                       ),
+                    ],
+                  ),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: CircularProgressIndicator(
+                          value: attendancePercentage,
+                          strokeWidth: 5,
+                          backgroundColor: isDark
+                              ? Colors.grey[800]
+                              : Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation(
+                            _getColorForPercentage(attendancePercentage),
+                          ),
+                        ),
+                      ),
                       Text(
                         '${(attendancePercentage * 100).toInt()}%',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: _getColorForPercentage(attendancePercentage),
+                          fontSize: 12,
+                          color: isDark ? Colors.white : Colors.black,
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: attendancePercentage,
-                      backgroundColor: isDark
-                          ? Colors.grey[800]
-                          : Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation(
-                        _getColorForPercentage(attendancePercentage),
-                      ),
-                      minHeight: 6,
-                    ),
                   ),
                 ],
               ),
@@ -374,14 +424,28 @@ class _AdminClassCard extends ConsumerWidget {
                           : AppColors.textPrimaryLight,
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.person_add,
-                      size: 20,
-                      color: AppColors.goldPrimary,
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ClassManagerAssignmentScreen(
+                            classId: classId,
+                            className: classData['name'],
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: Text(
+                      l10n.manage,
+                      style: const TextStyle(fontSize: 12),
                     ),
-                    onPressed: () =>
-                        _showAddManagerDialog(context, ref, classId, l10n),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.goldPrimary,
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                   ),
                 ],
               ),
@@ -399,43 +463,49 @@ class _AdminClassCard extends ConsumerWidget {
                       ),
                     );
                   }
+                  // Show preview of managers (limit 3)
+                  final displayManagers = managers.take(3).toList();
                   return Column(
-                    children: managers.map((manager) {
-                      return ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: CircleAvatar(
-                          radius: 16,
-                          backgroundColor:
-                              AppColors.goldPrimary.withValues(alpha: 0.2),
+                    children: [
+                      ...displayManagers.map((manager) {
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: CircleAvatar(
+                            radius: 12,
+                            backgroundColor: AppColors.goldPrimary.withValues(
+                              alpha: 0.2,
+                            ),
+                            child: Text(
+                              manager['name'].substring(0, 1).toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: AppColors.goldPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            manager['name'],
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                        );
+                      }),
+                      if (managers.length > 3)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            manager['name'].substring(0, 1).toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.goldPrimary,
-                              fontWeight: FontWeight.bold,
+                            '+ ${managers.length - 3} more',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
                             ),
                           ),
                         ),
-                        title: Text(
-                          manager['name'],
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(
-                            Icons.remove_circle_outline,
-                            color: AppColors.redPrimary,
-                            size: 20,
-                          ),
-                          onPressed: () => _confirmRemoveManager(
-                            context,
-                            ref,
-                            classId,
-                            manager,
-                            l10n,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                    ],
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
@@ -454,60 +524,15 @@ class _AdminClassCard extends ConsumerWidget {
     return AppColors.redPrimary;
   }
 
-  Future<void> _showAddManagerDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String classId,
-    AppLocalizations l10n,
-  ) async {
-    // We need a list of users who are NOT managers of this class
-    // Ideally fetch all users and filter.
-    // For simplicity, we'll fetch all users (servants) and let the user pick.
-    // A better UX would be a search/autocomplete.
-    final usersAsync = ref.read(allUsersProvider); // Just read, don't watch
-    // But we need to await it. Since we are in a callback, we can't easily await a provider if it's not ready.
-    // Better to show a dialog that loads the users.
-
-    showDialog(
-      context: context,
-      builder: (ctx) => _AddManagerDialog(classId: classId),
-    );
+  String _getAttendanceStatusText(double percentage, AppLocalizations l10n) {
+    if (percentage >= 0.8) return l10n.good;
+    if (percentage >= 0.5) return l10n.average;
+    return l10n.poor;
   }
 
-  Future<void> _confirmRemoveManager(
-    BuildContext context,
-    WidgetRef ref,
-    String classId,
-    Map<String, dynamic> manager,
-    AppLocalizations l10n,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.removeManagerTitle),
-        content: Text(l10n.removeManagerConfirm(manager['name'])),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.redPrimary,
-            ),
-            child: Text(l10n.remove),
-          ),
-        ],
-      ),
-    );
+  // Removed unused _showAddManagerDialog
 
-    if (confirmed == true && context.mounted) {
-      await ref
-          .read(adminControllerProvider.notifier)
-          .removeClassManager(classId, manager['id']);
-    }
-  }
+  // Removed unused _confirmRemoveManager
 }
 
 class _AddManagerDialog extends ConsumerStatefulWidget {
@@ -538,32 +563,30 @@ class _AddManagerDialogState extends ConsumerState<_AddManagerDialog> {
             data: (managers) {
               final managerIds = managers.map((m) => m['id']).toSet();
               // Filter out admins and existing managers
-              final eligibleUsers =
-                  allUsers
-                      .where(
-                        (u) =>
-                            !managerIds.contains(u['id']) &&
-                            u['role'] != 'ADMIN' &&
-                            u['isActive'] == true &&
-                            u['isDeleted'] == false,
-                      )
-                      .toList();
+              final eligibleUsers = allUsers
+                  .where(
+                    (u) =>
+                        !managerIds.contains(u['id']) &&
+                        u['role'] != 'ADMIN' &&
+                        u['isActive'] == true &&
+                        u['isDeleted'] == false,
+                  )
+                  .toList();
 
               if (eligibleUsers.isEmpty) {
                 return Text(l10n.allUsersAreManagers);
               }
 
               return DropdownButtonFormField<String>(
-                value: _selectedUserId,
+                initialValue: _selectedUserId,
                 hint: Text(l10n.selectClassToManage), // "Select..."
                 isExpanded: true,
-                items:
-                    eligibleUsers.map((user) {
-                      return DropdownMenuItem(
-                        value: user['id'] as String,
-                        child: Text(user['name']),
-                      );
-                    }).toList(),
+                items: eligibleUsers.map((user) {
+                  return DropdownMenuItem(
+                    value: user['id'] as String,
+                    child: Text(user['name']),
+                  );
+                }).toList(),
                 onChanged: (value) {
                   setState(() {
                     _selectedUserId = value;
@@ -571,19 +594,17 @@ class _AddManagerDialogState extends ConsumerState<_AddManagerDialog> {
                 },
               );
             },
-            loading:
-                () => const SizedBox(
-                  height: 50,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-            error: (e, _) => Text(l10n.errorGeneric(e.toString())),
-          );
-        },
-        loading:
-            () => const SizedBox(
+            loading: () => const SizedBox(
               height: 50,
               child: Center(child: CircularProgressIndicator()),
             ),
+            error: (e, _) => Text(l10n.errorGeneric(e.toString())),
+          );
+        },
+        loading: () => const SizedBox(
+          height: 50,
+          child: Center(child: CircularProgressIndicator()),
+        ),
         error: (e, _) => Text(l10n.errorGeneric(e.toString())),
       ),
       actions: [
@@ -592,28 +613,26 @@ class _AddManagerDialogState extends ConsumerState<_AddManagerDialog> {
           child: Text(l10n.cancel),
         ),
         FilledButton(
-          onPressed:
-              _selectedUserId == null
-                  ? null
-                  : () async {
-                    final success = await ref
-                        .read(adminControllerProvider.notifier)
-                        .assignClassManager(widget.classId, _selectedUserId!);
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            success
-                                ? l10n.managerAdded('') // Placeholder
-                                : l10n.managerAddFailed,
-                          ),
-                          backgroundColor:
-                              success ? Colors.green : Colors.red,
+          onPressed: _selectedUserId == null
+              ? null
+              : () async {
+                  final success = await ref
+                      .read(adminControllerProvider.notifier)
+                      .assignClassManager(widget.classId, _selectedUserId!);
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? l10n.managerAdded('') // Placeholder
+                              : l10n.managerAddFailed,
                         ),
-                      );
-                    }
-                  },
+                        backgroundColor: success ? Colors.green : Colors.red,
+                      ),
+                    );
+                  }
+                },
           child: Text(l10n.add),
         ),
       ],

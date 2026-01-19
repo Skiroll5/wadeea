@@ -1615,6 +1615,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get notified when a note is added'**
   String get notesNotificationDesc;
+
+  /// No description provided for @manage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get manage;
+
+  /// No description provided for @good.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get good;
+
+  /// No description provided for @average.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get average;
+
+  /// No description provided for @poor.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor'**
+  String get poor;
+
+  /// No description provided for @manageClassManagers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Managers'**
+  String get manageClassManagers;
+
+  /// No description provided for @classManagersDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Managers for {className}'**
+  String classManagersDescription(Object className);
+
+  /// No description provided for @managerRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager removed'**
+  String get managerRemoved;
+
+  /// No description provided for @enabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get enabled;
+
+  /// No description provided for @accountPendingActivationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been created successfully but is waiting for administrator approval. You will be notified once your account is active.'**
+  String get accountPendingActivationDesc;
 }
 
 class _AppLocalizationsDelegate

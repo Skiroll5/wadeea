@@ -18,7 +18,7 @@ export const syncChanges = async (req: AuthRequest, res: Response) => {
 
 const handlePush = async (req: AuthRequest, res: Response) => {
     const { changes } = req.body;
-    console.log('SyncController: Received push request', JSON.stringify(req.body, null, 2));
+    console.log(`SyncController: Received push request with ${changes?.length || 0} changes`);
     if (!Array.isArray(changes)) return res.status(400).json({ message: 'Invalid format' });
 
     // Sort changes by dependency order: CLASS -> USER/STUDENT -> ATTENDANCE/NOTE
@@ -41,57 +41,101 @@ const handlePush = async (req: AuthRequest, res: Response) => {
     const processedUuids: string[] = [];
     const failedUuids: { uuid: string; error: string }[] = [];
 
-    // Process sequentially to maintain order
+    // Group changes by priority
+    const changesByPriority: { [key: number]: any[] } = {};
     for (const change of changes) {
-        const { uuid, entityType, entityId, operation, payload, createdAt } = change;
-
-        // Idempotency Check...
-
-        const modelName = mapEntityToModel(entityType);
-        if (!modelName) {
-            console.warn(`Unknown entity type: ${entityType}`);
-            failedUuids.push({ uuid, error: `Unknown entity type: ${entityType}` });
-            continue;
+        const p = priority[change.entityType as keyof typeof priority] || 99;
+        if (!changesByPriority[p]) {
+            changesByPriority[p] = [];
         }
+        changesByPriority[p].push(change);
+    }
 
-        try {
+    // Process batches by priority
+    const sortedPriorities = Object.keys(changesByPriority).map(Number).sort((a, b) => a - b);
+
+    for (const p of sortedPriorities) {
+        const batch = changesByPriority[p];
+        const promises: any[] = [];
+        const batchUuids = batch.map(c => c.uuid);
+
+        for (const change of batch) {
+            const { uuid, entityType, entityId, operation, payload } = change;
+
+            const modelName = mapEntityToModel(entityType);
+            if (!modelName) {
+                console.warn(`Unknown entity type: ${entityType}`);
+                failedUuids.push({ uuid, error: `Unknown entity type: ${entityType}` });
+                continue; // Skip this change
+            }
             const dbModel = (prisma as any)[modelName];
-
 
             if (operation === 'VIRTUAL_DELETE' || operation === 'DELETE') {
                 const deleteData: any = {
                     isDeleted: true,
                     deletedAt: payload.deletedAt ? new Date(payload.deletedAt) : new Date(),
-                    updatedAt: new Date() // Always bump update time
+                    updatedAt: new Date()
                 };
-
-                await dbModel.updateMany({
+                promises.push(dbModel.updateMany({
                     where: { id: entityId },
                     data: deleteData
-                });
+                }));
             } else {
-                // CREATE or UPDATE
                 const sanitizedPayload = sanitizePayload(payload);
-
-                await dbModel.upsert({
+                promises.push(dbModel.upsert({
                     where: { id: entityId },
                     create: { ...sanitizedPayload, id: entityId },
                     update: { ...sanitizedPayload },
-                });
+                }));
+            }
+        }
 
-                // --- Notification Triggers ---
-                // Fire and forget to not block sync response
-                (async () => {
-                    try {
-                        // @ts-ignore
-                        const authorId = req.user?.userId;
+        if (promises.length === 0) continue;
+
+        try {
+            await prisma.$transaction(promises);
+            processedUuids.push(...batchUuids);
+
+            // --- Notification Triggers for successful batch ---
+            // Fire and forget to not block sync response
+            (async () => {
+                try {
+                    // @ts-ignore
+                    const authorId = req.user?.userId;
+
+                    // Collect IDs for bulk fetching
+                    const studentIds = new Set<string>();
+                    const classIds = new Set<string>();
+
+                    for (const change of batch) {
+                        const { entityType, operation, payload } = change;
+                        const sanitizedPayload = sanitizePayload(payload);
+
+                        if (entityType === 'NOTE' && operation === 'CREATE' && sanitizedPayload.studentId) {
+                            studentIds.add(sanitizedPayload.studentId);
+                        } else if (entityType === 'ATTENDANCE_SESSION' && operation === 'CREATE' && sanitizedPayload.classId) {
+                            classIds.add(sanitizedPayload.classId);
+                        }
+                    }
+
+                    // Bulk fetch related data
+                    const [students, classes, author] = await Promise.all([
+                        studentIds.size > 0 ? prisma.student.findMany({ where: { id: { in: Array.from(studentIds) } } }) : [],
+                        classIds.size > 0 ? prisma.class.findMany({ where: { id: { in: Array.from(classIds) } } }) : [],
+                        authorId ? prisma.user.findUnique({ where: { id: authorId } }) : Promise.resolve(null)
+                    ]);
+
+                    const studentMap = new Map(students.map((s: any) => [s.id, s]));
+                    const classMap = new Map(classes.map((c: any) => [c.id, c]));
+                    const authorName = author?.name || 'A servant';
+
+                    for (const change of batch) {
+                         const { entityType, operation, payload } = change;
+                         const sanitizedPayload = sanitizePayload(payload);
 
                         if (entityType === 'NOTE' && operation === 'CREATE') {
-                            const student = await prisma.student.findUnique({ where: { id: sanitizedPayload.studentId } });
+                            const student: any = studentMap.get(sanitizedPayload.studentId);
                             if (student && student.classId && authorId) {
-                                const author = await prisma.user.findUnique({ where: { id: authorId } });
-                                const authorName = author?.name || 'A servant';
-
                                 await notifyClassManagers(
                                     student.classId,
                                     'noteAdded',
@@ -102,11 +146,8 @@ const handlePush = async (req: AuthRequest, res: Response) => {
                                 );
                             }
                         } else if (entityType === 'ATTENDANCE_SESSION' && operation === 'CREATE') {
-                            if (sanitizedPayload.classId && authorId) {
-                                const cls = await prisma.class.findUnique({ where: { id: sanitizedPayload.classId } });
-                                const author = await prisma.user.findUnique({ where: { id: authorId } });
-                                const authorName = author?.name || 'A servant';
-
+                             if (sanitizedPayload.classId && authorId) {
+                                const cls: any = classMap.get(sanitizedPayload.classId);
                                 await notifyClassManagers(
                                     sanitizedPayload.classId,
                                     'attendanceRecorded',
@@ -117,15 +158,17 @@ const handlePush = async (req: AuthRequest, res: Response) => {
                                 );
                             }
                         }
-                    } catch (err) {
-                        console.error('Notification trigger error:', err);
                     }
-                })();
-            }
-            processedUuids.push(uuid);
+                } catch (err) {
+                    console.error('Notification trigger error:', err);
+                }
+            })();
+
         } catch (e: any) {
-            console.error(`Sync error for ${uuid}:`, e);
-            failedUuids.push({ uuid, error: e.message || String(e) });
+            console.error(`Sync transaction error for priority ${p}:`, e);
+            batch.forEach(change => {
+                failedUuids.push({ uuid: change.uuid, error: e.message || String(e) });
+            });
         }
     }
 
