@@ -44,7 +44,7 @@ const checkBirthdays = async (isMorning: boolean) => {
             // For simplicity/safety: Users get notifications for classes they MANAGE. 
             // Only "New User Registered" is global for Admins.
 
-            const classIds = user.managedClasses.map(cm => cm.classId);
+            const classIds = user.managedClasses.map((cm: any) => cm.classId);
             if (classIds.length === 0) continue;
 
             // Find students with birthday on target date in these classes
@@ -103,7 +103,7 @@ const checkInactiveStudents = async () => {
         });
 
         for (const user of users) {
-            const classIds = user.managedClasses.map(cm => cm.classId);
+            const classIds = user.managedClasses.map((cm: any) => cm.classId);
             if (classIds.length === 0) continue;
 
             const thresholdDays = user.notificationPreference?.inactiveThresholdDays || 14;

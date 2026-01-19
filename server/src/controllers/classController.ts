@@ -9,19 +9,46 @@ export const listClasses = async (req: Request, res: Response) => {
     try {
         const classes = await prisma.class.findMany({
             where: { isDeleted: false },
-            // TODO: uncomment after running: npx prisma generate
-            // include: {
-            //     managers: {
-            //         select: {
-            //             user: {
-            //                 select: { id: true, name: true, email: true }
-            //             }
-            //         }
-            //     }
-            // },
+            include: {
+                sessions: {
+                    where: { isDeleted: false },
+                    select: {
+                        records: {
+                            where: { isDeleted: false },
+                            select: { status: true }
+                        }
+                    }
+                }
+            },
             orderBy: { name: 'asc' },
         });
-        res.json(classes);
+
+        const classesWithStats = classes.map(cls => {
+            let totalRecords = 0;
+            let presentRecords = 0;
+
+            cls.sessions.forEach(session => {
+                session.records.forEach(record => {
+                    totalRecords++;
+                    if (record.status === 'PRESENT') {
+                        presentRecords++;
+                    }
+                });
+            });
+
+            const attendancePercentage = totalRecords > 0
+                ? presentRecords / totalRecords
+                : 0;
+
+            // Remove sessions from response to keep it light
+            const { sessions, ...classData } = cls;
+            return {
+                ...classData,
+                attendancePercentage
+            };
+        });
+
+        res.json(classesWithStats);
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
     }

@@ -40,7 +40,8 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
   }
 
   Future<bool> login(String email, String password) async {
-    state = const AsyncValue.loading();
+    // We do NOT set loading state here to avoid router redirecting to /splash
+    // state = const AsyncValue.loading();
     try {
       final repo = _ref.read(authRepositoryProvider);
       final data = await repo.login(email, password);
@@ -71,22 +72,24 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
       state = AsyncValue.data(user);
       return true;
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      return false;
+      // We do NOT set error state to avoid router refresh/redirect
+      // state = AsyncValue.error(e, st);
+      // Instead we rethrow so the UI can handle the error message
+      rethrow;
     }
   }
 
   Future<bool> register(String email, String password, String name) async {
-    state = const AsyncValue.loading();
+    // Similarly, handle loading locally in UI
     try {
       final repo = _ref.read(authRepositoryProvider);
       await repo.register(email, password, name);
-      // Registration successful, await approval
+      // Registration successful, await approval. State remains null (not logged in)
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      return false;
+      // state = AsyncValue.error(e, st);
+      rethrow;
     }
   }
 
@@ -107,10 +110,6 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
       state = AsyncValue.data(updatedUser);
       return true;
     } catch (e) {
-      // Don't change state to error, just return false or rethrow?
-      // Better to show snackbar in UI, but here we can keep state as data(oldUser)
-      // or set error. Setting error might replace the UI with error screen which is bad.
-      // So let's just return false and let UI handle error message.
       return false;
     }
   }

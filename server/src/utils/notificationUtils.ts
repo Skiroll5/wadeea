@@ -58,7 +58,7 @@ export const notifyClassManagers = async (
             if (admin.id === excludeUserId) continue;
             // distinct check handled by Set if needed, but for now simple check
             // Avoid duplicates if admin is also a manager (unlikely but possible)
-            if (managers.some(m => m.userId === admin.id)) continue;
+            if (managers.some((m: any) => m.userId === admin.id)) continue;
 
             if (!admin.fcmToken) continue;
             // @ts-ignore

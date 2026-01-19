@@ -1,283 +1,622 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/components/premium_card.dart';
+import '../../../../core/components/premium_button.dart';
 import '../../data/admin_controller.dart';
+import '../../data/classes_controller.dart';
+import '../../../classes/data/classes_controller.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 
-class ClassManagementScreen extends ConsumerWidget {
+class ClassManagementScreen extends ConsumerStatefulWidget {
   const ClassManagementScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ClassManagementScreen> createState() =>
+      _ClassManagementScreenState();
+}
+
+class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
+  // Store optimistic order locally to prevent jitter
+  List<String>? _optimisticOrder;
+
+  @override
+  Widget build(BuildContext context) {
     final classesAsync = ref.watch(adminClassesProvider);
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n?.classManagement ?? 'Class Management')),
-      body: classesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text('${l10n?.errorGeneric(e.toString()) ?? "Error: $e"}'),
+      appBar: AppBar(title: Text(l10n.classManagement)),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? [AppColors.backgroundDark, AppColors.surfaceDark]
+                : [AppColors.backgroundLight, Colors.white],
+          ),
         ),
-        data: (classes) {
-          if (classes.isEmpty) {
-            return Center(
-              child: Text(l10n?.noClassesFound ?? 'No classes found'),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(adminClassesProvider),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: classes.length,
-              itemBuilder: (context, index) {
-                final classData = classes[index];
-                return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(
-                        context,
-                      ).primaryColor.withValues(alpha: 0.1),
-                      child: Icon(
-                        Icons.class_,
-                        color: Theme.of(context).primaryColor,
+        child: classesAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text(l10n.errorGeneric(e.toString()))),
+          data: (classes) {
+            if (classes.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.class_outlined,
+                      size: 64,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.noClassesFound,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
                       ),
                     ),
-                    title: Text(classData['name'] ?? 'Unknown'),
-                    subtitle: Text(classData['grade'] ?? 'No grade'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ClassManagerAssignmentScreen(
-                            classId: classData['id'],
-                            className: classData['name'] ?? 'Class',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                  ],
+                ),
+              );
+            }
+
+            // The classes list from provider is already sorted by order provider.
+            // But if we have a local optimistic update, apply it here.
+            var displayClasses = [...classes];
+            if (_optimisticOrder != null) {
+              displayClasses.sort((a, b) {
+                final indexA = _optimisticOrder!.indexOf(a['id']);
+                final indexB = _optimisticOrder!.indexOf(b['id']);
+                if (indexA == -1 && indexB == -1) return 0;
+                if (indexA == -1) return 1;
+                if (indexB == -1) return -1;
+                return indexA.compareTo(indexB);
+              });
+            }
+
+            return ReorderableListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: displayClasses.length,
+              onReorder: (oldIndex, newIndex) {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
+
+                final item = displayClasses.removeAt(oldIndex);
+                displayClasses.insert(newIndex, item);
+
+                final newOrderIds =
+                    displayClasses.map((c) => c['id'] as String).toList();
+
+                setState(() {
+                  _optimisticOrder = newOrderIds;
+                });
+
+                // Save to local storage
+                ref
+                    .read(classesControllerProvider)
+                    .updateClassOrder(newOrderIds);
+              },
+              itemBuilder: (context, index) {
+                final cls = displayClasses[index];
+                return _AdminClassCard(
+                  key: ValueKey(cls['id']),
+                  classData: cls,
+                  isDark: isDark,
+                  index: index,
                 );
               },
+            );
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddClassDialog(context, ref, l10n),
+        backgroundColor: isDark ? AppColors.goldPrimary : AppColors.goldPrimary,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  void _showAddClassDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
+    final nameController = TextEditingController();
+    final gradeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.addNewClassTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: l10n.className,
+                hintText: l10n.classNameHint,
+              ),
             ),
-          );
-        },
+            const SizedBox(height: 16),
+            TextField(
+              controller: gradeController,
+              decoration: InputDecoration(
+                labelText: l10n.gradeOptional,
+                hintText: l10n.gradeHint,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (nameController.text.isNotEmpty) {
+                final success = await ref
+                    .read(adminControllerProvider.notifier)
+                    .createClass(
+                      nameController.text,
+                      gradeController.text.isEmpty
+                          ? null
+                          : gradeController.text,
+                    );
+
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.classCreated),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.classCreationError),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.goldPrimary,
+            ),
+            child: Text(l10n.create),
+          ),
+        ],
       ),
     );
   }
 }
 
-class ClassManagerAssignmentScreen extends ConsumerWidget {
-  final String classId;
-  final String className;
-
-  const ClassManagerAssignmentScreen({
+class _AdminClassCard extends ConsumerWidget {
+  const _AdminClassCard({
     super.key,
-    required this.classId,
-    required this.className,
+    required this.classData,
+    required this.isDark,
+    required this.index,
   });
+
+  final Map<String, dynamic> classData;
+  final bool isDark;
+  final int index;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final classId = classData['id'] as String;
     final managersAsync = ref.watch(classManagersProvider(classId));
-    final allUsersAsync = ref.watch(allUsersProvider);
-    final adminController = ref.watch(adminControllerProvider.notifier);
-    final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n?.managersForClass(className) ?? 'Managers: $className',
-        ),
-      ),
-      body: Column(
-        children: [
-          // Current managers
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              l10n?.currentManagers ?? 'Current Managers',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: managersAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text(
-                  '${l10n?.errorGeneric(e.toString()) ?? "Error: $e"}',
+    // Calculate attendance percentage from backend data
+    final attendancePercentage = (classData['attendancePercentage'] as num?)?.toDouble() ?? 0.0;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: PremiumCard(
+        delay: index * 0.05,
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.goldPrimary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.class_outlined,
+                    color: isDark
+                        ? AppColors.goldPrimary
+                        : AppColors.goldDark,
+                  ),
                 ),
-              ),
-              data: (managers) {
-                if (managers.isEmpty) {
-                  return Center(
-                    child: Text(
-                      l10n?.noManagersAssigned ?? 'No managers assigned',
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: managers.length,
-                  itemBuilder: (context, index) {
-                    final manager = managers[index];
-                    final userData = manager['user'] as Map<String, dynamic>?;
-                    return Card(
-                      child: ListTile(
-                        leading: const CircleAvatar(child: Icon(Icons.person)),
-                        title: Text(userData?['name'] ?? 'Unknown'),
-                        subtitle: Text(userData?['email'] ?? ''),
-                        trailing: IconButton(
-                          icon: const Icon(
-                            Icons.remove_circle,
-                            color: Colors.red,
-                          ),
-                          onPressed: () async {
-                            final confirmed = await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: Text(
-                                  l10n?.removeManagerTitle ?? 'Remove Manager',
-                                ),
-                                content: Text(
-                                  l10n?.removeManagerConfirm(
-                                        userData?['name'] ?? '',
-                                      ) ??
-                                      'Remove ${userData?['name']} as manager?',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx, false),
-                                    child: Text(l10n?.cancel ?? 'Cancel'),
-                                  ),
-                                  FilledButton(
-                                    onPressed: () => Navigator.pop(ctx, true),
-                                    child: Text(l10n?.remove ?? 'Remove'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (confirmed == true) {
-                              await adminController.removeClassManager(
-                                classId,
-                                userData?['id'],
-                              );
-                            }
-                          },
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        classData['name'],
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
                         ),
                       ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          const Divider(),
-          // Add new manager
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              l10n?.addManager ?? 'Add Manager',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: allUsersAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text(
-                  '${l10n?.errorGeneric(e.toString()) ?? "Error: $e"}',
-                ),
-              ),
-              data: (users) {
-                // Filter to show only non-admin users
-                final eligibleUsers = users
-                    .where((u) => u['role'] != 'ADMIN' && u['isActive'] == true)
-                    .toList();
-
-                if (eligibleUsers.isEmpty) {
-                  return Center(
-                    child: Text(l10n?.noEligibleUsers ?? 'No eligible users'),
-                  );
-                }
-
-                return managersAsync.when(
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
-                  data: (currentManagers) {
-                    final currentManagerIds = currentManagers
-                        .map((m) => (m['user'] as Map?)?['id'])
-                        .toSet();
-
-                    final availableUsers = eligibleUsers
-                        .where((u) => !currentManagerIds.contains(u['id']))
-                        .toList();
-
-                    if (availableUsers.isEmpty) {
-                      return Center(
-                        child: Text(
-                          l10n?.allUsersAreManagers ??
-                              'All eligible users are already managers',
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: availableUsers.length,
-                      itemBuilder: (context, index) {
-                        final user = availableUsers[index];
-                        return Card(
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.grey.shade200,
-                              child: const Icon(Icons.person_add),
-                            ),
-                            title: Text(user['name'] ?? 'Unknown'),
-                            subtitle: Text(user['email'] ?? ''),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.add_circle,
-                                color: Colors.green,
+                      const SizedBox(height: 4),
+                      // Subtitle: Manager names
+                      managersAsync.when(
+                        data: (managers) {
+                          if (managers.isEmpty) {
+                            return Text(
+                              l10n.noManagersAssigned,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                                color: isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondaryLight,
                               ),
-                              onPressed: () async {
-                                final success = await adminController
-                                    .assignClassManager(classId, user['id']);
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        success
-                                            ? (l10n?.managerAdded(
-                                                    user['name'],
-                                                  ) ??
-                                                  '${user['name']} added as manager')
-                                            : (l10n?.managerAddFailed ??
-                                                  'Failed to add manager'),
-                                      ),
-                                      backgroundColor: success
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                  );
-                                }
-                              },
+                            );
+                          }
+                          final names =
+                              managers.map((m) => m['name']).join(' • ');
+                          return Text(
+                            names,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        },
+                        loading: () => const SizedBox(
+                          height: 10,
+                          width: 100,
+                          child: LinearProgressIndicator(minHeight: 2),
+                        ),
+                        error: (_, __) => const SizedBox(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            // Progress Bar in subtitle area or bottom of tile header?
+            // ExpansionTile doesn't easily support custom layout below title without hacking.
+            // Let's put the progress bar in the children or try to use subtitle for it?
+            // User requested: "For the class cards you should add a progress bar with the average percentage of presence"
+            // Let's add it as a child of the card content (ExpansionTile children).
+
+            childrenPadding: const EdgeInsets.all(16),
+            children: [
+              // Attendance Progress
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.attendanceRate,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
+                        ),
+                      ),
+                      Text(
+                        '${(attendancePercentage * 100).toInt()}%',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: _getColorForPercentage(attendancePercentage),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: attendancePercentage,
+                      backgroundColor: isDark
+                          ? Colors.grey[800]
+                          : Colors.grey[200],
+                      valueColor: AlwaysStoppedAnimation(
+                        _getColorForPercentage(attendancePercentage),
+                      ),
+                      minHeight: 6,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Managers Management
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    l10n.classManagers,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.person_add,
+                      size: 20,
+                      color: AppColors.goldPrimary,
+                    ),
+                    onPressed: () =>
+                        _showAddManagerDialog(context, ref, classId, l10n),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              managersAsync.when(
+                data: (managers) {
+                  if (managers.isEmpty) {
+                    return Text(
+                      l10n.noManagersAssigned,
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      ),
+                    );
+                  }
+                  return Column(
+                    children: managers.map((manager) {
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: CircleAvatar(
+                          radius: 16,
+                          backgroundColor:
+                              AppColors.goldPrimary.withValues(alpha: 0.2),
+                          child: Text(
+                            manager['name'].substring(0, 1).toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.goldPrimary,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
+                        ),
+                        title: Text(
+                          manager['name'],
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(
+                            Icons.remove_circle_outline,
+                            color: AppColors.redPrimary,
+                            size: 20,
+                          ),
+                          onPressed: () => _confirmRemoveManager(
+                            context,
+                            ref,
+                            classId,
+                            manager,
+                            l10n,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text(l10n.errorGeneric(e.toString())),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getColorForPercentage(double percentage) {
+    if (percentage >= 0.8) return Colors.green;
+    if (percentage >= 0.5) return Colors.orange;
+    return AppColors.redPrimary;
+  }
+
+  Future<void> _showAddManagerDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String classId,
+    AppLocalizations l10n,
+  ) async {
+    // We need a list of users who are NOT managers of this class
+    // Ideally fetch all users and filter.
+    // For simplicity, we'll fetch all users (servants) and let the user pick.
+    // A better UX would be a search/autocomplete.
+    final usersAsync = ref.read(allUsersProvider); // Just read, don't watch
+    // But we need to await it. Since we are in a callback, we can't easily await a provider if it's not ready.
+    // Better to show a dialog that loads the users.
+
+    showDialog(
+      context: context,
+      builder: (ctx) => _AddManagerDialog(classId: classId),
+    );
+  }
+
+  Future<void> _confirmRemoveManager(
+    BuildContext context,
+    WidgetRef ref,
+    String classId,
+    Map<String, dynamic> manager,
+    AppLocalizations l10n,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.removeManagerTitle),
+        content: Text(l10n.removeManagerConfirm(manager['name'])),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.redPrimary,
             ),
+            child: Text(l10n.remove),
           ),
         ],
       ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await ref
+          .read(adminControllerProvider.notifier)
+          .removeClassManager(classId, manager['id']);
+    }
+  }
+}
+
+class _AddManagerDialog extends ConsumerStatefulWidget {
+  final String classId;
+
+  const _AddManagerDialog({required this.classId});
+
+  @override
+  ConsumerState<_AddManagerDialog> createState() => _AddManagerDialogState();
+}
+
+class _AddManagerDialogState extends ConsumerState<_AddManagerDialog> {
+  String? _selectedUserId;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final allUsersAsync = ref.watch(allUsersProvider);
+    final currentManagersAsync = ref.watch(
+      classManagersProvider(widget.classId),
+    );
+
+    return AlertDialog(
+      title: Text(l10n.addManager),
+      content: allUsersAsync.when(
+        data: (allUsers) {
+          return currentManagersAsync.when(
+            data: (managers) {
+              final managerIds = managers.map((m) => m['id']).toSet();
+              // Filter out admins and existing managers
+              final eligibleUsers =
+                  allUsers
+                      .where(
+                        (u) =>
+                            !managerIds.contains(u['id']) &&
+                            u['role'] != 'ADMIN' &&
+                            u['isActive'] == true &&
+                            u['isDeleted'] == false,
+                      )
+                      .toList();
+
+              if (eligibleUsers.isEmpty) {
+                return Text(l10n.allUsersAreManagers);
+              }
+
+              return DropdownButtonFormField<String>(
+                value: _selectedUserId,
+                hint: Text(l10n.selectClassToManage), // "Select..."
+                isExpanded: true,
+                items:
+                    eligibleUsers.map((user) {
+                      return DropdownMenuItem(
+                        value: user['id'] as String,
+                        child: Text(user['name']),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedUserId = value;
+                  });
+                },
+              );
+            },
+            loading:
+                () => const SizedBox(
+                  height: 50,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+            error: (e, _) => Text(l10n.errorGeneric(e.toString())),
+          );
+        },
+        loading:
+            () => const SizedBox(
+              height: 50,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+        error: (e, _) => Text(l10n.errorGeneric(e.toString())),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed:
+              _selectedUserId == null
+                  ? null
+                  : () async {
+                    final success = await ref
+                        .read(adminControllerProvider.notifier)
+                        .assignClassManager(widget.classId, _selectedUserId!);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            success
+                                ? l10n.managerAdded('') // Placeholder
+                                : l10n.managerAddFailed,
+                          ),
+                          backgroundColor:
+                              success ? Colors.green : Colors.red,
+                        ),
+                      );
+                    }
+                  },
+          child: Text(l10n.add),
+        ),
+      ],
     );
   }
 }
