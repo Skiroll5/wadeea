@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart'; // for debugPrint
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/network/api_client.dart';
 
@@ -16,7 +17,7 @@ class FcmRepository {
       await _dio.post('/fcm/register', data: {'token': token});
     } catch (e) {
       // Fail silently or log
-      print('Failed to register FCM token: $e');
+      debugPrint('Failed to register FCM token: $e');
     }
   }
 }

@@ -91,7 +91,7 @@ class PendingActivationScreen extends ConsumerWidget {
                       );
                     },
                     icon: const Icon(Icons.settings),
-                    label: Text(l10n.settings ?? 'Settings'),
+                    label: Text(l10n.settings),
                   ),
                   const SizedBox(width: 16),
                   FilledButton.icon(

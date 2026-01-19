@@ -72,22 +72,31 @@ final orderedUserClassesProvider = Provider<AsyncValue<List<ClassesData>>>((
   }
 
   // If error, return error
-  if (classesAsync.hasError)
+  if (classesAsync.hasError) {
     return AsyncError(classesAsync.error!, classesAsync.stackTrace!);
+  }
 
   final classes = classesAsync.value ?? [];
   final order = orderAsync.value ?? [];
 
-  if (order.isEmpty) return AsyncData(classes);
+  if (order.isEmpty) {
+    return AsyncData(classes);
+  }
 
   final sorted = [...classes];
   sorted.sort((a, b) {
     final indexA = order.indexOf(a.id);
     final indexB = order.indexOf(b.id);
 
-    if (indexA == -1 && indexB == -1) return a.name.compareTo(b.name);
-    if (indexA == -1) return 1; // Unordered go to end
-    if (indexB == -1) return -1;
+    if (indexA == -1 && indexB == -1) {
+      return a.name.compareTo(b.name);
+    }
+    if (indexA == -1) {
+      return 1;
+    } // Unordered go to end
+    if (indexB == -1) {
+      return -1;
+    }
     return indexA.compareTo(indexB);
   });
 

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mobile/features/admin/data/admin_controller.dart';
-import 'package:mobile/features/admin/presentation/screens/class_management_screen.dart';
+// import 'package:mobile/features/admin/presentation/screens/class_management_screen.dart'; // Unused
 import 'package:mobile/features/admin/presentation/screens/class_manager_assignment_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/premium_card.dart';

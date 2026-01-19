@@ -1,9 +1,11 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:mobile/core/database/app_database.dart';
 import 'package:mobile/features/home/data/home_insights_repository.dart';
-import 'package:mobile/core/database/tables/tables.dart';
+// import 'package:mobile/core/database/tables/tables.dart'; // Unused
 import 'package:uuid/uuid.dart';
 
 void main() {

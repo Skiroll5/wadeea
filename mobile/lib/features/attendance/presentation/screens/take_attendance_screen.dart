@@ -53,10 +53,14 @@ class _TakeAttendanceScreenState extends ConsumerState<TakeAttendanceScreen> {
   }
 
   Future<void> _handlePop(bool didPop) async {
-    if (didPop) return;
+    if (didPop) {
+      return;
+    }
 
     if (!_hasChanges) {
-      if (mounted) context.pop();
+      if (mounted) {
+        context.pop();
+      }
       return;
     }
 
@@ -486,9 +490,7 @@ class _TakeAttendanceScreenState extends ConsumerState<TakeAttendanceScreen> {
                             maxLines: null,
                             decoration: InputDecoration(
                               hintText:
-                                  (l10n?.sessionNoteHint ??
-                                      'Add session note...') +
-                                  ' *',
+                                  '${l10n?.sessionNoteHint ?? 'Add session note...'} *',
                               prefixIcon: Icon(
                                 Icons.edit_note,
                                 color: _noteError

@@ -193,11 +193,13 @@ class _AttendanceLineChart extends ConsumerWidget {
                   interval: 1,
                   getTitlesWidget: (value, meta) {
                     final index = value.toInt();
-                    if (index < 0 || index >= stats.length)
+                    if (index < 0 || index >= stats.length) {
                       return const SizedBox();
+                    }
                     // Show limited labels to avoid crowding
-                    if (stats.length > 6 && index % 2 != 0)
+                    if (stats.length > 6 && index % 2 != 0) {
                       return const SizedBox();
+                    }
 
                     final date = stats[index].weekStart;
                     return Padding(

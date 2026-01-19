@@ -16,7 +16,9 @@ final classManagerNamesProvider = FutureProvider.family<String, String>((
 ) async {
   final controller = ref.watch(classesControllerProvider);
   final managers = await controller.getManagersForClass(classId);
-  if (managers.isEmpty) return '';
+  if (managers.isEmpty) {
+    return '';
+  }
   return managers.map((m) => m.name).join(', ');
 });
 
@@ -104,7 +106,9 @@ class ClassListItem extends ConsumerWidget {
                     // Managers subtitle
                     managersAsync.when(
                       data: (managers) {
-                        if (managers.isEmpty) return const SizedBox.shrink();
+                        if (managers.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
                         return Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Row(
@@ -151,10 +155,13 @@ class ClassListItem extends ConsumerWidget {
                   children: [
                     percentageAsync.when(
                       data: (percentage) {
-                         // Determine color based on percentage
+                        // Determine color based on percentage
                         Color progressColor = Colors.green;
-                        if (percentage < 50) progressColor = AppColors.redPrimary;
-                        else if (percentage < 80) progressColor = Colors.orange;
+                        if (percentage < 50) {
+                          progressColor = AppColors.redPrimary;
+                        } else if (percentage < 80) {
+                          progressColor = Colors.orange;
+                        }
 
                         return Stack(
                           alignment: Alignment.center,
@@ -165,8 +172,12 @@ class ClassListItem extends ConsumerWidget {
                               child: CircularProgressIndicator(
                                 value: percentage / 100,
                                 strokeWidth: 3,
-                                backgroundColor: isDark ? Colors.white10 : Colors.black12,
-                                valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                                backgroundColor: isDark
+                                    ? Colors.white10
+                                    : Colors.black12,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  progressColor,
+                                ),
                               ),
                             ),
                             Text(
@@ -181,7 +192,7 @@ class ClassListItem extends ConsumerWidget {
                         );
                       },
                       loading: () => const SizedBox(width: 36, height: 36),
-                      error: (_,__) => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
                     ),
                     PopupMenuButton<String>(
                       icon: Icon(

@@ -577,8 +577,9 @@ class _AttendanceDetailScreenState
                                       'PRESENT'
                                   ? 0
                                   : 1;
-                              if (statusA != statusB)
+                              if (statusA != statusB) {
                                 return statusA.compareTo(statusB);
+                              }
                               return a.studentName.compareTo(b.studentName);
                             }
                           });

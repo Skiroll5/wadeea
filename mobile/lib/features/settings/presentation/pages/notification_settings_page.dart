@@ -81,8 +81,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                       color: isDark ? Colors.white10 : Colors.grey.shade100,
                     ),
                     _NotificationSwitchTile(
-                      title:
-                          l10n?.birthdayNotification ?? 'Birthday Reminders',
+                      title: l10n?.birthdayNotification ?? 'Birthday Reminders',
                       icon: Icons.cake_outlined,
                       description: 'Get reminders for student birthdays',
                       value: prefs.birthdayReminder,
@@ -109,8 +108,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     _NotificationSwitchTile(
-                      title:
-                          l10n?.inactiveNotification ?? 'Inactive Students',
+                      title: l10n?.inactiveNotification ?? 'Inactive Students',
                       icon: Icons.person_off_outlined,
                       description: 'Alert when a student becomes inactive',
                       value: prefs.inactiveStudent,
@@ -129,8 +127,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                         color: isDark ? Colors.white10 : Colors.grey.shade100,
                       ),
                       _NotificationSwitchTile(
-                        title:
-                            l10n?.newUserNotification ?? 'New Registrations',
+                        title: l10n?.newUserNotification ?? 'New Registrations',
                         icon: Icons.person_add_outlined,
                         description: 'Notify when a new user registers',
                         value: prefs.newUserRegistered,
@@ -257,7 +254,7 @@ class NotificationSettingsPage extends ConsumerWidget {
                       trailing: Switch(
                         value: prefs.birthdayNotifyMorning,
                         activeTrackColor: AppColors.goldPrimary,
-                        activeColor: Colors.white,
+                        activeThumbColor: Colors.white,
                         onChanged: (val) {
                           ref
                               .read(notificationSettingsProvider.notifier)
@@ -323,10 +320,14 @@ class _NotificationSwitchTile extends StatelessWidget {
     return SwitchListTile(
       value: value,
       onChanged: onChanged,
-      activeColor: AppColors.goldPrimary,
+      activeTrackColor: AppColors.goldPrimary,
       title: Row(
         children: [
-          Icon(icon, size: 20, color: isDark ? AppColors.goldPrimary : AppColors.goldDark),
+          Icon(
+            icon,
+            size: 20,
+            color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
+          ),
           const SizedBox(width: 12),
           Text(
             title,

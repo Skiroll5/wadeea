@@ -71,7 +71,7 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
 
       state = AsyncValue.data(user);
       return true;
-    } catch (e, st) {
+    } catch (e) {
       // We do NOT set error state to avoid router refresh/redirect
       // state = AsyncValue.error(e, st);
       // Instead we rethrow so the UI can handle the error message
@@ -87,7 +87,7 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
       // Registration successful, await approval. State remains null (not logged in)
       state = const AsyncValue.data(null);
       return true;
-    } catch (e, st) {
+    } catch (e) {
       // state = AsyncValue.error(e, st);
       rethrow;
     }
