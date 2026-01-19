@@ -10,6 +10,7 @@ import classRoutes from './routes/classRoutes';
 import fcmRoutes from './routes/fcmRoutes';
 import { initFirebase } from './services/notificationService';
 import { initScheduledJobs } from './jobs/scheduledJobs';
+import { setIO } from './socket';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,7 +24,10 @@ const io = new Server(httpServer, {
     }
 });
 
-// Attach io to app for use in controllers
+// Set the socket instance for use in controllers
+setIO(io);
+
+// Attach io to app for use in controllers (legacy)
 app.set('io', io);
 
 app.use(cors());

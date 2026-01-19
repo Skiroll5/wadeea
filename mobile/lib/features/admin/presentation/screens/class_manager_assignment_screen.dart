@@ -457,27 +457,105 @@ class _ManagerCard extends ConsumerWidget {
   Future<void> _handleTap(BuildContext context, WidgetRef ref) async {
     final displayName = userName;
 
-    // Show quick feedback
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isManager
-              ? l10n.removingManager(displayName)
-              : l10n.addingManager(displayName),
-        ),
-        duration: const Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
-
     if (isManager) {
+      // Show confirmation dialog for removing manager
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          final theme = Theme.of(context);
+          final dialogIsDark = theme.brightness == Brightness.dark;
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.redPrimary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.person_remove,
+                    color: AppColors.redPrimary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.removeManager,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: dialogIsDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              l10n.removeManagerConfirmation(displayName),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: dialogIsDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l10n.cancel),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.redPrimary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(l10n.remove),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmed != true || !context.mounted) return;
+
+      // Show removal feedback
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.removingManager(displayName)),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+
       await ref
           .read(adminControllerProvider.notifier)
           .removeClassManager(classId, userId);
     } else {
+      // Show adding feedback
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.addingManager(displayName)),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+
       await ref
           .read(adminControllerProvider.notifier)
           .assignClassManager(classId, userId);

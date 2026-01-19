@@ -299,5 +299,11 @@
   "accountPendingActivationDesc": "تم إنشاء حسابك بنجاح ولكنه في انتظار موافقة المسؤول. سيتم إشعارك عند تفعيل حسابك.",
   "removingManager": "جاري إزالة {name}...",
   "addingManager": "جاري إضافة {name}...",
-  "availableUsers": "المستخدمون المتاحون"
+  "availableUsers": "المستخدمون المتاحون",
+  "removeManagerConfirmation": "هل أنت متأكد من إزالة {name} كمدير من هذا الصف؟",
+  "@removeManagerConfirmation": {
+    "placeholders": {
+      "name": {}
+    }
+  }
 }

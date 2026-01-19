@@ -50,6 +50,9 @@ Future<void> showAddClassDialog(BuildContext context, WidgetRef ref) async {
               l10n?.createNewClass ?? 'Create New Class',
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
               ),
             ),
             const SizedBox(height: 8),

@@ -1,6 +1,7 @@
 
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { getIO } from '../socket';
 
 const prisma = new PrismaClient();
 
@@ -108,6 +109,12 @@ export const assignManager = async (req: Request, res: Response) => {
             },
         });
 
+        // Emit sync update event so all clients refresh
+        const io = getIO();
+        io.emit('sync_update');
+        // Also emit a specific event to the affected user
+        io.emit('manager_assignment_changed', { classId, userId, action: 'assigned' });
+
         res.status(201).json({ message: 'Manager assigned', manager });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
@@ -127,6 +134,12 @@ export const removeManager = async (req: Request, res: Response) => {
         await prisma.classManager.delete({
             where: { classId_userId: { classId, userId } },
         });
+
+        // Emit sync update event so all clients refresh
+        const io = getIO();
+        io.emit('sync_update');
+        // Also emit a specific event to the affected user
+        io.emit('manager_assignment_changed', { classId, userId, action: 'removed' });
 
         res.json({ message: 'Manager removed' });
     } catch (error) {

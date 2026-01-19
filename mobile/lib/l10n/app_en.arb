@@ -250,6 +250,12 @@
     }
   },
   "removeManager": "Remove Manager",
+  "removeManagerConfirmation": "Are you sure you want to remove {name} as a manager from this class?",
+  "@removeManagerConfirmation": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "remove": "Remove",
   "noEligibleUsers": "No eligible users",
   "allUsersAreManagers": "All eligible users are already managers",
