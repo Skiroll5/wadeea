@@ -26,22 +26,64 @@ class HomeInsightsRepository {
       _db.classes,
     )..where((t) => t.isDeleted.equals(false))).get();
 
+    if (classes.isEmpty) return [];
+
+    final classIds = classes.map((c) => c.id).toList();
+
+    // 2. Get latest session for each class efficiently
+    // Optimized: Use a single custom query to fetch the latest session for all classes
+    // This avoids N+1 queries.
+    // Query logic:
+    // SELECT s.* FROM attendance_sessions s
+    // INNER JOIN (
+    //   SELECT class_id, MAX(date) as max_date
+    //   FROM attendance_sessions
+    //   WHERE is_deleted = 0
+    //   GROUP BY class_id
+    // ) latest ON s.class_id = latest.class_id AND s.date = latest.max_date
+    // WHERE s.is_deleted = 0 AND s.class_id IN (...)
+
+    final sessionsQuery = _db.customSelect(
+      'SELECT s.* FROM attendance_sessions s '
+      'INNER JOIN ('
+      '  SELECT class_id, MAX(date) as max_date '
+      '  FROM attendance_sessions '
+      '  WHERE is_deleted = 0 '
+      '  GROUP BY class_id'
+      ') latest ON s.class_id = latest.class_id AND s.date = latest.max_date '
+      'WHERE s.is_deleted = 0 AND s.class_id IN (${classIds.map((_) => '?').join(', ')})',
+      variables: classIds.map((id) => Variable.withString(id)).toList(),
+      readsFrom: {_db.attendanceSessions},
+    );
+
+    final sessionsRows = await sessionsQuery.get();
+    final latestSessions = sessionsRows
+        .map((row) => _db.attendanceSessions.map(row.data))
+        .toList();
+
+    final sessionMap = {for (var s in latestSessions) s.classId: s};
+
+    // 3. Get attendance stats for these sessions
+    final sessionIds = latestSessions.map((s) => s.id).toList();
+
+    List<AttendanceRecord> allRecords = [];
+    if (sessionIds.isNotEmpty) {
+      allRecords = await (_db.select(_db.attendanceRecords)
+            ..where(
+                (t) => t.sessionId.isIn(sessionIds) & t.isDeleted.equals(false)))
+          .get();
+    }
+
+    final recordsMap = <String, List<AttendanceRecord>>{};
+    for (var r in allRecords) {
+      recordsMap.putIfAbsent(r.sessionId, () => []).add(r);
+    }
+
+    // 4. Build result in memory
     for (var cls in classes) {
-      // 2. Get latest session for this class
-      final latestSession =
-          await (_db.select(_db.attendanceSessions)
-                ..where(
-                  (t) => t.classId.equals(cls.id) & t.isDeleted.equals(false),
-                )
-                ..orderBy([
-                  (t) =>
-                      OrderingTerm(expression: t.date, mode: OrderingMode.desc),
-                ])
-                ..limit(1))
-              .getSingleOrNull();
+      final latestSession = sessionMap[cls.id];
 
       if (latestSession == null) {
-        // No session yet
         result.add(
           ClassSessionStatus(
             classId: cls.id,
@@ -52,15 +94,7 @@ class HomeInsightsRepository {
         continue;
       }
 
-      // 3. Get attendance stats for this session
-      final records =
-          await (_db.select(_db.attendanceRecords)..where(
-                (t) =>
-                    t.sessionId.equals(latestSession.id) &
-                    t.isDeleted.equals(false),
-              ))
-              .get();
-
+      final records = recordsMap[latestSession.id] ?? [];
       final total = records.length;
       final present = records.where((r) => r.status == 'PRESENT').length;
       final rate = total > 0 ? present / total : 0.0;
