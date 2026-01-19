@@ -177,9 +177,10 @@ class StudentDetailScreen extends ConsumerWidget {
                                               ScaffoldMessenger.of(
                                                 context,
                                               ).showSnackBar(
-                                                const SnackBar(
+                                                SnackBar(
                                                   content: Text(
-                                                    l10n?.phoneNumberCopied ?? 'Phone number copied',
+                                                    l10n?.phoneNumberCopied ??
+                                                        'Phone number copied',
                                                   ),
                                                 ),
                                               );

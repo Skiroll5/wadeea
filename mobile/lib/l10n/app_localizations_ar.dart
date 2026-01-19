@@ -109,6 +109,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noPhone => 'لا يوجد هاتف';
 
   @override
+  String get phoneNumberCopied => 'تم نسخ رقم الهاتف';
+
+  @override
   String get address => 'العنوان';
 
   @override

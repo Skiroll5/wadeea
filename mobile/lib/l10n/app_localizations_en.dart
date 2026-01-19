@@ -111,6 +111,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPhone => 'No Phone';
 
   @override
+  String get phoneNumberCopied => 'Phone number copied';
+
+  @override
   String get address => 'Address';
 
   @override

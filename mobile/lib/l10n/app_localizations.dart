@@ -290,6 +290,12 @@ abstract class AppLocalizations {
   /// **'No Phone'**
   String get noPhone;
 
+  /// No description provided for @phoneNumberCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number copied'**
+  String get phoneNumberCopied;
+
   /// No description provided for @address.
   ///
   /// In en, this message translates to:

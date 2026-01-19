@@ -242,6 +242,80 @@ class _AllUsersTab extends ConsumerWidget {
   }
 }
 
+class _AbortedUsersTab extends ConsumerWidget {
+  const _AbortedUsersTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final abortedUsers = ref.watch(abortedUsersProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return abortedUsers.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text(l10n.errorGeneric(e.toString()))),
+      data: (users) {
+        if (users.isEmpty) {
+          return _EmptyState(
+            icon: Icons.block,
+            iconColor: Colors.red,
+            message: l10n.noAbortedUsers,
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async => ref.invalidate(abortedUsersProvider),
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              final user = users[index];
+              return _UserCard(
+                    user: user,
+                    isDark: isDark,
+                    delay: index * 0.1,
+                    actions: [
+                      _ActionButton(
+                        icon: Icons.refresh,
+                        label: l10n.reactivate,
+                        color: Colors.orange,
+                        onPressed: () =>
+                            _reactivateUser(context, ref, user['id'], l10n),
+                      ),
+                    ],
+                  )
+                  .animate()
+                  .fade(delay: Duration(milliseconds: (index * 100)))
+                  .slideX(begin: 0.1);
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _reactivateUser(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    AppLocalizations l10n,
+  ) async {
+    final success = await ref
+        .read(adminControllerProvider.notifier)
+        .activateUser(userId);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success ? l10n.userActivated : l10n.userActivationFailed,
+          ),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+}
+
 class _UserManagementItem extends ConsumerStatefulWidget {
   final Map<String, dynamic> user;
   final bool isDark;
@@ -276,7 +350,6 @@ class _UserManagementItemState extends ConsumerState<_UserManagementItem> {
       _isEnabled = widget.user['isEnabled'] == true;
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -349,48 +422,6 @@ class _UserManagementItemState extends ConsumerState<_UserManagementItem> {
         .animate()
         .fade(delay: Duration(milliseconds: (widget.index * 100)))
         .slideX(begin: 0.1);
-  }
-
-  Future<void> _showDeleteConfirmation(
-    BuildContext context,
-    WidgetRef ref,
-    Map<String, dynamic> user,
-    AppLocalizations l10n,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.disableUser),
-        content: Text(l10n.disableUserConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.redPrimary,
-            ),
-            child: Text(l10n.disableUser),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      final success = await ref
-          .read(adminControllerProvider.notifier)
-          .disableUser(user['id']);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success ? l10n.userDisabled : l10n.errorUpdateUser),
-            backgroundColor: success ? Colors.orange : Colors.red,
-          ),
-        );
-      }
-    }
   }
 
   Future<void> _showDeleteConfirmation(
@@ -540,12 +571,19 @@ class _UserCard extends StatelessWidget {
                         ? AppColors.goldPrimary.withValues(alpha: 0.2)
                         : (isEnabled
                               ? Colors.green.withValues(alpha: 0.2)
-                              : (isDark ? Colors.grey.shade700 : Colors.grey.shade300).withValues(alpha: 0.2)),
+                              : (isDark
+                                        ? Colors.grey.shade700
+                                        : Colors.grey.shade300)
+                                    .withValues(alpha: 0.2)),
                     child: Icon(
                       isAdmin ? Icons.admin_panel_settings : Icons.person,
                       color: isAdmin
                           ? AppColors.goldPrimary
-                          : (isEnabled ? Colors.green : (isDark ? Colors.grey.shade400 : Colors.grey.shade600)),
+                          : (isEnabled
+                                ? Colors.green
+                                : (isDark
+                                      ? Colors.grey.shade400
+                                      : Colors.grey.shade600)),
                     ),
                   ),
                   const SizedBox(width: 12),
