@@ -1,9 +1,0 @@
-﻿Analyzing mobile...                                             
-
-warning - Unused import: 'package:mobile/features/admin/presentation/screens/class_management_screen.dart' - lib\features\admin\presentation\screens\admin_panel_screen.dart:6:8 - unused_import
-   info - Use interpolation to compose strings and values - lib\features\attendance\presentation\screens\take_attendance_screen.dart:493:35 - prefer_interpolation_to_compose_strings
-warning - The stack trace variable 'st' isn't used and can be removed - lib\features\auth\data\auth_controller.dart:74:17 - unused_catch_stack
-warning - The stack trace variable 'st' isn't used and can be removed - lib\features\auth\data\auth_controller.dart:90:17 - unused_catch_stack
-warning - Dead code - lib\features\auth\presentation\screens\pending_activation_screen.dart:94:47 - dead_code
-warning - The left operand can't be null, so the right operand is never executed - lib\features\auth\presentation\screens\pending_activation_screen.dart:94:50 - dead_null_aware_expression
-
