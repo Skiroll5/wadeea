@@ -739,20 +739,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get statistics => 'الإحصائيات';
 
   @override
-  String get dangerZone => 'منطقة الخطر';
+  String get appearance => 'المظهر';
+
+  @override
+  String get preferences => 'التفضيلات';
+
+  @override
+  String get about => 'حول';
+
+  @override
+  String get dangerZone => 'مزامنة مع السيرفر';
 
   @override
   String get resetAllData => 'إعادة تعيين جميع البيانات';
 
   @override
-  String get resetAllDataDesc => 'حذف جميع الجلسات والسجلات';
+  String get resetAllDataDesc => 'مزامنة جميع الجلسات والسجلات';
 
   @override
-  String get resetDataTitle => 'إعادة تعيين البيانات؟';
+  String get resetDataTitle => 'مزامنة البيانات؟';
 
   @override
   String get resetDataConfirm =>
-      'هل أنت متأكد من أنك تريد إعادة تعيين جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.';
+      'هل أنت متأكد من أنك تريد مزامنة جميع البيانات؟';
 
   @override
   String get reset => 'إعادة تعيين';
@@ -880,7 +889,31 @@ class AppLocalizationsAr extends AppLocalizations {
   String get alerts => 'التنبيهات';
 
   @override
-  String get configuration => 'إعدادات';
+  String get configuration => 'الإعدادات';
+
+  @override
+  String get systemThemeDesc => 'اتباع إعدادات الجهاز';
+
+  @override
+  String get lightThemeDesc => 'المظهر الفاتح';
+
+  @override
+  String get darkThemeDesc => 'المظهر الداكن';
+
+  @override
+  String get englishLanguageDesc => 'اللغة الإنجليزية';
+
+  @override
+  String get arabicLanguageDesc => 'اللغة العربية';
+
+  @override
+  String get activityNotifications => 'إشعارات النشاط';
+
+  @override
+  String get importantWarnings => 'تحذيرات مهمة';
+
+  @override
+  String get customizeBehavior => 'تخصيص السلوك';
 
   @override
   String get manage => 'إدارة';

@@ -744,20 +744,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statistics => 'Statistics';
 
   @override
+  String get appearance => 'Appearance';
+
+  @override
+  String get preferences => 'Preferences';
+
+  @override
+  String get about => 'About';
+
+  @override
   String get dangerZone => 'Danger Zone';
 
   @override
-  String get resetAllData => 'Reset All Data';
+  String get resetAllData => 'Synchronize with the server';
 
   @override
-  String get resetAllDataDesc => 'Delete all sessions and records';
+  String get resetAllDataDesc => 'Sync all sessions and records';
 
   @override
-  String get resetDataTitle => 'Reset Data?';
+  String get resetDataTitle => 'Sync Data?';
 
   @override
   String get resetDataConfirm =>
-      'Are you sure you want to reset all data? This cannot be undone.';
+      'Are you sure you want to synchronize all data?';
 
   @override
   String get reset => 'Reset';
@@ -890,6 +899,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get configuration => 'Configuration';
+
+  @override
+  String get systemThemeDesc => 'Follow device settings';
+
+  @override
+  String get lightThemeDesc => 'Bright appearance';
+
+  @override
+  String get darkThemeDesc => 'Dark appearance';
+
+  @override
+  String get englishLanguageDesc => 'English language';
+
+  @override
+  String get arabicLanguageDesc => 'Arabic language';
+
+  @override
+  String get activityNotifications => 'Activity notifications';
+
+  @override
+  String get importantWarnings => 'Important warnings';
+
+  @override
+  String get customizeBehavior => 'Customize behavior';
 
   @override
   String get manage => 'Manage';

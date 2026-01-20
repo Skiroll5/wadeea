@@ -1460,6 +1460,24 @@ abstract class AppLocalizations {
   /// **'Statistics'**
   String get statistics;
 
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// No description provided for @preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferences;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
   /// No description provided for @dangerZone.
   ///
   /// In en, this message translates to:
@@ -1469,25 +1487,25 @@ abstract class AppLocalizations {
   /// No description provided for @resetAllData.
   ///
   /// In en, this message translates to:
-  /// **'Reset All Data'**
+  /// **'Synchronize with the server'**
   String get resetAllData;
 
   /// No description provided for @resetAllDataDesc.
   ///
   /// In en, this message translates to:
-  /// **'Delete all sessions and records'**
+  /// **'Sync all sessions and records'**
   String get resetAllDataDesc;
 
   /// No description provided for @resetDataTitle.
   ///
   /// In en, this message translates to:
-  /// **'Reset Data?'**
+  /// **'Sync Data?'**
   String get resetDataTitle;
 
   /// No description provided for @resetDataConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to reset all data? This cannot be undone.'**
+  /// **'Are you sure you want to synchronize all data?'**
   String get resetDataConfirm;
 
   /// No description provided for @reset.
@@ -1729,6 +1747,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Configuration'**
   String get configuration;
+
+  /// No description provided for @systemThemeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow device settings'**
+  String get systemThemeDesc;
+
+  /// No description provided for @lightThemeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bright appearance'**
+  String get lightThemeDesc;
+
+  /// No description provided for @darkThemeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark appearance'**
+  String get darkThemeDesc;
+
+  /// No description provided for @englishLanguageDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'English language'**
+  String get englishLanguageDesc;
+
+  /// No description provided for @arabicLanguageDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic language'**
+  String get arabicLanguageDesc;
+
+  /// No description provided for @activityNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity notifications'**
+  String get activityNotifications;
+
+  /// No description provided for @importantWarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Important warnings'**
+  String get importantWarnings;
+
+  /// No description provided for @customizeBehavior.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize behavior'**
+  String get customizeBehavior;
 
   /// No description provided for @manage.
   ///

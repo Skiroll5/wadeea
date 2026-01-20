@@ -31,283 +31,266 @@ class NotificationSettingsPage extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n?.notificationSettings ?? 'Notification Settings'),
-        centerTitle: false,
-      ),
-      body: settingsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, st) => Center(child: Text('Error: $err')),
-        data: (prefs) {
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              // Event Notifications Card
-              PremiumCard(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionHeader(
-                      title: l10n?.events ?? 'Events',
-                      isDark: isDark,
-                    ),
-                    const SizedBox(height: 8),
-                    _NotificationSwitchTile(
-                      title: l10n?.notesNotification ?? 'Notes',
-                      icon: Icons.note_alt_outlined,
-                      description:
-                          l10n?.notesNotificationDesc ??
-                          'Get notified when a note is added',
-                      value: prefs.noteAdded,
-                      onChanged: (val) => ref
-                          .read(notificationSettingsProvider.notifier)
-                          .updatePreference(prefs.copyWith(noteAdded: val)),
-                      isDark: isDark,
-                    ),
-                    Divider(
-                      height: 1,
-                      indent: 16,
-                      endIndent: 16,
-                      color: isDark ? Colors.white10 : Colors.grey.shade100,
-                    ),
-                    _NotificationSwitchTile(
-                      title: l10n?.attendanceNotification ?? 'Attendance',
-                      icon: Icons.fact_check_outlined,
-                      description:
-                          l10n?.attendanceNotificationDesc ??
-                          'Get notified when attendance is recorded',
-                      value: prefs.attendanceRecorded,
-                      onChanged: (val) => ref
-                          .read(notificationSettingsProvider.notifier)
-                          .updatePreference(
-                            prefs.copyWith(attendanceRecorded: val),
-                          ),
-                      isDark: isDark,
-                    ),
-                    Divider(
-                      height: 1,
-                      indent: 16,
-                      endIndent: 16,
-                      color: isDark ? Colors.white10 : Colors.grey.shade100,
-                    ),
-                    _NotificationSwitchTile(
-                      title: l10n?.birthdayNotification ?? 'Birthday Reminders',
-                      icon: Icons.cake_outlined,
-                      description:
-                          l10n?.birthdayNotificationDesc ??
-                          'Get reminders for student birthdays',
-                      value: prefs.birthdayReminder,
-                      onChanged: (val) => ref
-                          .read(notificationSettingsProvider.notifier)
-                          .updatePreference(
-                            prefs.copyWith(birthdayReminder: val),
-                          ),
-                      isDark: isDark,
-                    ),
-                  ],
+      body: CustomScrollView(
+        slivers: [
+          // Modern App Bar
+          SliverAppBar(
+            expandedHeight: 140,
+            pinned: true,
+            stretch: true,
+            backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [
+                            Colors.purple.withValues(alpha: 0.15),
+                            AppColors.surfaceDark,
+                          ]
+                        : [
+                            Colors.purple.withValues(alpha: 0.08),
+                            Colors.white,
+                          ],
+                  ),
                 ),
-              ).animate().fade().slideY(begin: 0.1, end: 0),
-
-              // Alerts & Warnings Card
-              PremiumCard(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionHeader(
-                      title: l10n?.alerts ?? 'Alerts',
-                      isDark: isDark,
-                    ),
-                    const SizedBox(height: 8),
-                    _NotificationSwitchTile(
-                      title: l10n?.inactiveNotification ?? 'Inactive Students',
-                      icon: Icons.person_off_outlined,
-                      description:
-                          l10n?.inactiveNotificationDesc ??
-                          'Alert when a student becomes inactive',
-                      value: prefs.inactiveStudent,
-                      onChanged: (val) => ref
-                          .read(notificationSettingsProvider.notifier)
-                          .updatePreference(
-                            prefs.copyWith(inactiveStudent: val),
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.purple.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                      isDark: isDark,
+                          child: Icon(
+                            Icons.notifications_active_rounded,
+                            color: Colors.purple,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n?.notificationSettings ??
+                                    'Notification Settings',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n?.notificationSettingsDesc ??
+                                    'Manage your notification preferences',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color:
+                                      isDark ? Colors.white54 : Colors.black45,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    if (isAdmin) ...[
-                      Divider(
-                        height: 1,
-                        indent: 16,
-                        endIndent: 16,
-                        color: isDark ? Colors.white10 : Colors.grey.shade100,
+                  ),
+                ),
+              ),
+            ),
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_rounded,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+
+          // Content
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: settingsAsync.when(
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (err, st) => SliverFillRemaining(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 48,
+                        color: Colors.red.shade400,
                       ),
-                      _NotificationSwitchTile(
-                        title: l10n?.newUserNotification ?? 'New Registrations',
-                        icon: Icons.person_add_outlined,
-                        description:
-                            l10n?.newUserNotificationDesc ??
-                            'Notify when a new user registers',
-                        value: prefs.newUserRegistered,
-                        onChanged: (val) => ref
-                            .read(notificationSettingsProvider.notifier)
-                            .updatePreference(
-                              prefs.copyWith(newUserRegistered: val),
-                            ),
-                        isDark: isDark,
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error: $err',
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ).animate().fade(delay: 100.ms).slideY(begin: 0.1, end: 0),
-
-              // Configuration Card
-              PremiumCard(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionHeader(
-                      title: l10n?.configuration ?? 'Configuration',
+              ),
+              data: (prefs) {
+                return SliverList(
+                  delegate: SliverChildListDelegate([
+                    // Events Section
+                    _NotificationSection(
+                      title: l10n?.events ?? 'Events',
+                      subtitle: l10n?.activityNotifications ?? 'Activity notifications',
+                      icon: Icons.event_note_rounded,
+                      iconColor: Colors.blue,
                       isDark: isDark,
-                    ),
-                    const SizedBox(height: 8),
-                    ListTile(
-                      title: Text(
-                        l10n?.inactiveAfterDays ?? 'Inactive after (days)',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? Colors.white
-                              : AppColors.textPrimaryLight,
+                      children: [
+                        _ModernNotificationSwitch(
+                          icon: Icons.note_alt_outlined,
+                          iconColor: Colors.indigo,
+                          title: l10n?.notesNotification ?? 'Notes',
+                          description: l10n?.notesNotificationDesc ??
+                              'Get notified when a note is added',
+                          value: prefs.noteAdded,
+                          onChanged: (val) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .updatePreference(prefs.copyWith(noteAdded: val)),
+                          isDark: isDark,
                         ),
-                      ),
-                      subtitle: Text(
-                        l10n?.inactiveThresholdDesc ??
-                            'Threshold to consider a student inactive',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? AppColors.textSecondaryDark
-                              : AppColors.textSecondaryLight,
+                        _ModernNotificationSwitch(
+                          icon: Icons.fact_check_outlined,
+                          iconColor: Colors.green,
+                          title: l10n?.attendanceNotification ?? 'Attendance',
+                          description: l10n?.attendanceNotificationDesc ??
+                              'Get notified when attendance is recorded',
+                          value: prefs.attendanceRecorded,
+                          onChanged: (val) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .updatePreference(
+                                prefs.copyWith(attendanceRecorded: val),
+                              ),
+                          isDark: isDark,
                         ),
-                      ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
+                        _ModernNotificationSwitch(
+                          icon: Icons.cake_outlined,
+                          iconColor: Colors.pink,
+                          title:
+                              l10n?.birthdayNotification ?? 'Birthday Reminders',
+                          description: l10n?.birthdayNotificationDesc ??
+                              'Get reminders for student birthdays',
+                          value: prefs.birthdayReminder,
+                          onChanged: (val) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .updatePreference(
+                                prefs.copyWith(birthdayReminder: val),
+                              ),
+                          isDark: isDark,
                         ),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white10 : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white24
-                                : Colors.grey.shade300,
+                      ],
+                    ).animate().fade().slideY(begin: 0.1),
+
+                    const SizedBox(height: 16),
+
+                    // Alerts Section
+                    _NotificationSection(
+                      title: l10n?.alerts ?? 'Alerts',
+                      subtitle: l10n?.importantWarnings ?? 'Important warnings',
+                      icon: Icons.warning_amber_rounded,
+                      iconColor: Colors.orange,
+                      isDark: isDark,
+                      children: [
+                        _ModernNotificationSwitch(
+                          icon: Icons.person_off_outlined,
+                          iconColor: Colors.red,
+                          title: l10n?.inactiveNotification ?? 'Inactive Students',
+                          description: l10n?.inactiveNotificationDesc ??
+                              'Alert when a student becomes inactive',
+                          value: prefs.inactiveStudent,
+                          onChanged: (val) => ref
+                              .read(notificationSettingsProvider.notifier)
+                              .updatePreference(
+                                prefs.copyWith(inactiveStudent: val),
+                              ),
+                          isDark: isDark,
+                        ),
+                        if (isAdmin)
+                          _ModernNotificationSwitch(
+                            icon: Icons.person_add_outlined,
+                            iconColor: Colors.teal,
+                            title:
+                                l10n?.newUserNotification ?? 'New Registrations',
+                            description: l10n?.newUserNotificationDesc ??
+                                'Notify when a new user registers',
+                            value: prefs.newUserRegistered,
+                            onChanged: (val) => ref
+                                .read(notificationSettingsProvider.notifier)
+                                .updatePreference(
+                                  prefs.copyWith(newUserRegistered: val),
+                                ),
+                            isDark: isDark,
                           ),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<int>(
+                      ],
+                    ).animate().fade(delay: 100.ms).slideY(begin: 0.1),
+
+                    const SizedBox(height: 16),
+
+                    // Configuration Section
+                    _NotificationSection(
+                      title: l10n?.configuration ?? 'Configuration',
+                      subtitle: l10n?.customizeBehavior ?? 'Customize behavior',
+                      icon: Icons.tune_rounded,
+                      iconColor: Colors.purple,
+                      isDark: isDark,
+                      children: [
+                        // Inactive Threshold
+                        _ConfigurationTile(
+                          icon: Icons.timer_outlined,
+                          iconColor: Colors.deepOrange,
+                          title: l10n?.inactiveAfterDays ?? 'Inactive after (days)',
+                          description: l10n?.inactiveThresholdDesc ??
+                              'Threshold to consider a student inactive',
+                          isDark: isDark,
+                          trailing: _ModernDropdown<int>(
                             value: prefs.inactiveThresholdDays,
-                            icon: Icon(
-                              Icons.arrow_drop_down,
-                              color: isDark
-                                  ? Colors.white70
-                                  : Colors.grey.shade600,
-                            ),
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            dropdownColor: isDark
-                                ? AppColors.surfaceDark
-                                : AppColors.surfaceLight,
-                            items: [7, 14, 21, 30].map((e) {
-                              return DropdownMenuItem(
-                                value: e,
-                                child: Text(l10n?.daysUnit(e) ?? '$e days'),
-                              );
-                            }).toList(),
+                            items: [7, 14, 21, 30],
+                            labelBuilder: (e) => l10n?.daysUnit(e) ?? '$e days',
                             onChanged: (val) {
                               if (val != null) {
                                 ref
                                     .read(notificationSettingsProvider.notifier)
                                     .updatePreference(
-                                      prefs.copyWith(
-                                        inactiveThresholdDays: val,
-                                      ),
+                                      prefs.copyWith(inactiveThresholdDays: val),
                                     );
                               }
                             },
+                            isDark: isDark,
                           ),
                         ),
-                      ),
-                    ),
-                    Divider(
-                      height: 1,
-                      indent: 16,
-                      endIndent: 16,
-                      color: isDark ? Colors.white10 : Colors.grey.shade100,
-                    ),
-                    // Birthday reminder days
-                    ListTile(
-                      title: Text(
-                        l10n?.birthdayReminderDays ?? 'Days before birthday',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? Colors.white
-                              : AppColors.textPrimaryLight,
-                        ),
-                      ),
-                      subtitle: Text(
-                        l10n?.birthdayReminderDaysDesc ??
-                            'How many days before to send reminder',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? AppColors.textSecondaryDark
-                              : AppColors.textSecondaryLight,
-                        ),
-                      ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white10 : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white24
-                                : Colors.grey.shade300,
-                          ),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<int>(
+
+                        // Birthday Reminder Days
+                        _ConfigurationTile(
+                          icon: Icons.calendar_today_outlined,
+                          iconColor: Colors.pink,
+                          title: l10n?.birthdayReminderDays ?? 'Days before birthday',
+                          description: l10n?.birthdayReminderDaysDesc ??
+                              'How many days before to send reminder',
+                          isDark: isDark,
+                          trailing: _ModernDropdown<int>(
                             value: prefs.birthdayReminderDays,
-                            icon: Icon(
-                              Icons.arrow_drop_down,
-                              color: isDark
-                                  ? Colors.white70
-                                  : Colors.grey.shade600,
-                            ),
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            dropdownColor: isDark
-                                ? AppColors.surfaceDark
-                                : AppColors.surfaceLight,
-                            items: [0, 1, 2, 3, 7].map((e) {
-                              final label = e == 0
-                                  ? (l10n?.sameDay ?? 'Same day')
-                                  : (l10n?.daysBefore(e) ?? '$e days before');
-                              return DropdownMenuItem(
-                                value: e,
-                                child: Text(label),
-                              );
-                            }).toList(),
+                            items: [0, 1, 2, 3, 7],
+                            labelBuilder: (e) => e == 0
+                                ? (l10n?.sameDay ?? 'Same day')
+                                : (l10n?.daysBefore(e) ?? '$e days'),
                             onChanged: (val) {
                               if (val != null) {
                                 ref
@@ -317,135 +300,157 @@ class NotificationSettingsPage extends ConsumerWidget {
                                     );
                               }
                             },
+                            isDark: isDark,
                           ),
                         ),
-                      ),
-                    ),
-                    Divider(
-                      height: 1,
-                      indent: 16,
-                      endIndent: 16,
-                      color: isDark ? Colors.white10 : Colors.grey.shade100,
-                    ),
-                    ListTile(
-                      title: Text(
-                        l10n?.birthdayAlertTime ?? 'Birthday alert time',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? Colors.white
-                              : AppColors.textPrimaryLight,
-                        ),
-                      ),
-                      subtitle: Text(
-                        l10n?.tapToChangeTime ?? 'Tap to change time',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? AppColors.textSecondaryDark
-                              : AppColors.textSecondaryLight,
-                        ),
-                      ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white10 : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white24
-                                : Colors.grey.shade300,
-                          ),
-                        ),
-                        child: Text(
-                          _formatTimeString(prefs.birthdayNotifyTime),
-                          style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      onTap: () async {
-                        final parts = prefs.birthdayNotifyTime.split(':');
-                        final initialTime = TimeOfDay(
-                          hour: int.tryParse(parts[0]) ?? 8,
-                          minute:
-                              int.tryParse(parts.length > 1 ? parts[1] : '0') ??
-                              0,
-                        );
-                        final picked = await showTimePicker(
-                          context: context,
-                          initialTime: initialTime,
-                          builder: (context, child) {
-                            return Theme(
-                              data: theme.copyWith(
-                                colorScheme: theme.colorScheme.copyWith(
-                                  primary: AppColors.goldPrimary,
-                                ),
-                              ),
-                              child: child!,
-                            );
-                          },
-                        );
-                        if (picked != null) {
-                          final timeStr =
-                              '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-                          ref
-                              .read(notificationSettingsProvider.notifier)
-                              .updatePreference(
-                                prefs.copyWith(birthdayNotifyTime: timeStr),
+
+                        // Birthday Alert Time
+                        _ConfigurationTile(
+                          icon: Icons.access_time_rounded,
+                          iconColor: Colors.blue,
+                          title: l10n?.birthdayAlertTime ?? 'Birthday alert time',
+                          description: l10n?.tapToChangeTime ?? 'Tap to change time',
+                          isDark: isDark,
+                          trailing: _TimePickerButton(
+                            time: prefs.birthdayNotifyTime,
+                            isDark: isDark,
+                            onTap: () async {
+                              final parts = prefs.birthdayNotifyTime.split(':');
+                              final initialTime = TimeOfDay(
+                                hour: int.tryParse(parts[0]) ?? 8,
+                                minute: int.tryParse(
+                                        parts.length > 1 ? parts[1] : '0') ??
+                                    0,
                               );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ).animate().fade(delay: 200.ms).slideY(begin: 0.1, end: 0),
-            ],
-          );
-        },
+                              final picked = await showTimePicker(
+                                context: context,
+                                initialTime: initialTime,
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: theme.copyWith(
+                                      colorScheme: theme.colorScheme.copyWith(
+                                        primary: AppColors.goldPrimary,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null) {
+                                final timeStr =
+                                    '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+                                ref
+                                    .read(notificationSettingsProvider.notifier)
+                                    .updatePreference(
+                                      prefs.copyWith(birthdayNotifyTime: timeStr),
+                                    );
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ).animate().fade(delay: 200.ms).slideY(begin: 0.1),
+
+                    const SizedBox(height: 24),
+                  ]),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _SectionHeader extends StatelessWidget {
+// Notification Section Card
+class _NotificationSection extends StatelessWidget {
   final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color iconColor;
   final bool isDark;
+  final List<Widget> children;
 
-  const _SectionHeader({required this.title, required this.isDark});
+  const _NotificationSection({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.iconColor,
+    required this.isDark,
+    required this.children,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-          color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
-        ),
+    return PremiumCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white54 : Colors.black45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: isDark ? Colors.white10 : Colors.grey.shade100,
+          ),
+          ...children,
+        ],
       ),
     );
   }
 }
 
-class _NotificationSwitchTile extends StatelessWidget {
-  final String title;
+// Modern Notification Switch
+class _ModernNotificationSwitch extends StatelessWidget {
   final IconData icon;
+  final Color iconColor;
+  final String title;
   final String description;
   final bool value;
   final ValueChanged<bool> onChanged;
   final bool isDark;
 
-  const _NotificationSwitchTile({
-    required this.title,
+  const _ModernNotificationSwitch({
     required this.icon,
+    required this.iconColor,
+    required this.title,
     required this.description,
     required this.value,
     required this.onChanged,
@@ -454,37 +459,225 @@ class _NotificationSwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SwitchListTile(
-      value: value,
-      onChanged: onChanged,
-      activeTrackColor: AppColors.goldPrimary,
-      title: Row(
+    return InkWell(
+      onTap: () => onChanged(!value),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: value ? 0.15 : 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: value ? iconColor : (isDark ? Colors.white38 : Colors.black26),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: value
+                          ? (isDark ? Colors.white : Colors.black87)
+                          : (isDark ? Colors.white54 : Colors.black45),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.white38 : Colors.black38,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Switch.adaptive(
+              value: value,
+              onChanged: onChanged,
+              activeColor: AppColors.goldPrimary,
+              activeTrackColor: AppColors.goldPrimary.withValues(alpha: 0.3),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Configuration Tile
+class _ConfigurationTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String description;
+  final bool isDark;
+  final Widget trailing;
+
+  const _ConfigurationTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.description,
+    required this.isDark,
+    required this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
           ),
-          const SizedBox(width: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : AppColors.textPrimaryLight,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.white38 : Colors.black38,
+                  ),
+                ),
+              ],
             ),
           ),
+          const SizedBox(width: 8),
+          trailing,
         ],
       ),
-      subtitle: Padding(
-        padding: const EdgeInsets.only(left: 32.0),
-        child: Text(
-          description,
-          style: TextStyle(
-            fontSize: 12,
-            color: isDark
-                ? AppColors.textSecondaryDark
-                : AppColors.textSecondaryLight,
+    );
+  }
+}
+
+// Modern Dropdown
+class _ModernDropdown<T> extends StatelessWidget {
+  final T value;
+  final List<T> items;
+  final String Function(T) labelBuilder;
+  final ValueChanged<T?> onChanged;
+  final bool isDark;
+
+  const _ModernDropdown({
+    required this.value,
+    required this.items,
+    required this.labelBuilder,
+    required this.onChanged,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.goldPrimary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppColors.goldPrimary.withValues(alpha: 0.3),
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          isDense: true,
+          icon: Icon(
+            Icons.expand_more_rounded,
+            color: AppColors.goldPrimary,
+            size: 20,
           ),
+          style: TextStyle(
+            color: AppColors.goldPrimary,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+          dropdownColor: isDark ? AppColors.surfaceDark : Colors.white,
+          items: items.map((e) {
+            return DropdownMenuItem(
+              value: e,
+              child: Text(labelBuilder(e)),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+}
+
+// Time Picker Button
+class _TimePickerButton extends StatelessWidget {
+  final String time;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _TimePickerButton({
+    required this.time,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.goldPrimary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: AppColors.goldPrimary.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.schedule_rounded,
+              color: AppColors.goldPrimary,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _formatTimeString(time),
+              style: TextStyle(
+                color: AppColors.goldPrimary,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ],
         ),
       ),
     );
