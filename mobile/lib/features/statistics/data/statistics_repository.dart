@@ -28,9 +28,9 @@ final classAtRiskStudentsProvider =
   );
 });
 
-final weeklyStatsProvider = FutureProvider<List<WeeklyStats>>((ref) async {
+final weeklyStatsProvider = StreamProvider<List<WeeklyStats>>((ref) {
   final repo = ref.watch(statisticsRepositoryProvider);
-  return repo.getWeeklyAttendanceStats();
+  return repo.watchWeeklyAttendanceStats();
 });
 
 class StatisticsRepository {
@@ -278,6 +278,17 @@ class StatisticsRepository {
     return statsMap.entries.map((e) {
       return WeeklyStats(weekStart: e.value.date, attendanceRate: e.value.rate);
     }).toList()..sort((a, b) => a.weekStart.compareTo(b.weekStart));
+  }
+
+  Stream<List<WeeklyStats>> watchWeeklyAttendanceStats() {
+    final changesStream = Rx.merge([
+      _db.select(_db.attendanceSessions).watch(),
+      _db.select(_db.attendanceRecords).watch(),
+    ]);
+
+    return changesStream
+        .debounceTime(const Duration(milliseconds: 300))
+        .asyncMap((_) => getWeeklyAttendanceStats());
   }
 }
 

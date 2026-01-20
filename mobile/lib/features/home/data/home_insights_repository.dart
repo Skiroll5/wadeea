@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rxdart/rxdart.dart';
 import '../../../core/database/app_database.dart';
 import '../../classes/data/class_order_service.dart';
 
@@ -7,13 +8,14 @@ final homeInsightsRepositoryProvider = Provider<HomeInsightsRepository>((ref) {
   return HomeInsightsRepository(ref.read(appDatabaseProvider));
 });
 
-final classesLatestSessionsProvider = FutureProvider<List<ClassSessionStatus>>((
+final classesLatestSessionsProvider = StreamProvider<List<ClassSessionStatus>>((
   ref,
-) async {
+) {
   final repo = ref.read(homeInsightsRepositoryProvider);
   final classOrderService = ref.read(classOrderServiceProvider);
-  final classOrder = await classOrderService.getClassOrder();
-  return repo.getClassesLatestSessions(classOrder: classOrder);
+  return repo.watchClassesLatestSessions(
+    loadClassOrder: classOrderService.getClassOrder,
+  );
 });
 
 class HomeInsightsRepository {
@@ -145,6 +147,23 @@ class HomeInsightsRepository {
     }
 
     return result;
+  }
+
+  Stream<List<ClassSessionStatus>> watchClassesLatestSessions({
+    required Future<List<String>> Function() loadClassOrder,
+  }) {
+    final changesStream = Rx.merge([
+      _db.select(_db.classes).watch(),
+      _db.select(_db.attendanceSessions).watch(),
+      _db.select(_db.attendanceRecords).watch(),
+    ]);
+
+    return changesStream
+        .debounceTime(const Duration(milliseconds: 300))
+        .asyncMap((_) async {
+          final classOrder = await loadClassOrder();
+          return getClassesLatestSessions(classOrder: classOrder);
+        });
   }
 
   Future<String> getStudentWhatsAppMessage(String studentId) async {
