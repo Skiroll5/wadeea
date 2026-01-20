@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { notifyUser } from '../utils/notificationUtils';
+import { emitAppNotification } from '../utils/realtimeNotifications';
 
 const prisma = new PrismaClient();
 
@@ -35,6 +36,15 @@ export const activateUser = async (req: Request, res: Response) => {
                 activationDenied: user.activationDenied
             });
         }
+        emitAppNotification({
+            level: 'success',
+            title: 'User activated',
+            message: `${user.name} is now active.`,
+            audience: 'admins',
+            targetUserId: user.id,
+            entityType: 'USER',
+            entityId: user.id,
+        });
 
         res.json({ message: 'User activated', user: { id: user.id, isActive: user.isActive } });
     } catch (error) {
@@ -72,6 +82,15 @@ export const abortActivation = async (req: Request, res: Response) => {
                 activationDenied: user.activationDenied
             });
         }
+        emitAppNotification({
+            level: 'warning',
+            title: 'Activation denied',
+            message: `${user.name}'s activation was denied.`,
+            audience: 'admins',
+            targetUserId: user.id,
+            entityType: 'USER',
+            entityId: user.id,
+        });
 
         res.json({ message: 'User activation denied', user: { id: user.id, activationDenied: user.activationDenied } });
     } catch (error) {
@@ -170,6 +189,15 @@ export const enableUser = async (req: Request, res: Response) => {
                 activationDenied: user.activationDenied
             });
         }
+        emitAppNotification({
+            level: 'success',
+            title: 'User enabled',
+            message: `${user.name} can sign in again.`,
+            audience: 'admins',
+            targetUserId: user.id,
+            entityType: 'USER',
+            entityId: user.id,
+        });
 
         res.json({ message: 'User enabled', user: { id: user.id, isEnabled: user.isEnabled } });
     } catch (error) {
@@ -207,6 +235,15 @@ export const disableUser = async (req: Request, res: Response) => {
                 activationDenied: user.activationDenied
             });
         }
+        emitAppNotification({
+            level: 'warning',
+            title: 'User disabled',
+            message: `${user.name} has been disabled.`,
+            audience: 'admins',
+            targetUserId: user.id,
+            entityType: 'USER',
+            entityId: user.id,
+        });
 
         res.json({ message: 'User disabled', user: { id: user.id, isEnabled: user.isEnabled } });
     } catch (error) {
@@ -237,6 +274,15 @@ export const deleteUser = async (req: Request, res: Response) => {
                 isDeleted: true
             });
         }
+        emitAppNotification({
+            level: 'warning',
+            title: 'User deleted',
+            message: `${user.name} was deleted.`,
+            audience: 'admins',
+            targetUserId: user.id,
+            entityType: 'USER',
+            entityId: user.id,
+        });
 
         res.json({ message: 'User deleted', user: { id: user.id } });
     } catch (error) {

@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'core/router/router_provider.dart';
 
 import 'core/database/app_database.dart';
+import 'core/services/ui_notification_service.dart';
 import 'features/settings/data/settings_controller.dart';
 
 void main() async {
@@ -36,6 +37,8 @@ class MainApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'St. Refqa Efteqad',
+      scaffoldMessengerKey:
+          ref.read(uiNotificationServiceProvider).messengerKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,

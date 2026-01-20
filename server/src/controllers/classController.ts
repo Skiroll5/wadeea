@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { getIO } from '../socket';
+import { emitAppNotification } from '../utils/realtimeNotifications';
 
 const prisma = new PrismaClient();
 
@@ -116,6 +117,16 @@ export const assignManager = async (req: Request, res: Response) => {
         io.emit('sync_update');
         // Also emit a specific event to the affected user
         io.emit('manager_assignment_changed', { classId, userId, action: 'assigned' });
+        emitAppNotification({
+            level: 'success',
+            title: 'Manager assigned',
+            message: `${manager.user?.name ?? 'User'} was assigned to ${manager.class?.name ?? 'class'}.`,
+            audience: 'admins',
+            targetUserId: userId,
+            entityType: 'CLASS_MANAGER',
+            entityId: manager.id,
+            classId,
+        });
 
         res.status(201).json({ message: 'Manager assigned', manager });
     } catch (error) {
@@ -146,6 +157,15 @@ export const removeManager = async (req: Request, res: Response) => {
         io.emit('sync_update');
         // Also emit a specific event to the affected user
         io.emit('manager_assignment_changed', { classId, userId, action: 'removed' });
+        emitAppNotification({
+            level: 'warning',
+            title: 'Manager removed',
+            message: `A manager was removed from a class.`,
+            audience: 'admins',
+            targetUserId: userId,
+            entityType: 'CLASS_MANAGER',
+            classId,
+        });
 
         res.json({ message: 'Manager removed' });
     } catch (error) {

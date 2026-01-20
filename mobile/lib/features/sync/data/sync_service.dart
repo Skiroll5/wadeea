@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/core/config/api_config.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../../core/database/app_database.dart';
+import '../../../core/services/ui_notification_service.dart';
 import '../../auth/data/auth_controller.dart';
 
 /// Provider for the SyncService with auto-sync capability
@@ -140,6 +141,10 @@ class SyncService {
       }
     });
 
+    _socket?.on('app_notification', (data) {
+      _handleAppNotification(data);
+    });
+
     _socket?.connect();
   }
 
@@ -149,6 +154,48 @@ class SyncService {
     _retryTimer?.cancel();
     _socket?.disconnect();
     _socket?.dispose();
+  }
+
+  void _handleAppNotification(dynamic data) {
+    if (data is! Map) return;
+
+    final currentUser = _ref.read(authControllerProvider).asData?.value;
+    final audience = data['audience']?.toString();
+    final targetUserId = data['targetUserId']?.toString();
+
+    if (audience == 'admins' && currentUser?.role != 'ADMIN') {
+      return;
+    }
+
+    if (audience == 'user' && targetUserId != null) {
+      if (currentUser == null || currentUser.id != targetUserId) {
+        return;
+      }
+    }
+
+    final level = _parseNotificationLevel(data['level']?.toString());
+    final title = data['title']?.toString();
+    final message = data['message']?.toString() ?? 'Update received.';
+
+    _ref.read(uiNotificationServiceProvider).show(
+          message: message,
+          title: title,
+          level: level,
+        );
+  }
+
+  UiNotificationLevel _parseNotificationLevel(String? level) {
+    switch (level) {
+      case 'success':
+        return UiNotificationLevel.success;
+      case 'warning':
+        return UiNotificationLevel.warning;
+      case 'error':
+        return UiNotificationLevel.error;
+      case 'info':
+      default:
+        return UiNotificationLevel.info;
+    }
   }
 
   /// Try to push changes, silently fails and retries later if offline
