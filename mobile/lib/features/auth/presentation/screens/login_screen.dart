@@ -110,25 +110,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo or Title
-                Icon(
-                      Icons.church,
-                      size: 64,
-                      color: Theme.of(context).primaryColor,
-                    )
+                // Logo
+                Image.asset(
+                  'assets/logo.png',
+                  height: 110,
+                  fit: BoxFit.contain,
+                )
                     .animate()
                     .fade(duration: 500.ms)
                     .scale(delay: 200.ms, curve: Curves.easeOutBack),
-
-                const SizedBox(height: 16),
-
-                Text(
-                  l10n.appTitle,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ).animate().fade(delay: 300.ms).slideY(begin: 0.2, end: 0),
 
                 const SizedBox(height: 48),
 
