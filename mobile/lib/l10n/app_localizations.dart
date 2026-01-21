@@ -110,6 +110,12 @@ abstract class AppLocalizations {
   /// **'Church of Martyr Rafqa and Her Children in Al-Qanater Al-Khayriya'**
   String get churchName;
 
+  /// No description provided for @loginVerse.
+  ///
+  /// In en, this message translates to:
+  /// **'اِحْفَظِ الْوَدِيعَةَ الصَّالِحَةَ بِالرُّوحِ الْقُدُسِ السَّاكِنِ فِينَا. (2 تي 1: 14).'**
+  String get loginVerse;
+
   /// No description provided for @login.
   ///
   /// In en, this message translates to:

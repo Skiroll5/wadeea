@@ -215,14 +215,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 
                 const SizedBox(height: 48),
-                Text(
-                  l10n.churchName,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: isDark ? Colors.white70 : Colors.black54,
-                        fontWeight: FontWeight.w600,
-                      ),
-                  textAlign: TextAlign.center,
-                ).animate().fade(delay: 700.ms).slideY(begin: 0.5),
+                Column(
+                  children: [
+                    Text(
+                      l10n.churchName,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: isDark ? Colors.white70 : Colors.black54,
+                            fontWeight: FontWeight.w600,
+                          ),
+                      textAlign: TextAlign.center,
+                    ).animate().fade(delay: 700.ms).slideY(begin: 0.5),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.loginVerse,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: isDark ? Colors.white60 : Colors.black45,
+                            fontStyle: FontStyle.italic,
+                          ),
+                      textAlign: TextAlign.center,
+                    ).animate().fade(delay: 900.ms).slideY(begin: 0.7),
+                  ],
+                ),
               ],
             ),
           ),

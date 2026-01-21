@@ -16,6 +16,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Church of Martyr Rafqa and Her Children in Al-Qanater Al-Khayriya';
 
   @override
+  String get loginVerse =>
+      'اِحْفَظِ الْوَدِيعَةَ الصَّالِحَةَ بِالرُّوحِ الْقُدُسِ السَّاكِنِ فِينَا. (2 تي 1: 14).';
+
+  @override
   String get login => 'Login';
 
   @override

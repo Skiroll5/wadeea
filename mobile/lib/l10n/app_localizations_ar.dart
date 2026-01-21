@@ -15,6 +15,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get churchName => 'كنيسة الشهيدة رفقة وأولادها بالقناطر الخيرية';
 
   @override
+  String get loginVerse =>
+      'اِحْفَظِ الْوَدِيعَةَ الصَّالِحَةَ بِالرُّوحِ الْقُدُسِ السَّاكِنِ فِينَا. (2 تي 1: 14).';
+
+  @override
   String get login => 'تسجيل الدخول';
 
   @override
