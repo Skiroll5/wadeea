@@ -1061,4 +1061,82 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get alreadyHaveAccount => 'لديك حساب بالفعل؟';
+
+  @override
+  String get emailOrPhone => 'البريد الإلكتروني أو الهاتف';
+
+  @override
+  String get phoneNumber => 'رقم الهاتف';
+
+  @override
+  String get phoneHint => 'أدخل رقم هاتفك';
+
+  @override
+  String get phoneAlreadyExists => 'يوجد حساب مرتبط برقم الهاتف هذا بالفعل';
+
+  @override
+  String get emailNotConfirmed =>
+      'يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول';
+
+  @override
+  String get checkYourEmail => 'تحقق من بريدك الإلكتروني';
+
+  @override
+  String get confirmEmailDescription =>
+      'لقد أرسلنا رابط تأكيد إلى بريدك الإلكتروني. يرجى الضغط عليه لتنشيط حسابك.';
+
+  @override
+  String get resendEmail => 'إعادة إرسال البريد';
+
+  @override
+  String get emailResent => 'تم إعادة إرسال بريد التأكيد';
+
+  @override
+  String get goBackToLogin => 'العودة لتسجيل الدخول';
+
+  @override
+  String get forgotPasswordTitle => 'استعادة كلمة المرور';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'اختر الطريقة التي تفضلها لاستعادة كلمة المرور';
+
+  @override
+  String get recoverViaEmail => 'استعادة عبر البريد الإلكتروني';
+
+  @override
+  String get recoverViaPhone => 'استعادة عبر الهاتف';
+
+  @override
+  String get sendResetLink => 'إرسال رابط الاستعادة';
+
+  @override
+  String get sendOTP => 'إرسال كود التحقق';
+
+  @override
+  String get resetLinkSent => 'تم إرسال رابط إعادة التعيين بنجاح';
+
+  @override
+  String get enterNewPassword => 'أدخل كلمة المرور الجديدة';
+
+  @override
+  String get newPasswordHint => 'أدخل 6 أحرف على الأقل';
+
+  @override
+  String get confirmNewPassword => 'تأكيد كلمة المرور الجديدة';
+
+  @override
+  String get resetPasswordAction => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get passwordResetSuccess => 'تم إعادة تعيين كلمة المرور بنجاح';
+
+  @override
+  String get pleaseEnterEmail => 'يرجى إدخال البريد الإلكتروني';
+
+  @override
+  String get pleaseEnterValidEmail => 'يرجى إدخال بريد إلكتروني صحيح';
+
+  @override
+  String get pleaseEnterPassword => 'يرجى إدخال كلمة المرور';
 }

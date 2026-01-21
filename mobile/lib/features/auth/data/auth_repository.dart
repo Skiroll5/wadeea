@@ -21,11 +21,11 @@ class AuthRepository {
 
   AuthRepository(this._dio);
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String identifier, String password) async {
     try {
       final response = await _dio.post(
         '$_baseUrl/auth/login',
-        data: {'email': email, 'password': password},
+        data: {'identifier': identifier, 'password': password},
       );
       return response.data; // { token, user }
     } on DioException catch (e) {
@@ -39,17 +39,51 @@ class AuthRepository {
   Future<Map<String, dynamic>> register(
     String email,
     String password,
-    String name,
-  ) async {
+    String name, {
+    String? phone,
+  }) async {
     try {
       final response = await _dio.post(
         '$_baseUrl/auth/register',
-        data: {'email': email, 'password': password, 'name': name},
+        data: {
+          'email': email,
+          'password': password,
+          'name': name,
+          if (phone != null) 'phone': phone,
+        },
       );
       return response.data;
     } on DioException catch (e) {
       final data = e.response?.data;
       final message = data?['message'] ?? 'Registration failed';
+      final code = data?['code'] ?? 'UNKNOWN';
+      throw AuthError(message, code);
+    }
+  }
+
+  Future<void> forgotPassword(String identifier) async {
+    try {
+      await _dio.post(
+        '$_baseUrl/auth/forgot-password',
+        data: {'identifier': identifier},
+      );
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = data?['message'] ?? 'Request failed';
+      final code = data?['code'] ?? 'UNKNOWN';
+      throw AuthError(message, code);
+    }
+  }
+
+  Future<void> resetPassword(String token, String newPassword) async {
+    try {
+      await _dio.post(
+        '$_baseUrl/auth/reset-password',
+        data: {'token': token, 'newPassword': newPassword},
+      );
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = data?['message'] ?? 'Reset failed';
       final code = data?['code'] ?? 'UNKNOWN';
       throw AuthError(message, code);
     }

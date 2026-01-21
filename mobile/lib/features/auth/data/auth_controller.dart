@@ -40,12 +40,10 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  Future<bool> login(String email, String password) async {
-    // We do NOT set loading state here to avoid router redirecting to /splash
-    // state = const AsyncValue.loading();
+  Future<bool> login(String identifier, String password) async {
     try {
       final repo = _ref.read(authRepositoryProvider);
-      final data = await repo.login(email, password);
+      final data = await repo.login(identifier, password);
 
       final user = User.fromJson(data['user']);
       final token = data['token'];
@@ -67,29 +65,46 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
           await fcmRepo.registerToken(token);
         }
       } catch (e) {
-        // print('FCM Registration Warning: $e');
+        // FCM error is non-fatal for login
       }
 
       state = AsyncValue.data(user);
       return true;
     } catch (e) {
-      // We do NOT set error state to avoid router refresh/redirect
-      // state = AsyncValue.error(e, st);
-      // Instead we rethrow so the UI can handle the error message
       rethrow;
     }
   }
 
-  Future<bool> register(String email, String password, String name) async {
-    // Similarly, handle loading locally in UI
+  Future<bool> register(
+    String email,
+    String password,
+    String name, {
+    String? phone,
+  }) async {
     try {
       final repo = _ref.read(authRepositoryProvider);
-      await repo.register(email, password, name);
-      // Registration successful, await approval. State remains null (not logged in)
+      await repo.register(email, password, name, phone: phone);
       state = const AsyncValue.data(null);
       return true;
     } catch (e) {
-      // state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  Future<void> forgotPassword(String identifier) async {
+    try {
+      final repo = _ref.read(authRepositoryProvider);
+      await repo.forgotPassword(identifier);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword(String token, String newPassword) async {
+    try {
+      final repo = _ref.read(authRepositoryProvider);
+      await repo.resetPassword(token, newPassword);
+    } catch (e) {
       rethrow;
     }
   }

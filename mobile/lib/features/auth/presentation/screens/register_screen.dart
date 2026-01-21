@@ -10,6 +10,9 @@ import '../../data/auth_controller.dart';
 import '../../data/auth_repository.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import '../widgets/auth_background.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/country_picker_dialog.dart';
+import 'dart:ui' as ui;
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -21,21 +24,46 @@ class RegisterScreen extends ConsumerStatefulWidget {
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String? _errorMessage;
+  String? _fullPhoneNumber;
   bool _isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _handleRegister() async {
-    if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    // Manual Validation for top-level error display
+    String? validationError;
+    if (_nameController.text.trim().isEmpty) {
+      validationError = l10n.pleaseEnterName;
+    } else if (_emailController.text.trim().isEmpty) {
+      validationError = l10n.pleaseEnterEmail;
+    } else {
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (!emailRegex.hasMatch(_emailController.text.trim())) {
+        validationError = l10n.pleaseEnterValidEmail;
+      } else if (_passwordController.text.isEmpty) {
+        validationError = l10n.pleaseEnterPassword;
+      }
+    }
+
+    if (validationError != null) {
+      setState(() {
+        _errorMessage = validationError;
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -46,15 +74,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       final success = await ref
           .read(authControllerProvider.notifier)
           .register(
-            _emailController.text,
+            _emailController.text.trim(),
             _passwordController.text,
-            _nameController.text,
+            _nameController.text.trim(),
+            phone: _fullPhoneNumber,
           );
 
       if (!mounted) return;
 
       if (success) {
-        _showSuccessDialog();
+        context.push('/confirm-email-pending');
       }
     } catch (e) {
       if (!mounted) return;
@@ -66,6 +95,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         switch (e.code) {
           case 'EMAIL_EXISTS':
             message = l10n.emailAlreadyExists;
+            break;
+          case 'PHONE_EXISTS':
+            message = l10n.phoneAlreadyExists;
             break;
           default:
             message = e.message;
@@ -84,73 +116,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         });
       }
     }
-  }
-
-  void _showSuccessDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 48,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.registrationSuccessful,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: isDark
-                    ? AppColors.textPrimaryDark
-                    : AppColors.textPrimaryLight,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.registrationSuccessfulDesc,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.go('/login');
-            },
-            child: Text(
-              l10n.login,
-              style: TextStyle(
-                color: isDark ? AppColors.goldPrimary : AppColors.goldDark,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -280,8 +245,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             label: l10n.name,
                             prefixIcon: Icons.person_outline,
                             keyboardType: TextInputType.name,
-                            validator: (value) =>
-                                value!.isEmpty ? l10n.pleaseEnterName : null,
                             delay: 0.7,
                           ),
                           const SizedBox(height: 16),
@@ -290,18 +253,120 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             label: l10n.email,
                             prefixIcon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
-                            validator: (value) =>
-                                value!.isEmpty ? l10n.pleaseEnterName : null,
                             delay: 0.8,
                           ),
+                          const SizedBox(height: 16),
+                          Directionality(
+                                textDirection: ui.TextDirection.ltr,
+                                child: IntlPhoneField(
+                                  controller: _phoneController,
+                                  initialCountryCode: 'EG',
+                                  textAlign: TextAlign.left,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.phoneNumber,
+                                    labelStyle: TextStyle(
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black54,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: isDark
+                                            ? Colors.white24
+                                            : Colors.black12,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: isDark
+                                            ? Colors.white24
+                                            : Colors.black12,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: isDark
+                                            ? AppColors.goldPrimary
+                                            : AppColors.bluePrimary,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.phone_outlined,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black54,
+                                    ),
+                                    counterText: '',
+                                  ),
+                                  disableLengthCheck: true,
+                                  languageCode: l10n.localeName,
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  dropdownTextStyle: TextStyle(
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                  pickerDialogStyle: PickerDialogStyle(
+                                    backgroundColor: isDark
+                                        ? const Color(0xFF1E1E1E)
+                                        : Colors.white,
+                                    countryCodeStyle: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black87,
+                                    ),
+                                    countryNameStyle: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black87,
+                                    ),
+                                    searchFieldInputDecoration: InputDecoration(
+                                      labelText: l10n.search,
+                                      labelStyle: TextStyle(
+                                        color: isDark
+                                            ? Colors.grey
+                                            : Colors.black54,
+                                      ),
+                                      prefixIcon: const Icon(Icons.search),
+                                      filled: true,
+                                      fillColor: isDark
+                                          ? Colors.white.withValues(alpha: 0.05)
+                                          : Colors.grey.withValues(alpha: 0.05),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                  ),
+                                  onChanged: (phone) {
+                                    if (phone.countryISOCode == 'EG' &&
+                                        phone.number.startsWith('0')) {
+                                      _fullPhoneNumber =
+                                          '${phone.countryCode}${phone.number.substring(1)}';
+                                    } else {
+                                      _fullPhoneNumber = phone.completeNumber;
+                                    }
+                                  },
+                                ),
+                              )
+                              .animate()
+                              .fade(delay: 850.ms)
+                              .slideY(begin: 0.2, end: 0),
                           const SizedBox(height: 16),
                           PremiumTextField(
                             controller: _passwordController,
                             label: l10n.password,
                             prefixIcon: Icons.lock_outline,
                             isPassword: true,
-                            validator: (value) =>
-                                value!.isEmpty ? l10n.pleaseEnterName : null,
                             delay: 0.9,
                           ),
                           const SizedBox(height: 32),

@@ -34,7 +34,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    if (_emailController.text.trim().isEmpty) {
+      setState(() {
+        _errorMessage = l10n.pleaseEnterEmail;
+      });
+      return;
+    } else if (_passwordController.text.isEmpty) {
+      setState(() {
+        _errorMessage = l10n.pleaseEnterPassword;
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -70,6 +82,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             break;
           case 'INVALID_CREDENTIALS':
             message = l10n.invalidCredentials;
+            break;
+          case 'EMAIL_NOT_CONFIRMED':
+            message = l10n.emailNotConfirmed;
             break;
           default:
             message = l10n.errorGeneric(e.message);
@@ -204,11 +219,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       PremiumTextField(
                         controller: _emailController,
-                        label: l10n.email,
-                        prefixIcon: Icons.email_outlined,
+                        label: l10n.emailOrPhone,
+                        prefixIcon: Icons.person_outline,
                         keyboardType: TextInputType.emailAddress,
-                        validator: (value) =>
-                            value!.isEmpty ? l10n.pleaseEnterName : null,
                         delay: 0.7,
                       ),
                       const SizedBox(height: 20),
@@ -217,8 +230,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         label: l10n.password,
                         prefixIcon: Icons.lock_outline,
                         isPassword: true,
-                        validator: (value) =>
-                            value!.isEmpty ? l10n.pleaseEnterName : null,
                         delay: 0.8,
                       ),
 
@@ -226,7 +237,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            // Link to forgot password if available
+                            context.push('/forgot-password');
                           },
                           child: Text(
                             l10n.forgotPassword,

@@ -1071,4 +1071,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get emailOrPhone => 'Email or Phone';
+
+  @override
+  String get phoneNumber => 'Phone Number';
+
+  @override
+  String get phoneHint => 'Enter your phone number';
+
+  @override
+  String get phoneAlreadyExists =>
+      'An account with this phone number already exists';
+
+  @override
+  String get emailNotConfirmed => 'Please confirm your email before logging in';
+
+  @override
+  String get checkYourEmail => 'Check Your Email';
+
+  @override
+  String get confirmEmailDescription =>
+      'We\'ve sent a confirmation link to your email. Please click it to activate your account.';
+
+  @override
+  String get resendEmail => 'Resend Email';
+
+  @override
+  String get emailResent => 'Confirmation email resent';
+
+  @override
+  String get goBackToLogin => 'Go back to Login';
+
+  @override
+  String get forgotPasswordTitle => 'Recover Password';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'Choose how you want to recover your password';
+
+  @override
+  String get recoverViaEmail => 'Recover via Email';
+
+  @override
+  String get recoverViaPhone => 'Recover via Phone';
+
+  @override
+  String get sendResetLink => 'Send Reset Link';
+
+  @override
+  String get sendOTP => 'Send OTP';
+
+  @override
+  String get resetLinkSent => 'Reset link sent successfully';
+
+  @override
+  String get enterNewPassword => 'Enter New Password';
+
+  @override
+  String get newPasswordHint => 'Enter at least 6 characters';
+
+  @override
+  String get confirmNewPassword => 'Confirm New Password';
+
+  @override
+  String get resetPasswordAction => 'Reset Password';
+
+  @override
+  String get passwordResetSuccess => 'Password reset successfully';
+
+  @override
+  String get pleaseEnterEmail => 'Please enter your email';
+
+  @override
+  String get pleaseEnterValidEmail => 'Please enter a valid email';
+
+  @override
+  String get pleaseEnterPassword => 'Please enter your password';
 }

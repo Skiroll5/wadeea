@@ -8,6 +8,8 @@ class User {
   final bool activationDenied;
   final String? classId;
   final String? whatsappTemplate;
+  final String? phone;
+  final bool isEmailConfirmed;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -21,6 +23,8 @@ class User {
     this.activationDenied = false,
     this.classId,
     this.whatsappTemplate,
+    this.phone,
+    this.isEmailConfirmed = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -36,6 +40,8 @@ class User {
       activationDenied: json['activationDenied'] ?? false,
       classId: json['classId'],
       whatsappTemplate: json['whatsappTemplate'],
+      phone: json['phone'],
+      isEmailConfirmed: json['isEmailConfirmed'] ?? false,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'])
           : null,
@@ -56,6 +62,8 @@ class User {
       'activationDenied': activationDenied,
       'classId': classId,
       'whatsappTemplate': whatsappTemplate,
+      'phone': phone,
+      'isEmailConfirmed': isEmailConfirmed,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
@@ -64,9 +72,11 @@ class User {
   User copyWith({
     String? name,
     String? whatsappTemplate,
+    String? classId,
     bool? isActive,
     bool? isEnabled,
     bool? activationDenied,
+    bool? isEmailConfirmed,
     DateTime? updatedAt,
   }) {
     return User(
@@ -77,8 +87,10 @@ class User {
       isActive: isActive ?? this.isActive,
       isEnabled: isEnabled ?? this.isEnabled,
       activationDenied: activationDenied ?? this.activationDenied,
-      classId: classId,
+      classId: classId ?? this.classId,
       whatsappTemplate: whatsappTemplate ?? this.whatsappTemplate,
+      phone: phone,
+      isEmailConfirmed: isEmailConfirmed ?? this.isEmailConfirmed,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -106,7 +106,8 @@ export const listPendingUsers = async (req: Request, res: Response) => {
                 isEnabled: true,
                 activationDenied: false,
                 role: 'SERVANT',
-                isDeleted: false
+                isDeleted: false,
+                isEmailConfirmed: true
             },
             select: { id: true, name: true, email: true, createdAt: true },
         });
@@ -121,7 +122,8 @@ export const listAbortedUsers = async (req: Request, res: Response) => {
         const users = await prisma.user.findMany({
             where: {
                 activationDenied: true,
-                isDeleted: false
+                isDeleted: false,
+                isEmailConfirmed: true
             },
             select: { id: true, name: true, email: true, createdAt: true },
         });
@@ -134,7 +136,10 @@ export const listAbortedUsers = async (req: Request, res: Response) => {
 export const listAllUsers = async (req: Request, res: Response) => {
     try {
         const users = await prisma.user.findMany({
-            where: { isDeleted: false },
+            where: {
+                isDeleted: false,
+                isEmailConfirmed: true
+            },
             select: {
                 id: true,
                 name: true,

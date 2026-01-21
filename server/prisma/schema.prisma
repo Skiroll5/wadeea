@@ -32,6 +32,17 @@ model User {
   managedClasses ClassManager[]
   notificationPreference NotificationPreference?
 
+  // Phone support
+  phone     String?  @unique
+
+  // Email confirmation
+  isEmailConfirmed  Boolean  @default(false)
+  confirmationToken String?
+
+  // Password recovery
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+
   // FCM token for push notifications
   fcmToken  String?
 
