@@ -2,12 +2,12 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient, Role } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { notifyAdmins } from '../utils/notificationUtils';
 import crypto from 'crypto';
 import { sendConfirmationEmail, sendPasswordResetEmail, sendPasswordResetSms } from '../services/mailerService';
+import prisma from '../prisma';
 
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 
 export const register = async (req: Request, res: Response) => {

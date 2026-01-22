@@ -7,65 +7,61 @@ let isInitialized = false;
 
 export const initFirebase = async () => {
     try {
-        // Check if service account file exists, or use environment variables
-        // For this implementation, we'll assume a standard path or environment setup
-        // Ideally, user puts 'service-account.json' in server root
+        if (isInitialized) return;
 
-        if (!admin.apps.length) {
-            // Using default credential (GOOGLE_APPLICATION_CREDENTIALS) or explicit path
-            // If running locally, you might need to point to the file
-            const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS || path.join(__dirname, '../../service-account.json');
+        // 1. Try environment variable for credential (JSON content or path)
+        if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+            const envCred = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+            let credential;
 
-            // Note: In production, usually handled by Env vars.
-            // We will wrap this in a try-catch to avoid crashing if not set up yet
-
-            let fileContent: string | null = null;
-            try {
-                fileContent = await fs.promises.readFile(serviceAccountPath, 'utf-8');
-            } catch (e) {
-                // File not found or not readable
-            }
-
-            if (process.env.GOOGLE_APPLICATION_CREDENTIALS || fileContent) {
-                let credential;
-
-                if (fileContent) {
-                    try {
-                        const serviceAccount = JSON.parse(fileContent);
-                        credential = admin.credential.cert(serviceAccount);
-                    } catch (parseError) {
-                         // If JSON parse fails, but we are using ENV var, maybe let standard cert(path) try?
-                         // It will likely fail too if file is invalid JSON, but to be safe/consistent:
-                         if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-                             credential = admin.credential.cert(serviceAccountPath);
-                         } else {
-                             throw parseError;
-                         }
-                    }
-                } else {
-                     // Env var is set, but we couldn't read file (maybe path is weird, or just not a file path but handled by lib?)
-                     // Although admin.credential.cert(path) expects a file path.
-                     credential = admin.credential.cert(serviceAccountPath);
-                }
-
-                admin.initializeApp({
-                    credential,
-                });
-                isInitialized = true;
-                console.log('Firebase Admin initialized successfully');
+            // Check if it's a file path
+            if (fs.existsSync(envCred)) {
+                 // It's a path
+                 credential = admin.credential.cert(envCred);
             } else {
-                console.warn('Firebase Service Account not found. Push notifications will NOT be sent.');
+                 // Try parsing as JSON content
+                 try {
+                     const serviceAccount = JSON.parse(envCred);
+                     credential = admin.credential.cert(serviceAccount);
+                 } catch (e) {
+                     // Not a valid JSON, and not a file.
+                     console.warn('GOOGLE_APPLICATION_CREDENTIALS set but invalid path or JSON. Falling back to default.');
+                 }
             }
-        } else {
-            isInitialized = true;
+
+            if (credential) {
+                admin.initializeApp({ credential });
+                isInitialized = true;
+                console.log('Firebase Admin initialized via GOOGLE_APPLICATION_CREDENTIALS');
+                return;
+            }
         }
+
+        // 2. Try default file path 'service-account.json' in server root
+        // Assuming this file is compiled to dist, or we resolve relative to src
+        const defaultPath = path.resolve(process.cwd(), 'service-account.json');
+        if (fs.existsSync(defaultPath)) {
+            admin.initializeApp({
+                credential: admin.credential.cert(defaultPath)
+            });
+            isInitialized = true;
+            console.log('Firebase Admin initialized via default service-account.json');
+            return;
+        }
+
+        console.warn('Firebase Service Account not found. Push notifications will NOT be sent.');
+
     } catch (error) {
         console.error('Failed to initialize Firebase Admin:', error);
     }
 };
 
 export const sendDataNotification = async (tokens: string[], title: string, body: string, data?: Record<string, string>) => {
-    if (!isInitialized || tokens.length === 0) return;
+    if (!isInitialized) {
+        // console.debug('Firebase not initialized, skipping notification.');
+        return;
+    }
+    if (tokens.length === 0) return;
 
     try {
         const message: admin.messaging.MulticastMessage = {
