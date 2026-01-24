@@ -87,35 +87,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleResendConfirmation() async {
-    final l10n = AppLocalizations.of(context)!;
-    setState(() => _isLoading = true);
-
-    try {
-      await ref
-          .read(authControllerProvider.notifier)
-          .resendConfirmation(_emailController.text.trim());
-
-      if (!mounted) return;
-      AppSnackBar.show(
-        context,
-        message: l10n.emailResent,
-        type: AppSnackBarType.success,
-      );
-      // Navigate to confirmation screen where they can enter OTP
-      context.push(
-        '/confirm-email-pending',
-        extra: {'email': _emailController.text.trim()},
-      );
-    } catch (e) {
-      if (!mounted) return;
-      AppSnackBar.show(
-        context,
-        message: MessageHandler.getErrorMessage(context, e),
-        type: AppSnackBarType.error,
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    // Instead of resending immediately, navigate to the verification screen
+    // where they can choose to resend or enter an existing code.
+    // This provides a better UX as they might already have a code.
+    context.push(
+      '/confirm-email-pending',
+      extra: {'email': _emailController.text.trim()},
+    );
   }
 
   Future<void> _handleGoogleLogin() async {

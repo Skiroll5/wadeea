@@ -138,7 +138,28 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
   Future<void> confirmEmail(String token) async {
     try {
       final repo = _ref.read(authRepositoryProvider);
-      await repo.confirmEmail(token);
+      final data = await repo.confirmEmail(token);
+
+      if (data['user'] == null || data['token'] == null) {
+        throw AuthError(
+          'The server is running an old version and didn\'t return login data. Please RESTART your server.',
+          'SERVER_OUTDATED',
+        );
+      }
+
+      final user = User.fromJson(data['user']);
+      final sessionToken = data['token'];
+
+      // Save token and user data
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', sessionToken);
+      await prefs.setString('user_data', jsonEncode(user.toJson()));
+
+      // Upsert user to local DB
+      await _upsertUserLocal(user);
+
+      // Update state to trigger auto-login in UI
+      state = AsyncValue.data(user);
     } catch (e) {
       rethrow;
     }

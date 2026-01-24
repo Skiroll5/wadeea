@@ -209,9 +209,19 @@ class AuthRepository {
     }
   }
 
-  Future<void> confirmEmail(String token) async {
+  Future<Map<String, dynamic>> confirmEmail(String token) async {
     try {
-      await _dio.post('$_baseUrl/auth/confirm-email', data: {'token': token});
+      final response = await _dio.post(
+        '$_baseUrl/auth/confirm-email',
+        data: {'token': token},
+      );
+      if (response.data == null) {
+        throw AuthError(
+          'Server returned an empty response. Please restart your server.',
+          'EMPTY_RESPONSE',
+        );
+      }
+      return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       final data = e.response?.data;
       final message = data?['message'] ?? 'Invalid OTP';

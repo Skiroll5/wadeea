@@ -97,7 +97,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           message: l10n.emailConfirmedSuccess,
           type: AppSnackBarType.success,
         );
-        context.go('/login');
+        // Auto-login is handled by state change in AuthController,
+        // go home instead of login screen.
+        context.go('/');
       } else {
         // Password Reset
         await ref.read(authControllerProvider.notifier).verifyResetOtp(otp);

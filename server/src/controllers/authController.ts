@@ -222,7 +222,28 @@ export const confirmEmail = async (req: Request, res: Response) => {
             }
         });
 
-        res.json({ message: 'Email confirmed successfully' });
+        // Generate token for auto-login
+        const tokenResponse = jwt.sign(
+            { userId: user.id, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            message: 'Email confirmed successfully',
+            token: tokenResponse,
+            user: {
+                id: user.id,
+                email: user.email,
+                phone: user.phone,
+                name: user.name,
+                role: user.role,
+                isActive: user.isActive,
+                isEnabled: user.isEnabled,
+                activationDenied: user.activationDenied,
+                isEmailConfirmed: true,
+            }
+        });
     } catch (error) {
         console.error('Confirm email error:', error);
         res.status(500).json({ message: 'Server error' });
