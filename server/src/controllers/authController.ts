@@ -373,3 +373,113 @@ export const resetPassword = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+import { OAuth2Client } from 'google-auth-library';
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleLogin = async (req: Request, res: Response) => {
+    try {
+        const { idToken } = req.body;
+        if (!idToken) {
+            return res.status(400).json({ message: 'Missing ID Token' });
+        }
+
+        // 1. Verify Token
+        const ticket = await client.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload) {
+            return res.status(400).json({ message: 'Invalid token payload' });
+        }
+
+        const { email, name, picture, sub: googleId } = payload;
+        
+        if (!email) {
+            return res.status(400).json({ message: 'Email not provided by Google' });
+        }
+
+        // 2. Find or Create User
+        // We check for Google ID (future proofing) or Email
+        let user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email }, // Link by email
+                    // { googleId } // If you add googleId column later
+                ],
+                isDeleted: false
+            }
+        });
+
+        if (!user) {
+            // Register new user automatically
+            // Auto-confirm email since it's verified by Google
+            const userCount = await prisma.user.count({ where: { isDeleted: false } });
+            const role = userCount === 0 ? 'ADMIN' : 'SERVANT';
+
+            user = await prisma.user.create({
+                data: {
+                    email,
+                    name: name || 'Google User',
+                    password: await bcrypt.hash(Math.random().toString(36), 10), // Random password
+                    role,
+                    isEmailConfirmed: true,
+                    isEnabled: true,
+                    isActive: role === 'ADMIN', // Auto-activate if first admin, else pending logic? 
+                                                // Actually, social login usually implies "active" enough, 
+                                                // but let's respect the "waitActivation" rule if needed.
+                                                // For now, let's keep consistent:
+                    activationDenied: false,
+                    // photoUrl: picture // Add to schema if needed
+                }
+            });
+
+            // Notify admins
+             notifyAdmins(
+                'newUserRegistered',
+                '👤 New Google User',
+                `${user.name} signed up with Google`,
+                { userId: user.id },
+                user.id
+            ).catch(console.error);
+
+        } else {
+             // Optional: Update existing user info (e.g. name/photo) if login success?
+             // For now, simple login.
+        }
+
+        // 3. Check access rules
+        if (!user.isEnabled) {
+             return res.status(403).json({
+                message: 'Your account has been disabled by the administrator',
+                code: 'ACCOUNT_DISABLED'
+            });
+        }
+
+        // 4. Generate Session Token (Standard JWT)
+        const token = jwt.sign(
+            { userId: user.id, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                isActive: user.isActive,
+                isEnabled: user.isEnabled,
+                isEmailConfirmed: user.isEmailConfirmed
+            }
+        });
+
+    } catch (error) {
+        console.error('Google login error:', error);
+        res.status(500).json({ message: 'Google authentication failed', error });
+    }
+};
