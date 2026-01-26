@@ -107,6 +107,30 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
       userClassCount = classes.length;
     });
 
+    // --- FORCE EXIT LOGIC ---
+    // If the selected class is no longer in the user's available classes (e.g. removed as manager),
+    // kick them back to home.
+    if (selectedClassId != null &&
+        userClassesAsync.hasValue &&
+        !userClassesAsync.isLoading &&
+        !userClassesAsync.hasError) {
+      final classes = userClassesAsync.value ?? [];
+      final exists = classes.any((c) => c.id == selectedClassId);
+
+      // Only force exit if we have classes loaded but the current one is missing
+      // And we are not an ADMIN (admins see everything via other streams, but safety check)
+      if (!exists && user?.role != 'ADMIN') {
+        // Schedule navigation to avoid build errors
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && GoRouter.of(context).canPop()) {
+            // Reset selection and pop
+            ref.read(selectedClassIdProvider.notifier).state = null;
+            context.go('/');
+          }
+        });
+      }
+    }
+
     // Single-class manager: no back button, show settings
     final isSingleClassManager = user?.role != 'ADMIN' && userClassCount == 1;
 
