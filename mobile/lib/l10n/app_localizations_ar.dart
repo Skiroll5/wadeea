@@ -272,7 +272,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get className => 'اسم الفصل';
 
   @override
-  String get classNameHint => 'مثال: مدرسة الأحد - الصف الثالث';
+  String get classNameHint => 'مثال: ثالثة إبتدائي أولاد';
 
   @override
   String get gradeOptional => 'السنة الدراسية (اختياري)';
@@ -1243,4 +1243,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get atRiskOnly => 'المعرضون للخطر فقط';
+
+  @override
+  String get assignManagers => 'تعيين المديرين';
+
+  @override
+  String get assignManagersCaption => 'ابحث واختر المستخدمين لإدارة هذا الفصل';
 }

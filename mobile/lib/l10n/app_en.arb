@@ -107,7 +107,7 @@
   "createNewClass": "Create New Class",
   "addClassCaption": "Add a new class to manage students",
   "className": "Class Name",
-  "classNameHint": "e.g. Sunday School - Grade 3",
+  "classNameHint": "e.g. Primary 3",
   "gradeOptional": "Grade (optional)",
   "gradeHint": "e.g. Grade 3",
   "create": "Create",

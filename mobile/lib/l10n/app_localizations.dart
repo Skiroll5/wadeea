@@ -2413,6 +2413,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'At Risk Only'**
   String get atRiskOnly;
+
+  /// No description provided for @assignManagers.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign Managers'**
+  String get assignManagers;
+
+  /// No description provided for @assignManagersCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Search and select users to manage this class'**
+  String get assignManagersCaption;
 }
 
 class _AppLocalizationsDelegate

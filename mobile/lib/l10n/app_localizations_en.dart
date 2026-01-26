@@ -1253,4 +1253,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get atRiskOnly => 'At Risk Only';
+
+  @override
+  String get assignManagers => 'Assign Managers';
+
+  @override
+  String get assignManagersCaption =>
+      'Search and select users to manage this class';
 }

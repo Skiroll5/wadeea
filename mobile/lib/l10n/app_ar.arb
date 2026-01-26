@@ -92,7 +92,7 @@
   "createNewClass": "إنشاء فصل جديد",
   "addClassCaption": "أضف فصل جديد لإدارة الطلاب",
   "className": "اسم الفصل",
-  "classNameHint": "مثال: مدرسة الأحد - الصف الثالث",
+  "classNameHint": "مثال: ثالثة إبتدائي أولاد",
   "gradeOptional": "الصف (اختياري)",
   "gradeHint": "مثال: الصف الثالث",
   "create": "إنشاء",
