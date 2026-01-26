@@ -1,3 +1,5 @@
+import '../../../core/utils/date_utils.dart';
+
 class User {
   final String id;
   final String email;
@@ -42,12 +44,8 @@ class User {
       whatsappTemplate: json['whatsappTemplate'],
       phone: json['phone'],
       isEmailConfirmed: json['isEmailConfirmed'] ?? false,
-      createdAt: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt'])
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.tryParse(json['updatedAt'])
-          : null,
+      createdAt: AppDateUtils.tryParseLocal(json['createdAt']),
+      updatedAt: AppDateUtils.tryParseLocal(json['updatedAt']),
     );
   }
 

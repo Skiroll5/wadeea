@@ -10,6 +10,7 @@ import 'package:mobile/core/config/api_config.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../../core/database/app_database.dart';
 import '../../../core/services/ui_notification_service.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../auth/data/auth_controller.dart';
 
 /// Provider for the SyncService with auto-sync capability
@@ -534,7 +535,7 @@ class SyncService {
 
   Future<void> _upsertAttendance(Map<String, dynamic> data) async {
     final id = data['id'] as String;
-    final serverUpdatedAt = DateTime.parse(data['updatedAt']);
+    final serverUpdatedAt = AppDateUtils.parseLocal(data['updatedAt']);
 
     final local = await (_db.select(
       _db.attendanceRecords,
@@ -552,11 +553,13 @@ class SyncService {
       sessionId: Value(data['sessionId']),
       studentId: Value(data['studentId']),
       status: Value(data['status']),
-      createdAt: Value(DateTime.parse(data['createdAt'])),
+      createdAt: Value(AppDateUtils.parseLocal(data['createdAt'])),
       updatedAt: Value(serverUpdatedAt),
       isDeleted: Value(data['isDeleted'] ?? false),
       deletedAt: Value(
-        data['deletedAt'] != null ? DateTime.parse(data['deletedAt']) : null,
+        data['deletedAt'] != null
+            ? AppDateUtils.parseLocal(data['deletedAt'])
+            : null,
       ),
     );
     await _db.into(_db.attendanceRecords).insertOnConflictUpdate(entity);
@@ -564,7 +567,7 @@ class SyncService {
 
   Future<void> _upsertAttendanceSession(Map<String, dynamic> data) async {
     final id = data['id'] as String;
-    final serverUpdatedAt = DateTime.parse(data['updatedAt']);
+    final serverUpdatedAt = AppDateUtils.parseLocal(data['updatedAt']);
 
     final local = await (_db.select(
       _db.attendanceSessions,
@@ -579,13 +582,15 @@ class SyncService {
     final entity = AttendanceSessionsCompanion(
       id: Value(id),
       classId: Value(data['classId']),
-      date: Value(DateTime.parse(data['date'])),
+      date: Value(AppDateUtils.parseLocal(data['date'])),
       note: Value(data['note']),
-      createdAt: Value(DateTime.parse(data['createdAt'])),
+      createdAt: Value(AppDateUtils.parseLocal(data['createdAt'])),
       updatedAt: Value(serverUpdatedAt),
       isDeleted: Value(data['isDeleted'] ?? false),
       deletedAt: Value(
-        data['deletedAt'] != null ? DateTime.parse(data['deletedAt']) : null,
+        data['deletedAt'] != null
+            ? AppDateUtils.parseLocal(data['deletedAt'])
+            : null,
       ),
     );
     await _db.into(_db.attendanceSessions).insertOnConflictUpdate(entity);
@@ -593,7 +598,7 @@ class SyncService {
 
   Future<void> _upsertNote(Map<String, dynamic> data) async {
     final id = data['id'] as String;
-    final serverUpdatedAt = DateTime.parse(data['updatedAt']);
+    final serverUpdatedAt = AppDateUtils.parseLocal(data['updatedAt']);
 
     final local = await (_db.select(
       _db.notes,
@@ -611,11 +616,13 @@ class SyncService {
       authorId: Value(data['authorId']),
       authorName: Value(data['authorName']), // De-normalized
       content: Value(data['content']),
-      createdAt: Value(DateTime.parse(data['createdAt'])),
+      createdAt: Value(AppDateUtils.parseLocal(data['createdAt'])),
       updatedAt: Value(serverUpdatedAt),
       isDeleted: Value(data['isDeleted'] ?? false),
       deletedAt: Value(
-        data['deletedAt'] != null ? DateTime.parse(data['deletedAt']) : null,
+        data['deletedAt'] != null
+            ? AppDateUtils.parseLocal(data['deletedAt'])
+            : null,
       ),
     );
     await _db.into(_db.notes).insertOnConflictUpdate(entity);
@@ -623,7 +630,7 @@ class SyncService {
 
   Future<void> _upsertUser(Map<String, dynamic> data) async {
     final id = data['id'] as String;
-    final serverUpdatedAt = DateTime.parse(data['updatedAt']);
+    final serverUpdatedAt = AppDateUtils.parseLocal(data['updatedAt']);
 
     final local = await (_db.select(
       _db.users,
@@ -645,11 +652,13 @@ class SyncService {
       isActive: Value(data['isActive'] ?? false),
       isEnabled: Value(data['isEnabled'] ?? true),
       activationDenied: Value(data['activationDenied'] ?? false),
-      createdAt: Value(DateTime.parse(data['createdAt'])),
+      createdAt: Value(AppDateUtils.parseLocal(data['createdAt'])),
       updatedAt: Value(serverUpdatedAt),
       isDeleted: Value(data['isDeleted'] ?? false),
       deletedAt: Value(
-        data['deletedAt'] != null ? DateTime.parse(data['deletedAt']) : null,
+        data['deletedAt'] != null
+            ? AppDateUtils.parseLocal(data['deletedAt'])
+            : null,
       ),
     );
     await _db.into(_db.users).insertOnConflictUpdate(entity);
@@ -664,7 +673,7 @@ class SyncService {
     );
 
     final id = data['id'] as String;
-    final serverUpdatedAt = DateTime.parse(data['updatedAt']);
+    final serverUpdatedAt = AppDateUtils.parseLocal(data['updatedAt']);
 
     final local = await (_db.select(
       _db.classes,
@@ -681,11 +690,13 @@ class SyncService {
       name: Value(data['name']),
       grade: Value(data['grade']),
       managerNames: Value(data['managerNames']), // De-normalized
-      createdAt: Value(DateTime.parse(data['createdAt'])),
+      createdAt: Value(AppDateUtils.parseLocal(data['createdAt'])),
       updatedAt: Value(serverUpdatedAt),
       isDeleted: Value(data['isDeleted'] ?? false),
       deletedAt: Value(
-        data['deletedAt'] != null ? DateTime.parse(data['deletedAt']) : null,
+        data['deletedAt'] != null
+            ? AppDateUtils.parseLocal(data['deletedAt'])
+            : null,
       ),
     );
     await _db.into(_db.classes).insertOnConflictUpdate(entity);
@@ -693,7 +704,7 @@ class SyncService {
 
   Future<void> _upsertStudentFromSync(Map<String, dynamic> data) async {
     final id = data['id'] as String;
-    final serverUpdatedAt = DateTime.parse(data['updatedAt']);
+    final serverUpdatedAt = AppDateUtils.parseLocal(data['updatedAt']);
 
     final local = await (_db.select(
       _db.students,
@@ -711,14 +722,18 @@ class SyncService {
       phone: Value(data['phone']),
       address: Value(data['address']),
       birthdate: Value(
-        data['birthdate'] != null ? DateTime.parse(data['birthdate']) : null,
+        data['birthdate'] != null
+            ? AppDateUtils.parseLocal(data['birthdate'])
+            : null,
       ),
       classId: Value(data['classId']),
-      createdAt: Value(DateTime.parse(data['createdAt'])),
+      createdAt: Value(AppDateUtils.parseLocal(data['createdAt'])),
       updatedAt: Value(serverUpdatedAt),
       isDeleted: Value(data['isDeleted'] ?? false),
       deletedAt: Value(
-        data['deletedAt'] != null ? DateTime.parse(data['deletedAt']) : null,
+        data['deletedAt'] != null
+            ? AppDateUtils.parseLocal(data['deletedAt'])
+            : null,
       ),
     );
     await _db.into(_db.students).insertOnConflictUpdate(entity);
