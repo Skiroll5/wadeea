@@ -51,345 +51,352 @@ class _AddClassScreenState extends ConsumerState<AddClassScreen> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Heading
-                    Text(
-                      l10n.addClassCaption,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight,
-                      ),
-                    ).animate().fade().slideY(begin: 0.2, end: 0),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1. Class Name Input
+                      Text(
+                            l10n.className,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimaryLight,
+                            ),
+                          )
+                          .animate()
+                          .fade(delay: 100.ms)
+                          .slideX(begin: -0.1, end: 0),
+                      const SizedBox(height: 12),
 
-                    const SizedBox(height: 32),
+                      _buildPremiumTextField(
+                            controller: _nameController,
+                            hint: l10n.classNameHint,
+                            icon: Icons.class_outlined,
+                            isDark: isDark,
+                            autoFocus: true, // Focus name first
+                          )
+                          .animate()
+                          .fade(delay: 200.ms)
+                          .scale(begin: const Offset(0.95, 0.95)),
 
-                    // 1. Class Name Input
-                    Text(
-                      l10n.className,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: isDark
-                            ? AppColors.textPrimaryDark
-                            : AppColors.textPrimaryLight,
-                      ),
-                    ).animate().fade(delay: 100.ms).slideX(begin: -0.1, end: 0),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 32),
 
-                    _buildPremiumTextField(
-                          controller: _nameController,
-                          hint: l10n.classNameHint,
-                          icon: Icons.class_outlined,
-                          isDark: isDark,
-                          autoFocus: true, // Focus name first
-                        )
-                        .animate()
-                        .fade(delay: 200.ms)
-                        .scale(begin: const Offset(0.95, 0.95)),
-
-                    const SizedBox(height: 32),
-
-                    // 2. Managers Selection Header
-                    Text(
-                      l10n.assignManagers,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: isDark
-                            ? AppColors.textPrimaryDark
-                            : AppColors.textPrimaryLight,
-                      ),
-                    ).animate().fade(delay: 300.ms).slideX(begin: -0.1, end: 0),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.assignManagersCaption,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight,
-                      ),
-                    ).animate().fade(delay: 350.ms),
-
-                    const SizedBox(height: 16),
-
-                    // Multi-Select Input Field
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.05)
-                            : Colors.grey.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isDark ? Colors.white10 : Colors.black12,
+                      // 2. Managers Selection Header
+                      Text(
+                            l10n.assignManagers,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimaryLight,
+                            ),
+                          )
+                          .animate()
+                          .fade(delay: 300.ms)
+                          .slideX(begin: -0.1, end: 0),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.assignManagersCaption,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
                         ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (_selectedUsers.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  ..._selectedUsers.map((user) {
-                                    return Chip(
-                                      label: Text(
-                                        user['name'] ?? '',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: isDark
-                                              ? AppColors.textPrimaryDark
-                                              : AppColors.textPrimaryLight,
-                                        ),
-                                      ),
-                                      avatar: CircleAvatar(
-                                        backgroundColor: AppColors.goldPrimary,
-                                        child: Text(
-                                          (user['name'] as String? ?? '')
-                                                  .characters
-                                                  .firstOrNull
-                                                  ?.toUpperCase() ??
-                                              '',
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                      ).animate().fade(delay: 350.ms),
+
+                      const SizedBox(height: 16),
+
+                      // Multi-Select Input Field
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark ? Colors.white10 : Colors.black12,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_selectedUsers.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    ..._selectedUsers.map((user) {
+                                      return Chip(
+                                        label: Text(
+                                          user['name'] ?? '',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isDark
+                                                ? AppColors.textPrimaryDark
+                                                : AppColors.textPrimaryLight,
                                           ),
                                         ),
-                                      ),
-                                      deleteIcon: Icon(
-                                        Icons.close,
-                                        size: 16,
-                                        color: isDark
-                                            ? Colors.white54
-                                            : Colors.black54,
-                                      ),
-                                      onDeleted: () {
-                                        setState(() {
-                                          _selectedManagerIds.remove(
-                                            user['id'],
-                                          );
-                                          _selectedUsers.remove(user);
-                                        });
-                                      },
-                                      backgroundColor: isDark
-                                          ? Colors.white.withValues(alpha: 0.1)
-                                          : Colors.white,
-                                      side: BorderSide.none,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    );
-                                  }),
-                                ],
+                                        avatar: CircleAvatar(
+                                          backgroundColor:
+                                              AppColors.goldPrimary,
+                                          child: Text(
+                                            (user['name'] as String? ?? '')
+                                                    .characters
+                                                    .firstOrNull
+                                                    ?.toUpperCase() ??
+                                                '',
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        deleteIcon: Icon(
+                                          Icons.close,
+                                          size: 16,
+                                          color: isDark
+                                              ? Colors.white54
+                                              : Colors.black54,
+                                        ),
+                                        onDeleted: () {
+                                          setState(() {
+                                            _selectedManagerIds.remove(
+                                              user['id'],
+                                            );
+                                            _selectedUsers.remove(user);
+                                          });
+                                        },
+                                        backgroundColor: isDark
+                                            ? Colors.white.withValues(
+                                                alpha: 0.1,
+                                              )
+                                            : Colors.white,
+                                        side: BorderSide.none,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ],
+                                ),
                               ),
-                            ),
 
-                          // Search TextField - Full Width
-                          TextField(
-                            controller: _searchController,
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: l10n.search,
-                              hintStyle: TextStyle(
-                                color: isDark ? Colors.white38 : Colors.black38,
+                            // Search TextField - Full Width
+                            TextField(
+                              controller: _searchController,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
                               ),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 8,
+                              decoration: InputDecoration(
+                                hintText: l10n.search,
+                                hintStyle: TextStyle(
+                                  color: isDark
+                                      ? Colors.white38
+                                      : Colors.black38,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
                               ),
+                              onChanged: (val) {
+                                setState(
+                                  () => _searchQuery = val.toLowerCase(),
+                                );
+                              },
                             ),
-                            onChanged: (val) {
-                              setState(() => _searchQuery = val.toLowerCase());
-                            },
-                          ),
-                        ],
-                      ),
-                    ).animate().fade(delay: 400.ms),
-
-                    // Suggestions List (Only visible when typing or focused? Always visible for now if query exists or just to show options)
-                    // Let's show suggestions always, filtering by query, excluding selected
-                    const SizedBox(height: 16),
-
-                    Container(
-                      constraints: const BoxConstraints(maxHeight: 300),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.02)
-                            : Colors.black.withValues(alpha: 0.02),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: allUsersAsync.when(
-                        loading: () => const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: CircularProgressIndicator(),
-                          ),
+                          ],
                         ),
-                        error: (e, s) => Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text("Error loading users"),
-                          ),
+                      ).animate().fade(delay: 400.ms),
+
+                      // Suggestions List (Only visible when typing or focused? Always visible for now if query exists or just to show options)
+                      // Let's show suggestions always, filtering by query, excluding selected
+                      const SizedBox(height: 16),
+
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 300),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.02)
+                              : Colors.black.withValues(alpha: 0.02),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        data: (users) {
-                          // Filter: Match query AND not already selected AND active AND not denied
-                          final filteredUsers = users.where((u) {
-                            final id = u['id'] as String;
+                        child: allUsersAsync.when(
+                          loading: () => const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          error: (e, s) => Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Text("Error loading users"),
+                            ),
+                          ),
+                          data: (users) {
+                            // Filter: Match query AND not already selected AND active AND not denied
+                            final filteredUsers = users.where((u) {
+                              final id = u['id'] as String;
 
-                            // Essential checks: Active and Not Denied
-                            final isActive = u['isActive'] == true;
-                            final isDenied = u['activationDenied'] == true;
-                            if (!isActive || isDenied) return false;
+                              // Essential checks: Active and Not Denied
+                              final isActive = u['isActive'] == true;
+                              final isDenied = u['activationDenied'] == true;
+                              if (!isActive || isDenied) return false;
 
-                            if (_selectedManagerIds.contains(id)) return false;
+                              if (_selectedManagerIds.contains(id))
+                                return false;
 
-                            if (_searchQuery.isEmpty)
-                              return true; // Show all available if empty query
+                              if (_searchQuery.isEmpty)
+                                return true; // Show all available if empty query
 
-                            final name = (u['name'] as String? ?? '')
-                                .toLowerCase();
-                            final email = (u['email'] as String? ?? '')
-                                .toLowerCase();
-                            return name.contains(_searchQuery) ||
-                                email.contains(_searchQuery);
-                          }).toList();
+                              final name = (u['name'] as String? ?? '')
+                                  .toLowerCase();
+                              final email = (u['email'] as String? ?? '')
+                                  .toLowerCase();
+                              return name.contains(_searchQuery) ||
+                                  email.contains(_searchQuery);
+                            }).toList();
 
-                          if (filteredUsers.isEmpty) {
-                            if (_searchQuery.isNotEmpty) {
-                              return Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Center(child: Text(l10n.noUsersFound)),
-                              );
+                            if (filteredUsers.isEmpty) {
+                              if (_searchQuery.isNotEmpty) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Center(child: Text(l10n.noUsersFound)),
+                                );
+                              }
+                              return const SizedBox.shrink(); // Don't show empty box if no query and no users left
                             }
-                            return const SizedBox.shrink(); // Don't show empty box if no query and no users left
-                          }
 
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: filteredUsers.length,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            itemBuilder: (context, index) {
-                              final user = filteredUsers[index];
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: AppColors.goldPrimary
-                                      .withValues(alpha: 0.2),
-                                  child: Text(
-                                    (user['name'] as String? ?? '')
-                                            .characters
-                                            .firstOrNull
-                                            ?.toUpperCase() ??
-                                        '',
-                                    style: TextStyle(
-                                      color: AppColors.goldPrimary,
-                                      fontWeight: FontWeight.bold,
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: filteredUsers.length,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              itemBuilder: (context, index) {
+                                final user = filteredUsers[index];
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: AppColors.goldPrimary
+                                        .withValues(alpha: 0.2),
+                                    child: Text(
+                                      (user['name'] as String? ?? '')
+                                              .characters
+                                              .firstOrNull
+                                              ?.toUpperCase() ??
+                                          '',
+                                      style: TextStyle(
+                                        color: AppColors.goldPrimary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                title: Text(
-                                  user['name'] ?? '',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark
-                                        ? Colors.white
-                                        : Colors.black87,
+                                  title: Text(
+                                    user['name'] ?? '',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black87,
+                                    ),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  user['email'] ?? '',
-                                  style: TextStyle(
-                                    color: isDark
-                                        ? Colors.white54
-                                        : Colors.black54,
-                                    fontSize: 12,
+                                  subtitle: Text(
+                                    user['email'] ?? '',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white54
+                                          : Colors.black54,
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedManagerIds.add(user['id']);
-                                    _selectedUsers.add(user);
-                                    _searchController.clear();
-                                    _searchQuery = '';
-                                  });
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ).animate().fade(delay: 500.ms),
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedManagerIds.add(user['id']);
+                                      _selectedUsers.add(user);
+                                      _searchController.clear();
+                                      _searchQuery = '';
+                                    });
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ).animate().fade(delay: 500.ms),
 
-                    SizedBox(
-                      height: MediaQuery.of(context).viewInsets.bottom + 20,
+                      SizedBox(
+                        height: MediaQuery.of(context).viewInsets.bottom + 20,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Bottom Action Bar
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      offset: const Offset(0, -4),
+                      blurRadius: 16,
                     ),
                   ],
                 ),
-              ),
-            ),
-
-            // Bottom Action Bar
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    offset: const Offset(0, -4),
-                    blurRadius: 16,
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isCreating ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    backgroundColor: AppColors.goldPrimary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isCreating ? null : _submit,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      backgroundColor: AppColors.goldPrimary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
+                    child: _isCreating
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            l10n.create,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                  child: _isCreating
-                      ? const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          l10n.create,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                 ),
-              ),
-            ).animate().slideY(begin: 1.0, end: 0, delay: 600.ms),
-          ],
+              ).animate().slideY(begin: 1.0, end: 0, delay: 600.ms),
+            ],
+          ),
         ),
       ),
     );
