@@ -8,6 +8,7 @@ import '../../data/admin_controller.dart';
 // import '../../data/classes_controller.dart'; // Removed invalid import
 import '../../../classes/data/classes_controller.dart';
 import 'package:mobile/l10n/app_localizations.dart';
+import '../../../classes/presentation/screens/add_class_screen.dart';
 import 'class_manager_assignment_screen.dart';
 
 class ClassManagementScreen extends ConsumerStatefulWidget {
@@ -125,7 +126,10 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
       floatingActionButton: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _showAddClassDialog(context, ref, l10n),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddClassScreen()),
+          ),
           borderRadius: BorderRadius.circular(12),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -161,81 +165,6 @@ class _ClassManagementScreenState extends ConsumerState<ClassManagementScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showAddClassDialog(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-  ) {
-    final nameController = TextEditingController();
-    final gradeController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.addNewClassTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: l10n.className,
-                hintText: l10n.classNameHint,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: gradeController,
-              decoration: InputDecoration(
-                labelText: l10n.gradeOptional,
-                hintText: l10n.gradeHint,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () async {
-              if (nameController.text.isNotEmpty) {
-                final success = await ref
-                    .read(adminControllerProvider.notifier)
-                    .createClass(
-                      nameController.text,
-                      gradeController.text, // Pass directly as String
-                    );
-
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  if (success) {
-                    AppSnackBar.show(
-                      context,
-                      message: l10n.classCreated,
-                      type: AppSnackBarType.success,
-                    );
-                  } else {
-                    AppSnackBar.show(
-                      context,
-                      message: l10n.classCreationError,
-                      type: AppSnackBarType.error,
-                    );
-                  }
-                }
-              }
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.goldPrimary,
-            ),
-            child: Text(l10n.create),
-          ),
-        ],
       ),
     );
   }

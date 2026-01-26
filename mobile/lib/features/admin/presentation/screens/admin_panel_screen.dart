@@ -14,7 +14,7 @@ import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/data/auth_controller.dart';
 import '../../../classes/presentation/widgets/class_list_item.dart';
-import '../../../classes/presentation/widgets/class_dialogs.dart';
+import '../../../classes/presentation/screens/add_class_screen.dart';
 import '../../../sync/data/sync_service.dart';
 
 class AdminPanelScreen extends ConsumerStatefulWidget {
@@ -246,7 +246,10 @@ class _ClassesSection extends ConsumerWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () async {
-                  await showAddClassDialog(context, ref);
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AddClassScreen()),
+                  );
                   ref.invalidate(adminClassesProvider);
                 },
                 borderRadius: BorderRadius.circular(12),

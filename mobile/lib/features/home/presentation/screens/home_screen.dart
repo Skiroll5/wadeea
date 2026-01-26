@@ -16,7 +16,7 @@ import '../../../students/data/students_controller.dart';
 import '../../../sync/data/sync_service.dart';
 import 'package:mobile/features/home/data/home_insights_repository.dart';
 import '../../../classes/presentation/widgets/class_list_item.dart';
-import '../../../classes/presentation/widgets/class_dialogs.dart';
+import '../../../classes/presentation/screens/add_class_screen.dart';
 
 /// Provider for optimistic class order - shared between HomeScreen and InsightsSection
 final optimisticClassOrderProvider = StateProvider<List<String>?>(
@@ -387,8 +387,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    onTap: () =>
-                                        showAddClassDialog(context, ref),
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const AddClassScreen(),
+                                      ),
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
