@@ -224,6 +224,11 @@ const handlePush = async (req: AuthRequest, res: Response) => {
                 // Force server timestamp to fix clock skew issues
                 sanitizedPayload.updatedAt = new Date();
 
+                // Sanitize unknown fields
+                if (entityType === 'NOTE') {
+                    delete sanitizedPayload.authorName;
+                }
+
                 promises.push(dbModel.upsert({
                     where: { id: entityId },
                     create: { ...sanitizedPayload, id: entityId },
