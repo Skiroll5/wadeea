@@ -1096,6 +1096,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                     l10n.addNewStudent,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 8),
