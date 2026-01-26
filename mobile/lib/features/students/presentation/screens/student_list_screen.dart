@@ -492,7 +492,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                           child: Column(
                             children: [
                               Icon(
-                                Icons.people_outline,
+                                Icons.add_circle_outline,
                                 size: 64,
                                 color: isDark
                                     ? Colors.grey.shade600
