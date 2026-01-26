@@ -1148,7 +1148,10 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                   TextField(
                     controller: nameController,
                     autofocus: true,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                     decoration: inputDecoration.copyWith(
                       labelText: l10n.studentName,
                       errorText: nameError,
@@ -1181,7 +1184,10 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                       ),
                       disableLengthCheck: true,
                       languageCode: l10n.localeName,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                       dropdownTextStyle: TextStyle(
                         color: isDark ? Colors.white : Colors.black87,
                       ),
@@ -1230,7 +1236,10 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                   // Address Field
                   TextField(
                     controller: addressController,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                     decoration: inputDecoration.copyWith(
                       labelText: l10n.addressOptional,
                       prefixIcon: Icon(
