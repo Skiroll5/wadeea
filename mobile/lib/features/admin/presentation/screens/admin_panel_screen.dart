@@ -732,6 +732,14 @@ class _UserCardState extends State<_UserCard> {
         }
       } else {
         setState(() => _isLoading = false);
+        if (context.mounted) {
+          _showActionFeedback(
+            context,
+            success: true,
+            successMessage: newValue ? l10n.userEnabled : l10n.userDisabled,
+            failureMessage: l10n.actionFailedCheckConnection,
+          );
+        }
       }
     }
   }
