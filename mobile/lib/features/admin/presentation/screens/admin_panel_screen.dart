@@ -331,7 +331,7 @@ class _ClassesSection extends ConsumerWidget {
                 // Manually construct ClassesData from Map since Admin logic uses Map
                 final cls = ClassesData(
                   id: classData['id'] as String? ?? '',
-                  name: l10n.unknown,
+                  name: classData['name'] as String? ?? l10n.unknown,
                   grade: classData['grade'] as String?,
                   managerNames: classData['managerNames'] as String?,
                   createdAt: DateTime.now(), // Dummy for display
