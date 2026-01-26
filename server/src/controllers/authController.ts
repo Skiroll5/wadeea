@@ -199,14 +199,20 @@ export const confirmEmail = async (req: Request, res: Response) => {
     try {
         // Support both query (link) and body (OTP)
         let token = (req.query.token as string) || req.body.token;
+        const { email } = req.body;
 
         if (!token) return res.status(400).json({ message: 'Token required' });
 
         // Sanitize
         token = String(token).trim();
 
+        const whereClause: any = { confirmationToken: token, isDeleted: false };
+        if (email) {
+            whereClause.email = email;
+        }
+
         const user = await prisma.user.findFirst({
-            where: { confirmationToken: token, isDeleted: false }
+            where: whereClause
         });
 
         if (!user) {

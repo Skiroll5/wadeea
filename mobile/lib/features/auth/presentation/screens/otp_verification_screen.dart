@@ -89,7 +89,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
     try {
       if (widget.purpose == OtpPurpose.emailConfirmation) {
-        await ref.read(authControllerProvider.notifier).confirmEmail(otp);
+        await ref
+            .read(authControllerProvider.notifier)
+            .confirmEmail(otp, email: widget.identifier);
 
         if (!mounted) return;
         AppSnackBar.show(

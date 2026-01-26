@@ -135,10 +135,10 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  Future<void> confirmEmail(String token) async {
+  Future<void> confirmEmail(String token, {String? email}) async {
     try {
       final repo = _ref.read(authRepositoryProvider);
-      final data = await repo.confirmEmail(token);
+      final data = await repo.confirmEmail(token, email: email);
 
       if (data['user'] == null || data['token'] == null) {
         throw AuthError(
