@@ -159,23 +159,11 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
 
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-              // 2. Attendance Sessions Section (Inline)
-              SliverToBoxAdapter(
-                child: _buildSessionsSection(
-                  context,
-                  sessions,
-                  ref,
-                  isDark,
-                  l10n,
-                  selectedClassId,
-                ),
-              ),
-
-              // 3. At Risk Students Section
-              if (selectedClassId != null)
+              // 2. At Risk Students Section
+              if (selectedClassId != null) ...[
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Consumer(
                       builder: (context, ref, _) {
                         final atRiskAsync = ref.watch(
@@ -193,6 +181,20 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                     ),
                   ),
                 ),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              ],
+
+              // 3. Attendance Sessions Section (Inline)
+              SliverToBoxAdapter(
+                child: _buildSessionsSection(
+                  context,
+                  sessions,
+                  ref,
+                  isDark,
+                  l10n,
+                  selectedClassId,
+                ),
+              ),
 
               // 4. Student List Header
               SliverToBoxAdapter(
