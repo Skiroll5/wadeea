@@ -389,8 +389,8 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                                         size: 20,
                                       ),
                                       tooltip: isFiltered
-                                          ? 'Show All'
-                                          : 'At Risk Only',
+                                          ? l10n.showAll
+                                          : l10n.atRiskOnly,
                                       onPressed: () {
                                         ref
                                             .read(
@@ -670,7 +670,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                "No sessions yet.",
+                l10n.noSessionsYet,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,

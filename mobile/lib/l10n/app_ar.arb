@@ -462,5 +462,8 @@
   "orContinueWith": "أو المتابعة باستخدام",
   "googleSignIn": "جوجل",
   "googleSignInAborted": "تم إلغاء تسجيل الدخول بواسطة المستخدم",
-  "invalidOtp": "رمز التحقق غير صحيح"
+  "invalidOtp": "رمز التحقق غير صحيح",
+  "noSessionsYet": "لا توجد حصص بعد",
+  "showAll": "عرض الكل",
+  "atRiskOnly": "المعرضون للخطر فقط"
 }

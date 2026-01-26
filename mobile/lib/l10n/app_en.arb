@@ -573,5 +573,8 @@
   "orContinueWith": "Or continue with",
   "googleSignIn": "Google",
   "googleSignInAborted": "Sign in aborted by user",
-  "invalidOtp": "Invalid verification code"
+  "invalidOtp": "Invalid verification code",
+  "noSessionsYet": "No sessions yet",
+  "showAll": "Show All",
+  "atRiskOnly": "At Risk Only"
 }
