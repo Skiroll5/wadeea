@@ -1234,4 +1234,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get invalidOtp => 'رمز التحقق غير صحيح';
+
+  @override
+  String get noSessionsYet => 'لا توجد حصص بعد';
+
+  @override
+  String get showAll => 'عرض الكل';
+
+  @override
+  String get atRiskOnly => 'المعرضون للخطر فقط';
 }

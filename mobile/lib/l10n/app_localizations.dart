@@ -2395,6 +2395,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid verification code'**
   String get invalidOtp;
+
+  /// No description provided for @noSessionsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions yet'**
+  String get noSessionsYet;
+
+  /// No description provided for @showAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show All'**
+  String get showAll;
+
+  /// No description provided for @atRiskOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'At Risk Only'**
+  String get atRiskOnly;
 }
 
 class _AppLocalizationsDelegate

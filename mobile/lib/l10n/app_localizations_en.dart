@@ -1244,4 +1244,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidOtp => 'Invalid verification code';
+
+  @override
+  String get noSessionsYet => 'No sessions yet';
+
+  @override
+  String get showAll => 'Show All';
+
+  @override
+  String get atRiskOnly => 'At Risk Only';
 }
