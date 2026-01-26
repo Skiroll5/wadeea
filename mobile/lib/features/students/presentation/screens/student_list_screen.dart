@@ -662,23 +662,28 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
           // Recent Sessions List
           if (sessions.isEmpty)
             Container(
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.only(bottom: 12),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.grey.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                l10n.noSessionsYet,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
-                ),
-              ),
-            )
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.grey.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    l10n.noSessionsYet,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isDark
+                          ? Colors.grey.shade500
+                          : Colors.grey.shade600,
+                    ),
+                  ),
+                )
+                .animate()
+                .fade(duration: 400.ms, delay: 200.ms)
+                .slideX(begin: 0.1, end: 0, curve: Curves.easeOut)
           else
             Column(
               children: recentSessions.asMap().entries.map((entry) {
