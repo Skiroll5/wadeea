@@ -4,57 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/classes_controller.dart';
 import '../../../../l10n/app_localizations.dart';
+import 'add_class_screen.dart';
 
 class ClassListScreen extends ConsumerWidget {
   const ClassListScreen({super.key});
-
-  void _showAddClassDialog(BuildContext context, WidgetRef ref) {
-    final nameController = TextEditingController();
-    final gradeController = TextEditingController();
-    final l10n = AppLocalizations.of(context)!;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.addNewClassTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(labelText: l10n.className),
-            ),
-            TextField(
-              controller: gradeController,
-              decoration: InputDecoration(labelText: l10n.gradeOptional),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.isNotEmpty) {
-                await ref
-                    .read(classesControllerProvider)
-                    .addClass(
-                      nameController.text,
-                      gradeController.text.isEmpty
-                          ? null
-                          : gradeController.text,
-                    );
-                if (context.mounted) Navigator.pop(context);
-              }
-            },
-            child: Text(l10n.add),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -101,7 +54,10 @@ class ClassListScreen extends ConsumerWidget {
         error: (e, s) => Center(child: Text(l10n.errorGeneric(e.toString()))),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddClassDialog(context, ref),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddClassScreen()),
+        ),
         backgroundColor: AppColors.goldPrimary,
         child: const Icon(Icons.add, color: Colors.white),
       ),

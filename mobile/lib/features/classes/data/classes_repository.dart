@@ -28,7 +28,7 @@ class ClassesRepository {
 
   // Formerly getManagersForClass - now de-normalized in Classes table
 
-  Future<void> addClass(String name, String? grade) async {
+  Future<void> addClass(String name, List<String> managerIds) async {
     final id = const Uuid().v4();
     final now = DateTime.now();
 
@@ -36,7 +36,7 @@ class ClassesRepository {
     final localEntity = ClassesCompanion(
       id: Value(id),
       name: Value(name),
-      grade: Value(grade),
+      grade: const Value(null),
       isDeleted: const Value(false),
       createdAt: Value(now),
       updatedAt: Value(now),
@@ -46,7 +46,7 @@ class ClassesRepository {
     final apiPayload = {
       'id': id,
       'name': name,
-      'grade': grade,
+      'managers': managerIds,
       'createdAt': now.toIso8601String(),
       'updatedAt': now.toIso8601String(),
     };

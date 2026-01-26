@@ -109,9 +109,9 @@ class ClassesController {
     _ref.invalidate(classOrderProvider);
   }
 
-  Future<void> addClass(String name, String? grade) async {
+  Future<void> addClass(String name, List<String> managerIds) async {
     final repository = _ref.read(classesRepositoryProvider);
-    await repository.addClass(name, grade);
+    await repository.addClass(name, managerIds);
   }
 
   Future<void> updateClass(String id, String newName) async {

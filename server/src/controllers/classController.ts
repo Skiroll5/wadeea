@@ -75,11 +75,20 @@ export const listClasses = async (req: Request, res: Response) => {
 // Create a new class
 export const createClass = async (req: Request, res: Response) => {
     try {
-        const { name, grade } = req.body;
+        const { name, managers } = req.body;
         if (!name) return res.status(400).json({ message: 'Class name required' });
 
+        const managerIds: string[] = Array.isArray(managers) ? managers : [];
+
         const newClass = await prisma.class.create({
-            data: { name, grade },
+            data: {
+                name,
+                managers: {
+                    create: managerIds.map((userId) => ({
+                        userId
+                    }))
+                }
+            },
         });
 
         res.status(201).json({ message: 'Class created', class: newClass });
@@ -87,7 +96,23 @@ export const createClass = async (req: Request, res: Response) => {
         // Emit real-time update
         const io = getIO();
         io.emit('sync_update');
+
+        // Notify assigned managers
+        managerIds.forEach(userId => {
+            io.emit('manager_assignment_changed', { classId: newClass.id, userId, action: 'assigned' });
+            emitAppNotification({
+                level: 'success',
+                title: 'Assigned to Class',
+                message: `You have been assigned as a manager to ${newClass.name}.`,
+                audience: 'admins', // Technically audience is specific user
+                targetUserId: userId,
+                entityType: 'CLASS_MANAGER',
+                classId: newClass.id,
+            });
+        });
+
     } catch (error) {
+        console.error('Create class error:', error);
         res.status(500).json({ message: 'Server error', error });
     }
 };
