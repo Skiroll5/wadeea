@@ -1260,4 +1260,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get assignManagersCaption =>
       'Search and select users to manage this class';
+
+  @override
+  String deleteClassConfirmation(Object className) {
+    return 'Delete $className?';
+  }
 }

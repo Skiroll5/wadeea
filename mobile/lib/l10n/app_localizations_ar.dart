@@ -1249,4 +1249,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get assignManagersCaption => 'ابحث واختر المستخدمين لإدارة هذا الفصل';
+
+  @override
+  String deleteClassConfirmation(Object className) {
+    return 'حذف $className؟';
+  }
 }

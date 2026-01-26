@@ -2425,6 +2425,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search and select users to manage this class'**
   String get assignManagersCaption;
+
+  /// No description provided for @deleteClassConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {className}?'**
+  String deleteClassConfirmation(Object className);
 }
 
 class _AppLocalizationsDelegate
