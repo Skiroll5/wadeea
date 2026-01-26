@@ -146,101 +146,39 @@ class ClassListItem extends ConsumerWidget {
                                   children: [
                                     ...displayManagers.map(
                                       (name) => Container(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          4,
-                                          4,
-                                          12,
-                                          4,
-                                        ), // More premium spacing
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: isDark
-                                        padding: const EdgeInsetsDirectional.only(
-                                          start: 4, 
-                                          top: 4, 
-                                          bottom: 4, 
-                                          end: 12
-                                        ), 
-                                        decoration: BoxDecoration(
-                                          color: isDark
-                                              ? const Color(0xFF2C2C2E) // Lighter, cleaner dark grey
-                                              : Colors.white,
-                                          borderRadius: BorderRadius.circular(30),
+                                              ? const Color(0xFF1C1C1E)
+                                              : const Color(0xFFF2F2F7),
+                                          borderRadius: BorderRadius.circular(
+                                            100,
+                                          ), // Fully rounded pill
                                           border: Border.all(
                                             color: isDark
-                                                ? Colors.white.withOpacity(0.15)
-                                                : Colors.black.withOpacity(0.08),
+                                                ? Colors.white.withOpacity(0.12)
+                                                : Colors.black.withOpacity(
+                                                    0.06,
+                                                  ),
                                           ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-                                              blurRadius: 6,
-                                              offset: const Offset(0, 2),
-                                            )
-                                          ],
                                         ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                              width: 26, 
-                                              height: 26,
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                  colors: isDark
-                                                      ? [const Color(0xFFFFD700), const Color(0xFFFFA500)] // Gold gradient
-                                                      : [const Color(0xFFFFD700), const Color(0xFFFFC107)],
-                                                ),
-                                                shape: BoxShape.circle,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black.withOpacity(0.2),
-                                                    blurRadius: 4,
-                                                    offset: const Offset(0, 2),
-                                                  )
-                                                ],
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  name.isNotEmpty
-                                                      ? name[0].toUpperCase()
-                                                      : '?',
-                                                  style: TextStyle(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w800,
-                                                    color: Colors.black.withOpacity(0.8), // Dark text on Gold is better contrast
-                                                    height: 1.0, 
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Flexible(
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(bottom: 2), // Slight visual lift
-                                                child: Text(
-                                                  name,
-                                                  style: TextStyle(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: isDark
-                                                        ? Colors.white
-                                                              .withValues(
-                                                                alpha: 0.9,
-                                                              )
-                                                        : AppColors
-                                                              .textPrimaryLight,
-                                                    letterSpacing: -0.1,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                        child: Text(
+                                          name,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark
+                                                ? const Color(0xFFE5E5E7)
+                                                : const Color(0xFF1C1C1E),
+                                            height: 1.1,
+                                            letterSpacing:
+                                                0.2, // Clean letter spacing
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ),
@@ -250,37 +188,29 @@ class ClassListItem extends ConsumerWidget {
                                           horizontal: 10,
                                           vertical: 6,
                                         ),
-                                        height:
-                                            34, // Match approx height of chips (4+24+4 + borders ~34)
                                         decoration: BoxDecoration(
                                           color: isDark
-                                              ? Colors.white.withValues(
-                                                  alpha: 0.05,
-                                                )
-                                              : Colors.black.withValues(
-                                                  alpha: 0.04,
-                                                ),
+                                              ? const Color(0xFF1C1C1E)
+                                              : const Color(0xFFF2F2F7),
                                           borderRadius: BorderRadius.circular(
-                                            30,
+                                            100,
                                           ),
                                           border: Border.all(
                                             color: isDark
-                                                ? Colors.white.withValues(
-                                                    alpha: 0.05,
-                                                  )
-                                                : Colors.transparent,
+                                                ? Colors.white.withOpacity(0.12)
+                                                : Colors.black.withOpacity(
+                                                    0.06,
+                                                  ),
                                           ),
                                         ),
-                                        child: Center(
-                                          child: Text(
-                                            '+$remaining',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              color: isDark
-                                                  ? Colors.white54
-                                                  : Colors.black54,
-                                            ),
+                                        child: Text(
+                                          '+$remaining',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark
+                                                ? Colors.white54
+                                                : Colors.black54,
                                           ),
                                         ),
                                       ),
