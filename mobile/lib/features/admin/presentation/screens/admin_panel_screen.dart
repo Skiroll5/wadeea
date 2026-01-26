@@ -558,7 +558,9 @@ class _UsersSection extends ConsumerWidget {
 
             // Filter out denied/rejected users - they should only appear in Denied Activations screen
             final users = allUsers
-                .where((u) => u['activationDenied'] != true)
+                .where(
+                  (u) => u['activationDenied'] != true && u['isActive'] == true,
+                )
                 .toList();
 
             if (users.isEmpty && !allUsersAsync.isLoading) {
