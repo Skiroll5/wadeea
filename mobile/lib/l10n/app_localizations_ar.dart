@@ -1251,4 +1251,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String deleteClassConfirmation(Object className) {
     return 'حذف $className؟';
   }
+
+  @override
+  String get searchCountryPlaceholder => 'بحث عن دولة أو كود...';
 }

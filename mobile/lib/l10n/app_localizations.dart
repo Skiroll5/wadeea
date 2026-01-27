@@ -2431,6 +2431,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete {className}?'**
   String deleteClassConfirmation(Object className);
+
+  /// No description provided for @searchCountryPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Search country or code...'**
+  String get searchCountryPlaceholder;
 }
 
 class _AppLocalizationsDelegate

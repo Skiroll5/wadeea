@@ -1263,4 +1263,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String deleteClassConfirmation(Object className) {
     return 'Delete $className?';
   }
+
+  @override
+  String get searchCountryPlaceholder => 'Search country or code...';
 }

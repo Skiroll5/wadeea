@@ -584,5 +584,6 @@
     "placeholders": {
         "className": {}
     }
-  }
+  },
+  "searchCountryPlaceholder": "Search country or code..."
 }

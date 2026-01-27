@@ -18,8 +18,7 @@ import 'package:mobile/features/statistics/data/statistics_repository.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import '../../../../features/auth/data/auth_controller.dart';
 import '../../../../features/settings/data/settings_controller.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:intl_phone_field/country_picker_dialog.dart';
+import '../../../../core/components/premium_phone_input.dart';
 import 'package:mobile/features/attendance/presentation/widgets/attendance_session_card.dart';
 
 enum StudentSortField { name, percentage }
@@ -1045,7 +1044,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
   void _showAddStudentDialog(BuildContext context, WidgetRef ref) {
     final nameController = TextEditingController();
     final phoneController = TextEditingController();
-    String? fullPhoneNumber;
+    final _phoneKey = GlobalKey<PremiumPhoneInputState>();
     final addressController = TextEditingController();
     DateTime? selectedBirthdate;
     String? nameError;
@@ -1206,65 +1205,11 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                   const SizedBox(height: 16),
 
                   // Phone Field
-                  Directionality(
-                    textDirection: ui.TextDirection.ltr,
-                    child: IntlPhoneField(
-                      controller: phoneController,
-                      initialCountryCode: 'EG',
-                      textAlign: TextAlign.left,
-                      decoration: inputDecoration.copyWith(
-                        labelText: l10n.phoneNumberOptional,
-                        counterText: '', // Hide length counter
-                        alignLabelWithHint: true,
-                      ),
-                      disableLengthCheck: true,
-                      languageCode: l10n.localeName,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
-                      dropdownTextStyle: TextStyle(
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                      pickerDialogStyle: PickerDialogStyle(
-                        backgroundColor: isDark
-                            ? const Color(0xFF1E1E1E)
-                            : Colors.white,
-                        countryCodeStyle: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                        countryNameStyle: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                        searchFieldInputDecoration: InputDecoration(
-                          labelText: l10n.search,
-                          labelStyle: TextStyle(
-                            color: isDark ? Colors.grey : Colors.black54,
-                          ),
-                          prefixIcon: const Icon(Icons.search),
-                          filled: true,
-                          fillColor: isDark
-                              ? Colors.white.withValues(alpha: 0.05)
-                              : Colors.grey.withValues(alpha: 0.05),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                      onChanged: (phone) {
-                        if (phone.countryISOCode == 'EG' &&
-                            phone.number.startsWith('0')) {
-                          fullPhoneNumber =
-                              '${phone.countryCode}${phone.number.substring(1)}';
-                        } else {
-                          fullPhoneNumber = phone.completeNumber;
-                        }
-                      },
-                      onCountryChanged: (country) {
-                        // Optional: log or handle
-                      },
-                    ),
+                  PremiumPhoneInput(
+                    key: _phoneKey,
+                    controller: phoneController,
+                    label: l10n.phoneNumberOptional,
+                    onSubmitted: (_) {}, // Optional
                   ),
                   const SizedBox(height: 16),
 
@@ -1471,7 +1416,7 @@ class _StudentListScreenState extends ConsumerState<StudentListScreen> {
                                   .addStudent(
                                     name: name,
                                     phone:
-                                        fullPhoneNumber ??
+                                        _phoneKey.currentState?.fullNumber ??
                                         phoneController.text.trim(),
                                     classId: selectedClassId,
                                     address: addressController.text.trim(),
