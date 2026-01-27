@@ -1,9 +1,9 @@
-# 1. Use the official Nginx image (tiny and fast)
 FROM nginx:alpine
 
-# 2. Copy the custom config we just created
-COPY default.conf /etc/nginx/conf.d/default.conf
+# 1. Copy config
+# Context is Root, so we must specify "webapp/default.conf"
+COPY webapp/default.conf /etc/nginx/conf.d/default.conf
 
-# 3. Copy your specific Flutter build files
-# (Ensure you run 'flutter build web' locally first!)
-COPY ../mobile/build/web /usr/share/nginx/html
+# 2. Copy Flutter files
+# Context is Root, so we can see "mobile/" directly
+COPY mobile/build/web /usr/share/nginx/html
