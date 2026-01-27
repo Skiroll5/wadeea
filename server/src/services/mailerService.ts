@@ -75,3 +75,34 @@ export const sendPasswordResetSms = async (phone: string, token: string) => {
     console.log(`OTP Code: ${token}`);
     console.log('---------------------------------\n');
 };
+
+export const sendWelcomeEmail = async (email: string, name: string) => {
+    if (!resend) {
+        console.log('\n--- WELCOME EMAIL (MOCK) ---');
+        console.log(`To: ${email}`);
+        console.log(`Name: ${name}`);
+        console.log('----------------------------\n');
+        return;
+    }
+
+    try {
+        await resend.emails.send({
+            from: fromEmail,
+            to: email,
+            subject: 'Welcome to Efteqad St. Refqa!',
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>Welcome, ${name}!</h2>
+                    <p>We are thrilled to have you join the Efteqad St. Refqa community.</p>
+                    <p>Your account has been successfully created and verified.</p>
+                    <br>
+                    <p>If you have any questions, feel free to reply to this email.</p>
+                    <p>Best regards,<br>The Team</p>
+                </div>
+            `
+        });
+        console.log(`Welcome email sent to ${email}`);
+    } catch (error) {
+        console.error('Error sending welcome email:', error);
+    }
+};

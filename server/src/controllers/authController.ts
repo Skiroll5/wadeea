@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { notifyAdmins } from '../utils/notificationUtils';
-import { sendConfirmationEmail, sendPasswordResetEmail, sendPasswordResetSms } from '../services/mailerService';
+import { sendConfirmationEmail, sendPasswordResetEmail, sendPasswordResetSms, sendWelcomeEmail } from '../services/mailerService';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
@@ -250,6 +250,9 @@ export const confirmEmail = async (req: Request, res: Response) => {
                 isEmailConfirmed: true,
             }
         });
+
+        // Send Welcome Email
+        sendWelcomeEmail(user.email, user.name || 'User').catch(err => console.error('Welcome email error:', err));
     } catch (error) {
         console.error('Confirm email error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -488,6 +491,9 @@ export const googleLogin = async (req: Request, res: Response) => {
                 { userId: user.id },
                 user.id
             ).catch(console.error);
+
+            // Send Welcome Email
+            sendWelcomeEmail(user.email, user.name).catch(console.error);
 
         } else {
             // Optional: Update existing user info (e.g. name/photo) if login success?
