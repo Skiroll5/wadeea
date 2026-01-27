@@ -28,6 +28,7 @@ services:
       - acme:/etc/acme.sh
     environment:
       - DEFAULT_EMAIL=wadeea@strefqa.com
+      - NGINX_PROXY_CONTAINER=nginx-proxy
 
   # 3. YOUR APP
   flutter-app:
