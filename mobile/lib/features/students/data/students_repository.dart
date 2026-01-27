@@ -168,9 +168,13 @@ class StudentsRepository {
   }
 
   Future<void> saveStudentPreference(
+    String userId,
     String studentId,
     String customMessage,
   ) async {
+    final now = DateTime.now();
+
+    // 1. Update API
     try {
       final token = await _getToken();
       if (token == null) throw Exception('No token');
@@ -185,11 +189,28 @@ class StudentsRepository {
       );
     } catch (e) {
       // print('StudentsRepo: Save Student Preference Failed ($e)');
+      // If API fails, we might still want to save locally for offline support?
+      // For now, let's rethrow to maintain current behavior, but consider fallback.
       rethrow;
     }
+
+    // 2. Update Local DB
+    final companion = UserStudentPreferencesCompanion(
+      userId: Value(userId),
+      studentId: Value(studentId),
+      customWhatsappMessage: Value(customMessage),
+      createdAt: Value(
+        now,
+      ), // Will be ignored on update if not handled carefully
+      updatedAt: Value(now),
+    );
+
+    await _db
+        .into(_db.userStudentPreferences)
+        .insertOnConflictUpdate(companion);
   }
 
-  Future<String?> getStudentPreference(String studentId) async {
+  Future<String?> getStudentPreference(String userId, String studentId) async {
     try {
       final token = await _getToken();
       if (token == null) throw Exception('No token');
@@ -202,14 +223,42 @@ class StudentsRepository {
         ),
       );
 
-      if (response.data != null &&
-          response.data['customWhatsappMessage'] != null) {
-        return response.data['customWhatsappMessage'] as String;
+      final customMessage =
+          (response.data != null &&
+              response.data['customWhatsappMessage'] != null)
+          ? response.data['customWhatsappMessage'] as String
+          : null;
+
+      // Sync to local DB
+      if (customMessage != null) {
+        final now = DateTime.now();
+        await _db
+            .into(_db.userStudentPreferences)
+            .insertOnConflictUpdate(
+              UserStudentPreferencesCompanion(
+                userId: Value(userId),
+                studentId: Value(studentId),
+                customWhatsappMessage: Value(customMessage),
+                createdAt: Value(
+                  now,
+                ), // ignored on update if not careful, but fine
+                updatedAt: Value(now),
+              ),
+            );
       }
-      return null;
+
+      return customMessage;
     } catch (e) {
       // print('StudentsRepo: Get Student Preference Failed ($e)');
-      return null;
+
+      // Fallback: Try fetching from local DB if API fails
+      final localPref =
+          await (_db.select(_db.userStudentPreferences)..where(
+                (t) => t.userId.equals(userId) & t.studentId.equals(studentId),
+              ))
+              .getSingleOrNull();
+
+      return localPref?.customWhatsappMessage;
     }
   }
 

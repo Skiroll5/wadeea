@@ -121,12 +121,18 @@ class StudentsController {
     String studentId,
     String customMessage,
   ) async {
+    final user = _ref.read(authControllerProvider).value;
+    if (user == null) throw Exception('User not authenticated');
+
     final repo = _ref.read(studentsRepositoryProvider);
-    await repo.saveStudentPreference(studentId, customMessage);
+    await repo.saveStudentPreference(user.id, studentId, customMessage);
   }
 
   Future<String?> getStudentPreference(String studentId) async {
+    final user = _ref.read(authControllerProvider).value;
+    if (user == null) return null;
+
     final repo = _ref.read(studentsRepositoryProvider);
-    return repo.getStudentPreference(studentId);
+    return repo.getStudentPreference(user.id, studentId);
   }
 }
