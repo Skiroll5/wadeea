@@ -1,6 +1,63 @@
 version: '3.8'
 
 services:
+  # --- 1. THE REVERSE PROXY (HTTPS Handler) ---
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  # --- 2. SSL AUTOMATION ---
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    restart: always
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
+    environment:
+      - DEFAULT_EMAIL=wadeea@strefqa.com
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+
+  # --- 3. FLUTTER WEB APP (Frontend) ---
+  flutter-app:
+    build: . # Looks for 'Dockerfile' in the current root folder
+    container_name: wadeea-web
+    restart: always
+    expose:
+      - "80"
+    environment:
+      # Domain for the Frontend
+      - VIRTUAL_HOST=wadeea.strefqa.com,www.wadeea.strefqa.com
+      - LETSENCRYPT_HOST=wadeea.strefqa.com,www.wadeea.strefqa.com
+
+  # --- 4. NODE.JS BACKEND (API) ---
+  backend:
+    build: ./server # Looks for 'Dockerfile' inside the 'server' folder
+    container_name: wadeea-api
+    restart: always
+    expose:
+      - "3000"
+    environment:
+      # Domain for the Backend (Fixes Mixed Content Error)
+      - VIRTUAL_HOST=api.wadeea.strefqa.com
+      - LETSENCRYPT_HOST=api.wadeea.strefqa.com
+      - VIRTUAL_PORT=3000
+      # Connect to DB by service name 'postgres'
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/wadeea_db
+
+  # --- 5. DATABASE ---
   postgres:
     image: postgres:15-alpine
     container_name: wadeea_db
@@ -9,7 +66,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: wadeea_db
-    ports:
-      - "5432:5432"
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+
+volumes:
+  certs:
+  vhost:
+  html:
+  acme:

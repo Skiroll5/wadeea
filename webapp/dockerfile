@@ -1,7 +1,0 @@
-FROM nginx:alpine
-
-# Copy the Nginx config
-COPY webapp/default.conf /etc/nginx/conf.d/default.conf
-
-# Copy the BUILT files from the previous stage
-COPY mobile/build/web /usr/share/nginx/html

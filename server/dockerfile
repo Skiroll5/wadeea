@@ -1,0 +1,19 @@
+FROM node:18-alpine
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+# If you use Prisma:
+COPY prisma ./prisma/
+
+RUN npm install
+# Generate Prisma Client (if used)
+RUN npx prisma generate
+
+# Copy source code
+COPY . .
+
+# Build and Run
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "run", "start:prod"]
