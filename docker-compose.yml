@@ -57,7 +57,20 @@ services:
       # Connect to DB by service name 'postgres'
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/wadeea_db
 
-  # --- 5. DATABASE ---
+  # --- 5. LANDING PAGE ---
+  landing-page:
+    image: nginx:alpine
+    container_name: wadeea-landing
+    restart: always
+    volumes:
+      - ./landing:/usr/share/nginx/html
+    expose:
+      - "80"
+    environment:
+      - VIRTUAL_HOST=strefqa.com,www.strefqa.com
+      - LETSENCRYPT_HOST=strefqa.com,www.strefqa.com
+
+  # --- 6. DATABASE ---
   postgres:
     image: postgres:15-alpine
     container_name: wadeea_db

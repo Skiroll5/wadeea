@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق وديعة - كنيسة القديسة رفقا واولادها الخمسة</title>
+    <meta name="description"
+        content="تطبيق وديعة، التطبيق الرسمي لإفتقاد كنيسة القديسة رفقا واولادها الخمسة. حمل التطبيق الآن.">
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="background-globes">
+        <div class="globe globe-1"></div>
+        <div class="globe globe-2"></div>
+        <div class="globe globe-3"></div>
+    </div>
+
+    <div class="glass-overlay"></div>
+
+    <main class="container">
+        <header class="header">
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="شعار كنيسة القديسة رفقا واولادها الخمسة" class="logo">
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1 class="app-title">تطبيق <span class="highlight">وديعة</span></h1>
+            <p class="app-subtitle">خدمة الإفتقاد - كنيسة القديسة رفقة وأولادها الخمسة</p>
+
+            <div class="app-description">
+                <p>
+                    "اِحْفَظِ الْوَدِيعَةَ الصَّالِحَةَ بِالرُّوحِ الْقُدُسِ السَّاكِنِ فِينَا." (2 تي 1: 14).
+                </p>
+            </div>
+
+            <div class="actions">
+                <a href="files/app-release.apk" class="btn btn-primary" download>
+                    <span class="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </span>
+                    <span class="text">تحميل التطبيق (Android)</span>
+                </a>
+
+                <a href="https://wadeea.strefqa.com" class="btn btn-secondary">
+                    <span class="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                            </path>
+                        </svg>
+                    </span>
+                    <span class="text">دخول الخدمة (Online)</span>
+                </a>
+
+                <!-- <a href="#" class="btn btn-secondary disabled">
+                    <span class="text">نسخة iOS (قريباً)</span>
+                </a> -->
+            </div>
+
+            <div class="platform-info">
+                <span class="badge">نظام أندرويد</span>
+                <span class="badge">نسخة 1.0.0</span>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p class="copyright">© 2026 كنيسة القديسة رفقة وأولادها الخمسة بالقناطر الخيرية</p>
+        </footer>
+    </main>
+
+    <script>
+        // Simple animation on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = document.querySelectorAll('.hero > *');
+            elements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.classList.add('fade-in-up');
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+
+</html>
