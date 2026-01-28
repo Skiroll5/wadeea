@@ -510,7 +510,7 @@ packages:
     source: hosted
     version: "5.9.0"
   google_sign_in_platform_interface:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: google_sign_in_platform_interface
       sha256: "5f6f79cf139c197261adb6ac024577518ae48fdff8e53205c5373b5f6430a8aa"
@@ -518,7 +518,7 @@ packages:
     source: hosted
     version: "2.5.0"
   google_sign_in_web:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: google_sign_in_web
       sha256: "460547beb4962b7623ac0fb8122d6b8268c951cf0b646dd150d60498430e4ded"
@@ -931,7 +931,7 @@ packages:
     source: hosted
     version: "1.10.1"
   sqlite3:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqlite3
       sha256: "3145bd74dcdb4fd6f5c6dda4d4e4490a8087d7f286a14dee5d37087290f0f8a2"
@@ -1131,7 +1131,7 @@ packages:
     source: hosted
     version: "1.2.1"
   web:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: web
       sha256: "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a"

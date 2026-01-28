@@ -14,6 +14,7 @@ import 'package:mobile/l10n/app_localizations.dart';
 
 import '../widgets/auth_background.dart';
 import '../widgets/auth_message_banner.dart';
+import '../widgets/google_sign_in_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -318,58 +319,62 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 24),
 
                 // 4. Google Sign In Button
-                OutlinedButton(
-                  onPressed: _isLoading ? null : _handleGoogleLogin,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: BorderSide(
-                      color: isDark ? Colors.white24 : Colors.grey.shade300,
+                GoogleSignInButton(
+                  onPressed: _handleGoogleLogin,
+                  isLoading: _isLoading,
+                  mobileChild: OutlinedButton(
+                    onPressed: _isLoading ? null : _handleGoogleLogin,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(
+                        color: isDark ? Colors.white24 : Colors.grey.shade300,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      backgroundColor: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.white.withValues(alpha: 0.8),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    backgroundColor: isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.white.withValues(alpha: 0.8),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Google Icon
-                            Container(
-                              width: 24,
-                              height: 24,
-                              alignment: Alignment.center,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                              ),
-                              child: Text(
-                                'G',
-                                style: GoogleFonts.inter(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Google Icon
+                              Container(
+                                width: 24,
+                                height: 24,
+                                alignment: Alignment.center,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                ),
+                                child: Text(
+                                  'G',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              l10n.googleSignIn,
-                              style: GoogleFonts.cairo(
-                                color: isDark ? Colors.white : Colors.black87,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                              const SizedBox(width: 12),
+                              Text(
+                                l10n.googleSignIn,
+                                style: GoogleFonts.cairo(
+                                  color: isDark ? Colors.white : Colors.black87,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                  ),
                 ).animate().fade(delay: 800.ms).slideY(begin: 0.2, end: 0),
 
                 const SizedBox(height: 32),

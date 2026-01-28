@@ -31,12 +31,13 @@ class AuthRepository {
 
   AuthRepository(this._dio);
 
+  // Expose the stream for listeners (like AuthController)
+  Stream<gsi.GoogleSignInAccount?> get onCurrentUserChanged =>
+      _googleSignIn.onCurrentUserChanged;
+
   Future<Map<String, dynamic>> signInWithGoogle() async {
     try {
       debugPrint('DEBUG: Starting Google Sign In process...');
-
-      // Removed force sign out to prevent race conditions on Web
-      // await _googleSignIn.signOut();
 
       // 1. Native Sign In
       debugPrint('DEBUG: Calling _googleSignIn.signIn()');
@@ -49,6 +50,37 @@ class AuthRepository {
 
       debugPrint('DEBUG: User signed in successfully: ${googleUser.email}');
 
+      return verifyGoogleUser(googleUser);
+    } on TimeoutException {
+      debugPrint('DEBUG: Connection Timed Out!');
+      throw AuthError('Timeout', 'TIMEOUT');
+    } on DioException catch (e) {
+      debugPrint('DEBUG: DioException: ${e.message} ${e.response?.data}');
+      final data = e.response?.data;
+      String message = 'Google connection failed';
+      String code = 'UNKNOWN';
+
+      if (data is Map<String, dynamic>) {
+        message = data['message'] ?? message;
+        code = data['code'] ?? code;
+      }
+      throw AuthError(message, code);
+    } catch (e) {
+      debugPrint('DEBUG: General Exception in signInWithGoogle: $e');
+      if (e is AuthError) rethrow;
+
+      if (e.toString().contains('popup_closed_by_user')) {
+        throw AuthError('Sign in popup was closed.', 'ABORTED');
+      }
+
+      throw AuthError('Google Sign In failed: ${e.toString()}', 'GOOGLE_ERROR');
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyGoogleUser(
+    gsi.GoogleSignInAccount googleUser,
+  ) async {
+    try {
       // 2. Get ID Token
       debugPrint('DEBUG: Retrieving authentication/ID Token...');
       final gsi.GoogleSignInAuthentication googleAuth =
@@ -74,14 +106,10 @@ class AuthRepository {
 
       return response.data; // { token, user }
     } on TimeoutException {
-      debugPrint('DEBUG: Connection Timed Out!');
       throw AuthError('Timeout', 'TIMEOUT');
     } on DioException catch (e) {
-      debugPrint('DEBUG: DioException: ${e.message} ${e.response?.data}');
-      // Only sign out on failure if we successfully signed in locally first
-      // await _googleSignIn.signOut();
       final data = e.response?.data;
-      String message = 'Google connection failed';
+      String message = 'Google verification failed';
       String code = 'UNKNOWN';
 
       if (data is Map<String, dynamic>) {
@@ -89,12 +117,6 @@ class AuthRepository {
         code = data['code'] ?? code;
       }
       throw AuthError(message, code);
-    } catch (e) {
-      debugPrint('DEBUG: General Exception in signInWithGoogle: $e');
-      if (e is AuthError) rethrow;
-
-      // await _googleSignIn.signOut();
-      throw AuthError('Google Sign In failed: ${e.toString()}', 'GOOGLE_ERROR');
     }
   }
 

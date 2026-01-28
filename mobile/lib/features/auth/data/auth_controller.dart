@@ -20,6 +20,57 @@ class AuthController extends StateNotifier<AsyncValue<User?>> {
 
   AuthController(this._ref, this._db) : super(const AsyncValue.loading()) {
     _checkAuthStatus();
+
+    // Listen for Google Sign In changes (especially for Web)
+    final repo = _ref.read(authRepositoryProvider);
+    print('DEBUG: AuthController: Subscribing to onCurrentUserChanged stream');
+    repo.onCurrentUserChanged.listen(
+      (googleUser) {
+        print(
+          'DEBUG: AuthController: Stream fired! User: ${googleUser?.email}',
+        );
+        if (googleUser != null) {
+          // User signed in via Google (e.g. web button)
+          // We trigger the backend verification logic
+          _handleGoogleUserStream(googleUser);
+        }
+      },
+      onError: (e) {
+        print('DEBUG: AuthController: Stream error: $e');
+      },
+      onDone: () {
+        print('DEBUG: AuthController: Stream closed');
+      },
+    );
+  }
+
+  Future<void> _handleGoogleUserStream(dynamic googleUser) async {
+    // Only proceed if we aren't already authenticated or loading verification
+    // This is a simplified check.
+    if (state.asData?.value != null) return;
+
+    try {
+      final repo = _ref.read(authRepositoryProvider);
+      final data = await repo.verifyGoogleUser(googleUser);
+
+      final user = User.fromJson(data['user']);
+      final token = data['token'];
+
+      // Save token and user data
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', token);
+      await prefs.setString('user_data', jsonEncode(user.toJson()));
+
+      // Upsert user to local DB
+      await _upsertUserLocal(user);
+
+      state = AsyncValue.data(user);
+    } catch (e) {
+      // Handle silent failures or show error?
+      // Since this is a stream listener, we can't easily throw to UI.
+      // But we can set error state if appropriate, or just log.
+      print('Stream Google auth failed: $e');
+    }
   }
 
   Future<void> _checkAuthStatus() async {
